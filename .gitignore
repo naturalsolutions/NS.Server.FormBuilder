@@ -2,3 +2,4 @@ build/
 dist/
 formBuilder.egg-info
 setup.py
+*.pyc
