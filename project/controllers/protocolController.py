@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 from project                import app
-from flask                  import jsonify, abort
+from flask                  import jsonify, abort, render_template
 from ..models import Session
 from ..models.repositoryDB  import Protocol, Unity, Keyword, Version
 from ..utility.utility      import XMLUtiliy
@@ -37,9 +38,8 @@ def getKeywords():
     keywords = Session.query(Keyword).all()
     ks   = []
     for each in keywords:
-        ks.append( each.text )
+        ks.append( each.text.decode('latin-1').encode("utf-8") )
     return jsonify ({ "options" : ks })
-
 
 # Get protocol by name
 @app.route('/protocols/<name>', methods = ['GET'])
@@ -116,7 +116,7 @@ def updateProtocol(id):
 
 @app.route('/', methods = ['GET'])
 def index():
-    return render_template('form/index.html')
+    return render_template('index.html')
 
 
 
