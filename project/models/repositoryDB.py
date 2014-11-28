@@ -1,5 +1,5 @@
 from sqlalchemy                 import Column, Date, Integer, String, Table, ForeignKey
-from project.models          import Base, Session
+from project.models          import Base, Session, engine
 from sqlalchemy.orm             import relationship, backref
 from sqlalchemy                 import create_engine, UniqueConstraint
 
@@ -129,3 +129,28 @@ class Version(Base):
             "comment"   : str (self.comment),
             "createdAt" : self.createdAt.strftime("%Y-%m-%d_%H-%M-%S")
         }
+
+# ---------------------------------------------------------------------
+# Configuration table / class declaration
+# A configuration is a field saved as a pre configurated field from client
+# Is usefull if you have the same field in different protocol like "weight"
+class Configuration(Base):
+
+    __tablename__ = "Configurations"
+
+    id   = Column (Integer, primary_key = True)
+    type = Column (String, nullable = False)
+    path = Column (String, nullable = False)
+
+    def __init__ (self, type, path):
+        self.type = type
+        self.path = path
+
+    def serialize (self):
+        return {
+            "id"   : self.id,
+            "type" : str (self.type),
+            "path" : str(self.path)
+        }
+
+Base.metadata.create_all(engine)

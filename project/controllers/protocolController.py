@@ -2,7 +2,7 @@
 from project                import app
 from flask                  import jsonify, abort, render_template
 from ..models import Session
-from ..models.repositoryDB  import Protocol, Unity, Keyword, Version
+from ..models.repositoryDB  import Protocol, Unity, Keyword, Version, Configuration
 from ..utility.utility      import XMLUtiliy
 from ..utility.protocolUtility      import ProtocolUtility
 from sqlalchemy             import create_engine
@@ -113,6 +113,13 @@ def updateProtocol(id):
         else:
             self.notFound()
 
+@app.route('/configurations', methods = ['GET'])
+def getConfiguration():
+    configuration    = Session.query(Configuration).all()
+    configurations   = []
+    for each in configuration :
+        configurations.append( each.type )
+    return jsonify({ "options" : configurations})
 
 @app.route('/', methods = ['GET'])
 def index():
