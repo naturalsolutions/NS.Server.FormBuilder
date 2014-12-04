@@ -140,11 +140,13 @@ class Configuration(Base):
 
     id   = Column (Integer, primary_key = True)
     type = Column (String, nullable = False)
+    name = Column (String, nullable = False)
     path = Column (String, nullable = False)
 
-    def __init__ (self, type, path):
+    def __init__ (self, type, name, path):
         self.type = type
         self.path = path
+        self.name = name
 
     def serialize (self):
         return {

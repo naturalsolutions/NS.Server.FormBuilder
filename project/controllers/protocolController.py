@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from project                import app
-from flask                  import jsonify, abort, render_template
+from flask                  import jsonify, abort, render_template, request
 from ..models import Session
 from ..models.repositoryDB  import Protocol, Unity, Keyword, Version, Configuration
 from ..utility.utility      import XMLUtiliy
@@ -9,6 +9,7 @@ from sqlalchemy             import create_engine
 from sqlalchemy.orm         import sessionmaker
 
 import os
+import sys
 
 # Return all unit values
 @app.route('/unities', methods = ['GET'])
@@ -113,6 +114,7 @@ def updateProtocol(id):
         else:
             self.notFound()
 
+# GET, returns all configurated fields
 @app.route('/configurations', methods = ['GET'])
 def getConfiguration():
     configuration    = Session.query(Configuration).all()
@@ -120,6 +122,28 @@ def getConfiguration():
     for each in configuration :
         configurations.append( each.type )
     return jsonify({ "options" : configurations})
+
+@app.route('/configurations', methods = ['POST'])
+def createConfiguratedField():
+    if not request.json:
+        self.wrongFormat('JSON')
+    elif not 'field' in request.json:
+        self.missingParameters()
+    else:
+        if all (k in request.json['field'] for k in ("type","name", "content")):
+            # All parameter are present
+            newConfiguratedField = Configuration(request.json['field']['type'], request.json['field']['name'], "")
+
+            try:
+                Session.add (newConfiguratedField)
+                Session.commit ()
+                return jsonify({ "result" : True})
+            except:
+                Session.rollback()
+                print "Unexpected error:", sys.exc_info()[0]
+                return jsonify({ "result" : False})
+        else:
+            self.missingParameters();
 
 @app.route('/', methods = ['GET'])
 def index():
