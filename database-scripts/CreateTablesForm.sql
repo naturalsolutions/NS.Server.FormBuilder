@@ -26,10 +26,10 @@ CREATE TABLE KeyWord (
 
 	pk_KeyWord			BIGINT IDENTITY(1,1) NOT NULL,	-- primary key
 
-	Name				VARCHAR(100) 	NOT NULL,
+	Name				VARCHAR(100) 	NOT NULL UNIQUE,
 	CreationDate		DATETIME 		NOT NULL,
 	ModifDate			DATETIME 		NOT NULL,
-	CurStatus			TINYINT			NOT NULL,	
+	CurStatus			TINYINT			NOT NULL,
 
 	CONSTRAINT pk_KeyWord PRIMARY KEY CLUSTERED (pk_KeyWord )
 
@@ -58,7 +58,7 @@ CREATE TABLE Unity (
 
 	pk_Unity	BIGINT IDENTITY(1,1) NOT NULL,	-- primary key
 
-	Nom			BIGINT NOT NULL,
+	Name		BIGINT NOT NULL,
 	LabelFR		VARCHAR(300)  NULL,
 	LabelEN		VARCHAR(300)  NULL,
 
