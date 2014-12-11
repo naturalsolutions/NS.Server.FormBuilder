@@ -1,118 +1,166 @@
 # -*- coding: utf-8 -*-
 from project                import app
-from flask                  import jsonify, abort, render_template, request
-from ..models import Session
-from ..models.repositoryDB  import Protocol, Unity, Keyword, Version, Configuration
-from ..utility.utility      import XMLUtiliy
-from ..utility.protocolUtility      import ProtocolUtility
-from sqlalchemy             import create_engine
-from sqlalchemy.orm         import sessionmaker
+from flask                  import jsonify, abort, render_template, request, make_response
+from ..models               import session, Form, KeyWord, Unity
 
 import os
 import sys
+import datetime
 
-# Return all unit values
+#   ---------------------------------------------------------
+#   Return all unit values
 @app.route('/unities', methods = ['GET'])
 def getUnities():
-    unities = Session.query(Unity).all()
+    unities = session.query(Unity).all()
     un   = []
     for each in unities:
-        un.append( each.text )
+        un.append( each.toJSON() )
     return jsonify ({ "options" : un })
 
 
+#   --------------------------------------------------------
 # Return a list of protocols name
 # Used for javascript autocomplete source
 @app.route('/protocols', methods = ['GET'])
 def getProtocols():
-    protos      = Session.query(Protocol).all()
+    protos      = session.query(Form).all()
     protocols   = []
     for each in protos :
-        protocols.append( each.name )
+        protocols.append( each.toJSON() )
     return jsonify({ "options" : protocols})
 
 
+#   --------------------------------------------------------
 # return a list a keyword values
 # Used for javascript autocomplete source
 @app.route('/keywords', methods = ['GET'])
 def getKeywords():
-    keywords = Session.query(Keyword).all()
+    keywords = session.query(KeyWord).all()
     ks   = []
     for each in keywords:
-        ks.append( each.text.decode('latin-1').encode("utf-8") )
+        ks.append( each.toJSON() )
     return jsonify ({ "options" : ks })
 
+
+#   --------------------------------------------------------
 # Get protocol by name
-@app.route('/protocols/<name>', methods = ['GET'])
-def getProtocolsByName(name):
-    path = ProtocolUtility.XMLRepository + name;
-    if os.path.isdir (path) and os.listdir (path):
-        # get newest file
-        newest = max (glob.iglob (path + '/*.xml'), key = os.path.getctime)
-        return jsonify({ name : open(newest, 'r').read() })
+@app.route('/protocols/<formName>', methods = ['GET'])
+def getProtocolsByName(formName):
+    forms = session.query(Form).filter_by(Name = formName)
+    if forms.count() > 0:
+        return jsonify({ formName : forms.one().toJSON() })
     else:
-        abort (404, 'No XML corresponding to specified name')
+        abort (404, 'Form found for this name')
 
 
+#   -------------------------------------------------------
 # POST routes, create a form with name and content
 @app.route('/protocols', methods = ['POST'])
 def createProtocole():
-    if not request.json:
-        abort(make_response('Data seems not be in ' + format +' format', 400))
-    elif not 'name' in request.json or not 'content' in request.json or not 'comment' in request.json:
-        abort(make_response('Some parameters are missing', 400))
+
+    if request.json:
+
+        #   Check if all parameters are present
+        IfmissingParameters = True
+
+        neededParametersList = [
+            'name',
+            'description',
+            'keywords',
+            'labelFr',
+            'labelEn',
+            'schema',
+            'fieldsets'
+        ]
+
+        for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
+
+        if IfmissingParameters == False:
+
+            abort(make_response('Some parameters are missing', 400))
+
+        else:
+
+            #   Check if a form with this name exists
+            forms = session.query(Form).filter_by(Name = request.json['name'])
+
+            if forms.count() == 0:
+                # No, we create a new form
+                form = Form(request.json['name'], request.json['labelFr'], request.json['labelEn'], request.json['description'])
+            else:
+
+                #   Yes, we get the first form and we update it 
+                #   Maybe we can send an error here and only allow form update on PUT method ?
+                form = forms.first()
+
+                form.Name      = request.json['name']
+                form.labelFR   = request.json['labelFr']
+                form.labelEN   = request.json['labelEn']
+                form.comment   = request.json['description']
+                form.ModifDate = datetime.datetime.now()
+
+            form.addKeywords( request.json['keywords'] )
+            try:
+                session.add (form)
+                session.commit ()
+                return jsonify({"form" : form.toJSON() })
+            except:
+                session.rollback()
+                print( sys.exc_info() )
+                abort(make_response('Error during save', 500))
+
     else:
-        #check XML content
-        self._checkXML (request.json['content'])
-
-        # get current datetime
-        current = datetime.today()
-        # check if a protocol with this name yet exists
-        proto = Session.query(Protocol).filter(Protocol.name == request.json['name']).first()
-
-        if proto == None :
-            proto   = Protocol (request.json['name'], request.json['description'], ProtocolUtility.XMLRepository + request.json['name'])
-
-        ProtocolUtility.writeProtocol (request.json['name'], request.json['content'], current.strftime("%Y-%m-%d_%H-%M-%S"))
-
-        # add a version to new protocol
-        version = Version (request.json['comment'], current)
-        proto.addVersion(version)
-
-        # keywords
-        keywordsList = request.json['keywords'].split(',');
-        for each in keywordsList :
-            proto.addKeyword( Keyword(each) )
-        try:
-            Session.add (proto)
-            Session.commit ()
-        except:
-            Session.rollback()
-        resp = jsonify({"proto" : proto.serialize()})
-        return resp
+        abort(make_response('Data seems not be in ' + format +' format', 400))
 
 
 # PUT routes, update protocol
 @app.route('/protocols/<int:id>', methods=['PUT'])
 def updateProtocol(id):
-    if not request.json:
-        self.wrongFormat('JSON')
-    elif not 'content' in request.json:
-        self.missingParameters()
-    else:
-        proto = self._session.query(Protocol).filter(Protocol.id == id).first()
-        if proto != None:
+    if request.json:
+        IfmissingParameters     = True
+        neededParametersList    = [
+            'name',
+            'description',
+            'keywords',
+            'labelFr',
+            'labelEn',
+            'schema',
+            'fieldsets'
+        ]
 
-            # write xml file
-            current = datetime.datetime.now()
-            path    = self._writeProtocol (proto.name, request.json['content'], current.strftime("%Y-%m-%d_%H-%M-%S"))
-            version = Version (request.json['comment'], current)
-            proto.versions.append (version)
+        for a in neededParametersList:
+            IfmissingParameters = IfmissingParameters and (a in request.json)
 
-            self._session.commit()
-            return jsonify({"proto" : proto.serialize()})
+        if IfmissingParameters == False:
+
+            abort(make_response('Some parameters are missing', 400))
+
         else:
-            self.notFound()
+            form = self._session.query(Protocol).filter(Protocol.id == id).first()
+            if form != None:
+
+                form.Name      = request.json['name']
+                form.labelFR   = request.json['labelFr']
+                form.labelEN   = request.json['labelEn']
+                form.comment   = request.json['description']
+                form.ModifDate = datetime.datetime.now()
+
+                form.addKeywords( request.json['keywords'] )
+
+                try:
+                    session.add (form)
+                    session.commit ()
+                    return jsonify({"form" : form.toJSON() })
+                except:
+                    session.rollback()
+                    print( sys.exc_info() )
+                    abort(make_response('Error', 500))
+
+            else:
+                abort(make_response('No form found with this ID', 404))
+
+    else:
+        abort(make_response('Data seems not be in ' + format +' format', 400))
 
 # GET, returns all configurated fields
 @app.route('/configurations', methods = ['GET'])
@@ -122,6 +170,7 @@ def getConfiguration():
     for each in configuration :
         configurations.append( each.type )
     return jsonify({ "options" : configurations})
+
 
 @app.route('/configurations', methods = ['POST'])
 def createConfiguratedField():
@@ -144,6 +193,7 @@ def createConfiguratedField():
                 return jsonify({ "result" : False})
         else:
             self.missingParameters();
+
 
 @app.route('/', methods = ['GET'])
 def index():
