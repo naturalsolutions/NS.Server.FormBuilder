@@ -13,7 +13,7 @@ CREATE TABLE Form (
 	LabelFR			VARCHAR(300) 	NOT NULL,
 	LabelEN			VARCHAR(300) 	NOT NULL,
 	CreationDate	DATETIME 		NOT NULL,
-	ModifDate		DATETIME 		NOT NULL,
+	ModifDate		DATETIME 		NULL,
 	CurStatus		TINYINT			NOT NULL,
 	Comment			VARCHAR(MAX) 	NOT NULL
 
@@ -27,7 +27,7 @@ CREATE TABLE KeyWord (
 
 	Name				VARCHAR(100) 	NOT NULL UNIQUE,
 	CreationDate		DATETIME 		NOT NULL,
-	ModifDate			DATETIME 		NOT NULL,
+	ModifDate			DATETIME 		NULL,
 	CurStatus			TINYINT			NOT NULL,
 
 	CONSTRAINT pk_KeyWord PRIMARY KEY CLUSTERED (pk_KeyWord )
@@ -49,6 +49,7 @@ CREATE TABLE KeyWord_Form (
 	CONSTRAINT KeyWord_Form_fk_KeyWord	FOREIGN KEY (fk_KeyWord)	REFERENCES KeyWord(pk_KeyWord),	
 	CONSTRAINT KeyWord_Form_fk_Form		FOREIGN KEY (fk_Form)		REFERENCES Form(pk_Form)
 )
+
 
 CREATE TABLE Unity (
 

@@ -18,10 +18,13 @@ CREATE TABLE Input (
 	IsRequired		BIT 			NOT NULL,
 	IsReadOnly		BIT 			NOT NULL,
 	BootStrapSize	VARCHAR(100) 	NOT NULL,
-	SizeData		INT 			NOT NULL,
-	IsEOL			BIT 			NOT NULL,	--	is End Of Line
+	--	is End Of Line
+	IsEOL			BIT 			NOT NULL,
 	StartDate		DATETIME 		NOT NULL,
 	CurStatus		TINYINT			NOT NULL,
+	EditorClass		VARCHAR(255)	NULL,
+	FieldClass		VARCHAR(255)	NULL,
+	InputType		VARCHAR(255)	NOT NULL,
 
 	CONSTRAINT pk_Input PRIMARY KEY CLUSTERED (pk_Input ),
 
