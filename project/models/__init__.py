@@ -131,10 +131,10 @@ class Unity(Base) :
 
     __tablename__ = "Unity"
 
-    pk_Unity = Column(BigInteger, primary_key=True)
-    Name     = Column(BigInteger, nullable=False)
-    LabelFR  = Column(String(300, 'French_CI_AS'))
-    LabelEN  = Column(String(300, 'French_CI_AS'))
+    pk_Unity      = Column(BigInteger, primary_key=True)
+    Name          = Column(String(100, 'French_CI_AS'), nullable=False)
+    LabelFR       = Column(String(300, 'French_CI_AS'))
+    LabelEN       = Column(String(300, 'French_CI_AS'))
 
     def toJSON(self):
         return {
@@ -215,6 +215,10 @@ class ConfiguratedInput(Base):
     InputType            = Column(String(100, 'French_CI_AS'), nullable=False)
     EditorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
     FieldCLass           = Column(String(100, 'French_CI_AS'), nullable=True)
+
+    def __init__(self, initializationValues):
+        for objectColumn in initializationValues:
+            setattr(self, objectColumn, initializationValues[objectColumn])
 
 
 class ConfiguratedInputProperty(Base):

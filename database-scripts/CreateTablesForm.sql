@@ -55,7 +55,7 @@ CREATE TABLE Unity (
 
 	pk_Unity	BIGINT IDENTITY(1,1) NOT NULL,	-- primary key
 
-	Name		BIGINT NOT NULL,
+	Name		VARCHAR(300) NOT NULL,
 	LabelFR		VARCHAR(300)  NULL,
 	LabelEN		VARCHAR(300)  NULL,
 
