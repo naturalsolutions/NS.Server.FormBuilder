@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from project                import app
 from flask                  import jsonify, abort, render_template, request, make_response
-from ..models               import session, Form, KeyWord, Unity
+from ..models               import session, Form, KeyWord, Unity, ConfiguratedInput
 
 import os
 import sys
@@ -165,11 +165,12 @@ def updateProtocol(id):
 # GET, returns all configurated fields
 @app.route('/configurations', methods = ['GET'])
 def getConfiguration():
-    configuration    = Session.query(Configuration).all()
-    configurations   = []
-    for each in configuration :
-        configurations.append( each.type )
-    return jsonify({ "options" : configurations})
+    configuratedInputsList    = session.query(ConfiguratedInput).all()
+    configuratedInputs   = []
+
+    for each in configuratedInputsList :
+        configuratedInputs.append( each.Name )
+    return jsonify({ "options" : configuratedInputs})
 
 
 @app.route('/configurations', methods = ['POST'])
@@ -179,20 +180,20 @@ def createConfiguratedField():
     elif not 'field' in request.json:
         self.missingParameters()
     else:
-        if all (k in request.json['field'] for k in ("type","name", "content")):
+        if all (k in request.json['field'] for k in ("Type","Name", "LabelFR")):
             # All parameter are present
-            newConfiguratedField = Configuration(request.json['field']['type'], request.json['field']['name'], "")
+            newConfiguratedField = ConfiguratedInput( request.json['field'] )
 
             try:
-                Session.add (newConfiguratedField)
-                Session.commit ()
+                session.add (newConfiguratedField)
+                session.commit ()
                 return jsonify({ "result" : True})
             except:
-                Session.rollback()
+                session.rollback()
                 print "Unexpected error:", sys.exc_info()[0]
                 return jsonify({ "result" : False})
         else:
-            self.missingParameters();
+            abort(make_response('Some parameters are missing', 400))
 
 
 @app.route('/', methods = ['GET'])
