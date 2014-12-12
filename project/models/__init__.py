@@ -16,11 +16,12 @@ class Form(Base):
     __tablename__ = 'Form'
 
     pk_Form      = Column(BigInteger, primary_key=True)
+
     Name         = Column(String(100, 'French_CI_AS'), nullable=False)
     LabelFR      = Column(String(300, 'French_CI_AS'), nullable=False)
     LabelEN      = Column(String(300, 'French_CI_AS'), nullable=False)
     CreationDate = Column(DateTime, nullable=False)
-    ModifDate    = Column(DateTime, nullable=False)
+    ModifDate    = Column(DateTime, nullable=True)
     CurStatus    = Column(Integer, nullable=False)
     Comment      = Column(String(collation='French_CI_AS'), nullable=False)
 
@@ -77,7 +78,7 @@ class KeyWord(Base) :
     pk_KeyWord   = Column(BigInteger, primary_key=True)
     Name         = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
     CreationDate = Column(DateTime, nullable=False)
-    ModifDate    = Column(DateTime, nullable=False)
+    ModifDate    = Column(DateTime, nullable=True)
     CurStatus    = Column(Integer, nullable=False)
 
     # Constuctor
@@ -104,8 +105,10 @@ class KeyWord_Form(Base):
     __tablename__ = "KeyWord_Form"
 
     pk_KeyWord_Form = Column(BigInteger, primary_key=True)
+
     fk_KeyWord      = Column(ForeignKey('KeyWord.pk_KeyWord'), nullable=False)
     fk_Form         = Column(ForeignKey('Form.pk_Form'), nullable=False)
+
     CreationDate    = Column(DateTime, nullable=False)
     CurStatus       = Column(Integer, nullable=False)
 
@@ -180,7 +183,9 @@ class InputProperty(Base):
     __tablename__ = "InputProperty"
 
     pk_InputProperty = Column(BigInteger, primary_key=True)
+
     fk_Input         = Column(ForeignKey('Input.pk_Input'), nullable=False)
+
     Name             = Column(String(255, 'French_CI_AS'), nullable=False)
     Value            = Column(String(255, 'French_CI_AS'), nullable=False)
     CreationDate     = Column(DateTime, nullable=False)
@@ -197,23 +202,28 @@ class ConfiguratedInput(Base):
     __tablename__ = 'ConfiguratedInput'
 
     pk_ConfiguratedInput = Column(BigInteger, primary_key=True)
+
     Name                 = Column(String(100, 'French_CI_AS'), nullable=False)
     LabelFR              = Column(String(300, 'French_CI_AS'), nullable=False)
     LabelEN              = Column(String(300, 'French_CI_AS'), nullable=False)
     IsRequired           = Column(BIT, nullable=False)
     IsReadOnly           = Column(BIT, nullable=False)
     BootStrapSize        = Column(String(100, 'French_CI_AS'), nullable=False)
-    SizeData             = Column(Integer, nullable=False)
     IsEOL                = Column(BIT, nullable=False)
     StartDate            = Column(DateTime, nullable=False)
     CurStatus            = Column(Integer, nullable=False)
+    InputType            = Column(String(100, 'French_CI_AS'), nullable=False)
+    EditorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
+    FieldCLass           = Column(String(100, 'French_CI_AS'), nullable=True)
 
 
 class ConfiguratedInputProperty(Base):
     __tablename__ = 'ConfiguratedInputProperty'
 
     pk_ConfiguratedInputProperty = Column(BigInteger, primary_key=True)
+
     fk_ConfiguratedInput         = Column(ForeignKey('ConfiguratedInput.pk_ConfiguratedInput'), nullable=False)
+    
     Name                         = Column(String(255, 'French_CI_AS'), nullable=False)
     Value                        = Column(String(255, 'French_CI_AS'), nullable=False)
     CreationDate                 = Column(DateTime, nullable=False)
