@@ -18,7 +18,6 @@ CREATE TABLE Form (
 	Comment			VARCHAR(MAX) 	NOT NULL
 
 	CONSTRAINT pk_Form PRIMARY KEY CLUSTERED (pk_Form )
-
 )
 
 
@@ -32,7 +31,6 @@ CREATE TABLE KeyWord (
 	CurStatus			TINYINT			NOT NULL,
 
 	CONSTRAINT pk_KeyWord PRIMARY KEY CLUSTERED (pk_KeyWord )
-
 )
 
 
@@ -47,12 +45,10 @@ CREATE TABLE KeyWord_Form (
 
 	CONSTRAINT pk_KeyWord_Form PRIMARY KEY CLUSTERED (pk_KeyWord_Form),
 
-	--	constraints
-	CONSTRAINT KeyWord_Form_fk_KeyWord FOREIGN KEY (fk_KeyWord) REFERENCES KeyWord(pk_KeyWord),	--	Link forms and keywords
-	CONSTRAINT KeyWord_Form_fk_Form FOREIGN KEY (fk_Form) REFERENCES Form(pk_Form)				--
-
+	--	Link forms and keywords
+	CONSTRAINT KeyWord_Form_fk_KeyWord	FOREIGN KEY (fk_KeyWord)	REFERENCES KeyWord(pk_KeyWord),	
+	CONSTRAINT KeyWord_Form_fk_Form		FOREIGN KEY (fk_Form)		REFERENCES Form(pk_Form)
 )
-
 
 CREATE TABLE Unity (
 
@@ -62,6 +58,5 @@ CREATE TABLE Unity (
 	LabelFR		VARCHAR(300)  NULL,
 	LabelEN		VARCHAR(300)  NULL,
 
-	CONSTRAINT pk_Unity PRIMARY KEY CLUSTERED (pk_Unity),
-
+	CONSTRAINT pk_Unity PRIMARY KEY CLUSTERED (pk_Unity)
 )
