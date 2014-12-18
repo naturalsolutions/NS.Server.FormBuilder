@@ -11,33 +11,33 @@ Base = declarative_base()
 metadata = Base.metadata
 
 # Form class
-# Form has 0 or n Keywords 
+# Form has 0 or n Keywords
 class Form(Base):
     __tablename__ = 'Form'
 
-    pk_Form      = Column(BigInteger, primary_key=True)
+    pk_Form          = Column(BigInteger, primary_key=True)
 
-    Name         = Column(String(100, 'French_CI_AS'), nullable=False)
-    LabelFR      = Column(String(300, 'French_CI_AS'), nullable=False)
-    LabelEN      = Column(String(300, 'French_CI_AS'), nullable=False)
-    CreationDate = Column(DateTime, nullable=False)
-    ModifDate    = Column(DateTime, nullable=True)
-    CurStatus    = Column(Integer, nullable=False)
-    Comment      = Column(String(collation='French_CI_AS'), nullable=False)
+    Name             = Column(String(100, 'French_CI_AS'), nullable=False)
+    LabelFR          = Column(String(300, 'French_CI_AS'), nullable=False)
+    LabelEN          = Column(String(300, 'French_CI_AS'), nullable=False)
+    CreationDate     = Column(DateTime, nullable=False)
+    ModificationDate = Column(DateTime, nullable=True)
+    CurStatus        = Column(Integer, nullable=False)
+    Comment          = Column(String(collation='French_CI_AS'), nullable=False)
 
     # Relationship
-    keywords        = relationship("KeyWord_Form")  # A form has many Keywords
-    inputs          = relationship("Input")         # A form has many Inputs
+    keywords         = relationship("KeyWord_Form")  # A form has many Keywords
+    inputs           = relationship("Input")         # A form has many Inputs
 
     # Constructor
     def __init__(self, name, LabelFR, LabelEN, Comment):
-        self.Name         = name
-        self.LabelFR      = LabelFR
-        self.LabelEN      = LabelEN
-        self.Comment      = Comment
-        self.CreationDate = datetime.datetime.now()
-        self.ModifDate    = datetime.datetime.now()
-        self.CurStatus    = "1"
+        self.Name             = name
+        self.LabelFR          = LabelFR
+        self.LabelEN          = LabelEN
+        self.Comment          = Comment
+        self.CreationDate     = datetime.datetime.now()
+        self.ModificationDate = datetime.datetime.now()
+        self.CurStatus        = "1"
 
     # Serialize a form in JSON object
     def toJSON(self):
@@ -45,19 +45,19 @@ class Form(Base):
         for each in self.inputs:
             inputs.append( each.toJSON() )
         keywords = []
-        for each in self.keywords : 
+        for each in self.keywords :
             keywords.append (each.serialize())
         return {
-            "ID"            : self.pk_Form,
-            "Name"          : self.Name,
-            "LabelFR"       : self.LabelFR,
-            "LabelEN"       : self.LabelEN,
-            "CreationDate"  : self.CreationDate,
-            "ModifDate"     : self.ModifDate,
-            "CurStatus"     : self.CurStatus,
-            "Comment"       : self.Comment,
-            "Keywords"      : keywords,
-            "Schema"        : inputs
+            "ID"               : self.pk_Form,
+            "Name"             : self.Name,
+            "LabelFR"          : self.LabelFR,
+            "LabelEN"          : self.LabelEN,
+            "CreationDate"     : self.CreationDate,
+            "ModificationDate" : self.ModificationDate,
+            "CurStatus"        : self.CurStatus,
+            "Comment"          : self.Comment,
+            "Keywords"         : self.keywords,
+            "Schema"           : self.inputs
         }
 
     # Add keyword to the form
@@ -75,18 +75,18 @@ class KeyWord(Base) :
 
     __tablename__ = 'KeyWord'
 
-    pk_KeyWord   = Column(BigInteger, primary_key=True)
-    Name         = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
-    CreationDate = Column(DateTime, nullable=False)
-    ModifDate    = Column(DateTime, nullable=True)
-    CurStatus    = Column(Integer, nullable=False)
+    pk_KeyWord       = Column(BigInteger, primary_key=True)
+    Name             = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
+    CreationDate     = Column(DateTime, nullable=False)
+    ModificationDate = Column(DateTime, nullable=True)
+    CurStatus        = Column(Integer, nullable=False)
 
     # Constuctor
     def __init__(self, name):
-        self.Name = name
-        self.CreationDate = datetime.datetime.now()
-        self.ModifDate = datetime.datetime.now()
-        self.CurStatus = "1"
+        self.Name             = name
+        self.CreationDate     = datetime.datetime.now()
+        self.ModificationDate = datetime.datetime.now()
+        self.CurStatus        = "1"
 
     # Serialize a KeyWord object in JSON format
     def toJSON(self):
@@ -94,7 +94,7 @@ class KeyWord(Base) :
             "ID"            : self.pk_KeyWord,
             "Name"          : self.Name,
             "CreationDate"  : self.CreationDate,
-            "ModifDate"     : self.ModifDate,
+            "ModifDate"     : self.ModificationDate,
             "CurStatus"     : self.CurStatus,
         }
 
@@ -159,15 +159,16 @@ class Input(Base):
     LabelEN       = Column(String(300, 'French_CI_AS'), nullable=False)
     IsRequired    = Column(BIT, nullable=False)
     IsReadOnly    = Column(BIT, nullable=False)
-    BootStrapSize = Column(String(100, 'French_CI_AS'), nullable=False)
+    FieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
     IsEOL         = Column(BIT, nullable=False)
     StartDate     = Column(DateTime, nullable=False)
     CurStatus     = Column(Integer, nullable=False)
     InputType     = Column(String(100, 'French_CI_AS'), nullable=False)
     EditorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
     FieldCLass    = Column(String(100, 'French_CI_AS'), nullable=True)
-    
-    Form = relationship('Form')
+
+    Form        = relationship('Form')
+    Properties  = relationship("InputProperty")
 
     def toJSON(self):
         return {
@@ -208,17 +209,30 @@ class ConfiguratedInput(Base):
     LabelEN              = Column(String(300, 'French_CI_AS'), nullable=False)
     IsRequired           = Column(BIT, nullable=False)
     IsReadOnly           = Column(BIT, nullable=False)
-    BootStrapSize        = Column(String(100, 'French_CI_AS'), nullable=False)
+    FieldSize            = Column(String(100, 'French_CI_AS'), nullable=False)
     IsEOL                = Column(BIT, nullable=False)
     StartDate            = Column(DateTime, nullable=False)
     CurStatus            = Column(Integer, nullable=False)
     InputType            = Column(String(100, 'French_CI_AS'), nullable=False)
     EditorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
-    FieldCLass           = Column(String(100, 'French_CI_AS'), nullable=True)
+    FieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
 
-    def __init__(self, initializationValues):
-        for objectColumn in initializationValues:
-            setattr(self, objectColumn, initializationValues[objectColumn])
+    Properties          = relationship("ConfiguratedInputProperty")
+
+    @classmethod
+    def getColumnsList(cls):
+        return [
+            'Name',
+            'LabelFR',
+            'LabelEN',
+            'IsRequired',
+            'IsReadOnly',
+            'FieldSize',
+            'IsEOL',
+            'InputType',
+            'EditorClass',
+            'FieldClass',
+        ]
 
 
 class ConfiguratedInputProperty(Base):
@@ -227,7 +241,7 @@ class ConfiguratedInputProperty(Base):
     pk_ConfiguratedInputProperty = Column(BigInteger, primary_key=True)
 
     fk_ConfiguratedInput         = Column(ForeignKey('ConfiguratedInput.pk_ConfiguratedInput'), nullable=False)
-    
+
     Name                         = Column(String(255, 'French_CI_AS'), nullable=False)
     Value                        = Column(String(255, 'French_CI_AS'), nullable=False)
     CreationDate                 = Column(DateTime, nullable=False)
