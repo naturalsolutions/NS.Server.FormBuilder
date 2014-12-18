@@ -30,34 +30,42 @@ class Form(Base):
     inputs           = relationship("Input")         # A form has many Inputs
 
     # Constructor
-    def __init__(self, name, LabelFR, LabelEN, Comment):
-        self.Name             = name
-        self.LabelFR          = LabelFR
-        self.LabelEN          = LabelEN
-        self.Comment          = Comment
+    def __init__(self, **kwargs):
+        self.Name             = kwargs['Name']
+        self.LabelFR          = kwargs['LabelFR']
+        self.LabelEN          = kwargs['LabelEN']
+        self.Comment          = kwargs['Comment']
         self.CreationDate     = datetime.datetime.now()
         self.ModificationDate = datetime.datetime.now()
         self.CurStatus        = "1"
 
+    # Update form values
+    def update(self, Name, LabelFR, LabelEN, Comment):
+        self.Name             = Name
+        self.LabelFR          = LabelFR
+        self.LabelEN          = LabelEN
+        self.Comment          = Comment
+        self.ModificationDate = datetime.datetime.now()
+
     # Serialize a form in JSON object
     def toJSON(self):
-        inputs = []
+        inputs = {}
         for each in self.inputs:
-            inputs.append( each.toJSON() )
+            inputs[each.Name] = each.toJSON()
         keywords = []
         for each in self.keywords :
-            keywords.append (each.serialize())
+            keywords.append (each.toJSON())
         return {
             "ID"               : self.pk_Form,
             "Name"             : self.Name,
             "LabelFR"          : self.LabelFR,
             "LabelEN"          : self.LabelEN,
-            "CreationDate"     : self.CreationDate,
-            "ModificationDate" : self.ModificationDate,
+            "CreationDate"     : self.CreationDate.strftime("%Y-%m-%d"),
+            "ModificationDate" : self.ModificationDate.strftime("%Y-%m-%d"),
             "CurStatus"        : self.CurStatus,
             "Comment"          : self.Comment,
-            "Keywords"         : self.keywords,
-            "Schema"           : self.inputs
+            "Keywords"         : keywords,
+            "Schema"           : inputs
         }
 
     # Add keyword to the form
@@ -67,6 +75,10 @@ class Form(Base):
             a.KeyWord = KeyWord(each)
             #a.Form = self
             self.keywords.append(a)
+
+    # Add Input to the form
+    def addInput(self, newInput):
+        self.inputs.append(newInput)
 
 
 # KeyWord Class
@@ -93,8 +105,8 @@ class KeyWord(Base) :
         return {
             "ID"            : self.pk_KeyWord,
             "Name"          : self.Name,
-            "CreationDate"  : self.CreationDate,
-            "ModifDate"     : self.ModificationDate,
+            "CreationDate"  : self.CreationDate.strftime("%Y-%m-%d"),
+            "ModifDate"     : self.ModificationDate.strftime("%Y-%m-%d"),
             "CurStatus"     : self.CurStatus,
         }
 
@@ -122,7 +134,7 @@ class KeyWord_Form(Base):
         self.CurStatus = "1"
 
     # JSON serialization
-    def serialize(self):
+    def toJSON(self):
         return self.KeyWord.toJSON()
 
 
@@ -170,13 +182,61 @@ class Input(Base):
     Form        = relationship('Form')
     Properties  = relationship("InputProperty")
 
+    # constructor
+    def __init__(self, Name, LabelFR, LabelEN, IsRequired, IsReadOnly, FieldSize, IsEOL, InputType, EditorClass, FieldClass):
+        self.Name        = Name
+        self.LabelFR     = LabelFR
+        self.LabelEN     = LabelEN
+        self.IsRequired  = IsRequired
+        self.IsReadOnly  = IsReadOnly
+        self.FieldSize   = FieldSize
+        self.IsEOL       = IsEOL
+        self.InputType   = InputType
+        self.EditorClass = EditorClass
+        self.FieldClass  = FieldClass
+        self.CurStatus  = "1"
+
+        self.StartDate = datetime.datetime.now()
+
+    # Return convert object to JSON object
     def toJSON(self):
-        return {
-            "ID"        : self.pk_Input,
-            "Name"      : self.Name,
-            "LabelFR"   : self.LabelFR,
-            "LabelEN"   : self.LabelEN
+        JSONObject = { 
+            "LabelFR"     : self.LabelFR.decode('latin-1').encode("utf-8"),
+            "LabelEN"     : self.LabelEN,
+            "IsRequired"  : self.IsRequired,
+            "IsEOL"       : self.IsEOL,
+            "IsReadOnly"  : self.IsReadOnly,
+            "FieldSize"   : self.FieldSize,
+            "EditorClass" : self.EditorClass,
+            "FieldClass"  : self.FieldClass,
+            "InputType"   : self.InputType
         }
+
+        for prop in self.Properties:
+            JSONObject[prop.Name] = prop.getValue()
+
+        return JSONObject
+
+    # add property to the configurated input
+    def addProperty(self, prop):
+        self.Properties.append(prop)
+
+    # get Column list except primary key and managed field like curStatus and StartDate
+    @classmethod
+    def getColumnsList(cls):
+        return [
+            'Name',
+            'LabelFR',
+            'LabelEN',
+            'IsRequired',
+            'IsReadOnly',
+            'FieldSize',
+            'IsEOL',
+            'InputType',
+            'EditorClass',
+            'FieldClass',
+        ]
+
 
 # Input Property
 class InputProperty(Base):
@@ -194,12 +254,29 @@ class InputProperty(Base):
 
     Input = relationship('Input')
 
-    def toJSON(self):
-        return {
-        }
+     # constructor
+    def __init__(self, Name, Value, ValueType):
+        self.Name         = Name
+        self.Value        = Value
+        self.ValueType    = ValueType
+        self.CreationDate = datetime.datetime.now()
+
+    # Return value casted on the correct format
+    def getValue(self): 
+        if self.ValueType == "Boolean":
+            return bool(self.Value)
+        elif self.ValueType == "Number":
+            return int(self.Value)
+        elif self.ValueType == "Double":
+            return float(int(self.Value))
+        else:
+            return self.Value
 
 
+# Configurated input
+# A configurated input cans have one or more property
 class ConfiguratedInput(Base):
+
     __tablename__ = 'ConfiguratedInput'
 
     pk_ConfiguratedInput = Column(BigInteger, primary_key=True)
@@ -219,6 +296,46 @@ class ConfiguratedInput(Base):
 
     Properties          = relationship("ConfiguratedInputProperty")
 
+    # constructor
+    def __init__(self, Name, LabelFR, LabelEN, IsRequired, IsReadOnly, FieldSize, IsEOL, InputType, EditorClass, FieldClass):
+        self.Name        = Name
+        self.LabelFR     = LabelFR
+        self.LabelEN     = LabelEN
+        self.IsRequired  = IsRequired
+        self.IsReadOnly  = IsReadOnly
+        self.FieldSize   = FieldSize
+        self.IsEOL       = IsEOL
+        self.InputType   = InputType
+        self.EditorClass = EditorClass
+        self.FieldClass  = FieldClass
+        self.CurStatus  = "1"
+
+        self.StartDate = datetime.datetime.now()
+
+    # Return convert object to JSON object
+    def toJSON(self):
+        JSONObject = { 
+            "LabelFR"     : self.LabelFR.decode('latin-1').encode("utf-8"),
+            "LabelEN"     : self.LabelEN,
+            "IsRequired"  : self.IsRequired,
+            "IsEOL"       : self.IsEOL,
+            "IsReadOnly"  : self.IsReadOnly,
+            "FieldSize"   : self.FieldSize,
+            "EditorClass" : self.EditorClass,
+            "FieldClass"  : self.FieldClass,
+            "InputType"   : self.InputType
+        }
+
+        for prop in self.Properties:
+            JSONObject[prop.Name] = prop.getValue()
+
+        return JSONObject
+
+    # add property to the configurated input
+    def addProperty(self, prop):
+        self.Properties.append(prop)
+
+    # get Column list except primary key and managed field like curStatus and StartDate
     @classmethod
     def getColumnsList(cls):
         return [
@@ -235,6 +352,7 @@ class ConfiguratedInput(Base):
         ]
 
 
+# Configurated input property
 class ConfiguratedInputProperty(Base):
     __tablename__ = 'ConfiguratedInputProperty'
 
@@ -248,6 +366,25 @@ class ConfiguratedInputProperty(Base):
     ValueType                    = Column(String(10, 'French_CI_AS'), nullable=False)
 
     ConfiguratedInput = relationship('ConfiguratedInput')
+
+    # constructor
+    def __init__(self, Name, Value, ValueType):
+        self.Name         = Name
+        self.Value        = Value
+        self.ValueType    = ValueType
+        self.CreationDate = datetime.datetime.now()
+
+    # Return value casted on the correct format
+    def getValue(self): 
+        if self.ValueType == "Boolean":
+            return bool(self.Value)
+        elif self.ValueType == "Number":
+            return int(self.Value)
+        elif self.ValueType == "Double":
+            return float(int(self.Value))
+        else:
+            return self.Value
+
 
 # Database connexion
 # We use pyodbc and SQL Server for the moment
