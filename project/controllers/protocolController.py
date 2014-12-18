@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from project                import app
 from flask                  import jsonify, abort, render_template, request, make_response
-from ..models               import session, Form, KeyWord, Unity, ConfiguratedInput
+from ..models               import session, Form, KeyWord, Unity, ConfiguratedInput, ConfiguratedInputProperty, Input, InputProperty
+from ..utilities import Utility
 
 import os
 import sys
 import datetime
+import pprint
+
+pp = pprint.PrettyPrinter(indent=4)
 
 #   ---------------------------------------------------------
 #   Return all unit values
@@ -21,7 +25,7 @@ def getUnities():
 #   --------------------------------------------------------
 # Return a list of protocols name
 # Used for javascript autocomplete source
-@app.route('/protocols', methods = ['GET'])
+@app.route('/forms', methods = ['GET'])
 def getProtocols():
     protos      = session.query(Form).all()
     protocols   = []
@@ -44,7 +48,7 @@ def getKeywords():
 
 #   --------------------------------------------------------
 # Get protocol by name
-@app.route('/protocols/<formName>', methods = ['GET'])
+@app.route('/forms/<formName>', methods = ['GET'])
 def getProtocolsByName(formName):
     forms = session.query(Form).filter_by(Name = formName)
     if forms.count() > 0:
@@ -55,7 +59,7 @@ def getProtocolsByName(formName):
 
 #   -------------------------------------------------------
 # POST routes, create a form with name and content
-@app.route('/protocols', methods = ['POST'])
+@app.route('/form', methods = ['POST'])
 def createProtocole():
 
     if request.json:
@@ -64,13 +68,13 @@ def createProtocole():
         IfmissingParameters = True
 
         neededParametersList = [
-            'name',
-            'description',
-            'keywords',
-            'labelFr',
-            'labelEn',
-            'schema',
-            'fieldsets'
+            'Name',
+            'Comment',
+            'Keywords',
+            'LabelFR',
+            'LabelEN',
+            'Schema',
+            'Fieldsets'
         ]
 
         for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
@@ -80,26 +84,25 @@ def createProtocole():
             abort(make_response('Some parameters are missing', 400))
 
         else:
+            form = Form(**request.json)
 
-            #   Check if a form with this name exists
-            forms = session.query(Form).filter_by(Name = request.json['name'])
+            # for each element in Schema we create an input and its properties
+            for input in request.json['Schema']:
+                # new input values
+                newInputValues              = Utility._pick(request.json['Schema'][input], Input.getColumnsList())
+                # properties values
+                newPropertiesValues         = Utility._pickNot(request.json['Schema'][input], Input.getColumnsList())
+                # new Input object
+                newInput                    = Input( **newInputValues )
+                # Add properties to the new configurated field
+                for prop in newPropertiesValues:
+                    property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
+                    newInput.addProperty(property)
 
-            if forms.count() == 0:
-                # No, we create a new form
-                form = Form(request.json['name'], request.json['labelFr'], request.json['labelEn'], request.json['description'])
-            else:
+                # Add new input to the form
+                form.addInput(newInput)
 
-                #   Yes, we get the first form and we update it 
-                #   Maybe we can send an error here and only allow form update on PUT method ?
-                form = forms.first()
-
-                form.Name      = request.json['name']
-                form.labelFR   = request.json['labelFr']
-                form.labelEN   = request.json['labelEn']
-                form.comment   = request.json['description']
-                form.ModifDate = datetime.datetime.now()
-
-            form.addKeywords( request.json['keywords'] )
+            form.addKeywords( request.json['Keywords'] )
             try:
                 session.add (form)
                 session.commit ()
@@ -110,7 +113,7 @@ def createProtocole():
                 abort(make_response('Error during save', 500))
 
     else:
-        abort(make_response('Data seems not be in ' + format +' format', 400))
+        abort(make_response('Data seems not be in JSON format', 400))
 
 
 # PUT routes, update protocol
@@ -166,23 +169,37 @@ def updateProtocol(id):
 @app.route('/configurations', methods = ['GET'])
 def getConfiguration():
     configuratedInputsList    = session.query(ConfiguratedInput).all()
-    configuratedInputs   = []
+    configuratedInputs   = {}
 
     for each in configuratedInputsList :
-        configuratedInputs.append( each.Name )
+        configuratedInputs[each.Name] = each.toJSON()
+
     return jsonify({ "options" : configuratedInputs})
 
 
+# User want to save a input as a configurated input
 @app.route('/configurations', methods = ['POST'])
 def createConfiguratedField():
+
     if not request.json:
-        self.wrongFormat('JSON')
+        abort(make_response('Data seems not be in JSON format', 400))
     elif not 'field' in request.json:
-        self.missingParameters()
+        abort(make_response('Some parameters are missing', 400))
     else:
-        if all (k in request.json['field'] for k in ("Type","Name", "LabelFR")):
-            # All parameter are present
-            newConfiguratedField = ConfiguratedInput( request.json['field'] )
+        try:
+            # Configurated input values
+            # Main attributes like 'Name', 'LabelFR' or 'FieldSize' ...
+            newConfiguratedInputValues  = Utility._pick(request.json['field'], ConfiguratedInput.getColumnsList())
+            # Configurated input properties values
+            # E.G : for a text input we have 'help', 'size' and 'defaultValue' ...
+            newPropertiesValues         = Utility._pickNot(request.json['field'], ConfiguratedInput.getColumnsList())
+            # New Configurated input object
+            newConfiguratedField        = ConfiguratedInput( **newConfiguratedInputValues )
+
+            # Add properties to the new configurated field
+            for prop in newPropertiesValues:
+                property = ConfiguratedInputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
+                newConfiguratedField.addProperty(property)
 
             try:
                 session.add (newConfiguratedField)
@@ -192,14 +209,11 @@ def createConfiguratedField():
                 session.rollback()
                 print "Unexpected error:", sys.exc_info()[0]
                 return jsonify({ "result" : False})
-        else:
-            abort(make_response('Some parameters are missing', 400))
+
+        except:
+            abort(make_response('An error occured, input not saved !', 500))
 
 
 @app.route('/', methods = ['GET'])
 def index():
     return render_template('index.html')
-
-
-
-
