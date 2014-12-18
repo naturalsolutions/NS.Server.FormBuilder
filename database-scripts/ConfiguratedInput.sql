@@ -11,7 +11,7 @@ CREATE TABLE ConfiguratedInput (
 	LabelEN			VARCHAR(300) 	NOT NULL,
 	IsRequired		BIT 			NOT NULL,
 	IsReadOnly		BIT 			NOT NULL,
-	BootStrapSize	VARCHAR(100) 	NOT NULL,
+	FieldSize	    VARCHAR(100) 	NOT NULL,
 	IsEOL			BIT 			NOT NULL,
 	StartDate		DATETIME 		NOT NULL,
 	CurStatus		TINYINT			NOT NULL,

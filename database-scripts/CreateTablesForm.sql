@@ -9,13 +9,13 @@ CREATE TABLE Form (
 
 	pk_Form			BIGINT IDENTITY(1,1) NOT NULL,	--	primary key
 
-	Name			VARCHAR(100) 	NOT NULL,
-	LabelFR			VARCHAR(300) 	NOT NULL,
-	LabelEN			VARCHAR(300) 	NOT NULL,
-	CreationDate	DATETIME 		NOT NULL,
-	ModifDate		DATETIME 		NULL,
-	CurStatus		TINYINT			NOT NULL,
-	Comment			VARCHAR(MAX) 	NOT NULL
+	Name			   VARCHAR(100) 	NOT NULL,
+	LabelFR		       VARCHAR(300) 	NOT NULL,
+	LabelEN	           VARCHAR(300) 	NOT NULL,
+	CreationDate       DATETIME 		NOT NULL,
+	ModificationDate   DATETIME 		NULL,
+	CurStatus		   TINYINT			NOT NULL,
+	Comment			   VARCHAR(MAX) 	NOT NULL
 
 	CONSTRAINT pk_Form PRIMARY KEY CLUSTERED (pk_Form )
 )
@@ -27,7 +27,7 @@ CREATE TABLE KeyWord (
 
 	Name				VARCHAR(100) 	NOT NULL UNIQUE,
 	CreationDate		DATETIME 		NOT NULL,
-	ModifDate			DATETIME 		NULL,
+	ModificationDate    DATETIME 		NULL,
 	CurStatus			TINYINT			NOT NULL,
 
 	CONSTRAINT pk_KeyWord PRIMARY KEY CLUSTERED (pk_KeyWord )
@@ -46,7 +46,7 @@ CREATE TABLE KeyWord_Form (
 	CONSTRAINT pk_KeyWord_Form PRIMARY KEY CLUSTERED (pk_KeyWord_Form),
 
 	--	Link forms and keywords
-	CONSTRAINT KeyWord_Form_fk_KeyWord	FOREIGN KEY (fk_KeyWord)	REFERENCES KeyWord(pk_KeyWord),	
+	CONSTRAINT KeyWord_Form_fk_KeyWord	FOREIGN KEY (fk_KeyWord)	REFERENCES KeyWord(pk_KeyWord),
 	CONSTRAINT KeyWord_Form_fk_Form		FOREIGN KEY (fk_Form)		REFERENCES Form(pk_Form)
 )
 

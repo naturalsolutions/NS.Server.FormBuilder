@@ -17,7 +17,7 @@ CREATE TABLE Input (
 	LabelEN			VARCHAR(300) 	NOT NULL,
 	IsRequired		BIT 			NOT NULL,
 	IsReadOnly		BIT 			NOT NULL,
-	BootStrapSize	VARCHAR(100) 	NOT NULL,
+	FieldSize	    VARCHAR(100) 	NOT NULL,
 	--	is End Of Line
 	IsEOL			BIT 			NOT NULL,
 	StartDate		DATETIME 		NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE Input (
 	CONSTRAINT pk_Input PRIMARY KEY CLUSTERED (pk_Input ),
 
 	--	link input to its parent
-	CONSTRAINT Input_fk_form FOREIGN KEY (fk_form) REFERENCES form(pk_form) 
+	CONSTRAINT Input_fk_form FOREIGN KEY (fk_form) REFERENCES form(pk_form)
 )
 
 --	Properties section
