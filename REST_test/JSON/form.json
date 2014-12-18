@@ -1,0 +1,27 @@
+{
+  "Name": "Mon protocole",
+  "Comment": "",
+  "LabelFR": "",
+  "LabelEN": "",
+  "Schema": {
+    "Field": {
+      "LabelFR"     : "Label en frankais",
+      "LabelEN"     : "Label en anglais",
+      "Name"        : "Field",
+      "IsReadOnly"  : false,
+	  "IsRequired"  : true,
+      "EditorClass" : "",
+      "FieldClass"  : "",
+      "FieldSize"   : "",
+      "IsEOL"       : false,
+      "DefaultValue": "",
+      "Help"        : "Write some text",
+      "Size"        : 255,
+      "InputType"   : "Text"
+    }
+  },
+  "Keywords": [
+    "forms"
+  ],
+  "Fieldsets": []
+}

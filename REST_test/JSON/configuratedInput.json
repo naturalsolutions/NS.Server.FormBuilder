@@ -1,0 +1,17 @@
+{
+    "field" : {
+        "Name"         : "Fielda",
+        "LabelFR"      : "Label en français",
+        "LabelEN"      : "Label en anglais",
+        "IsRequired"   : false,
+        "IsEOL"        : false,
+        "IsReadOnly"   : false,
+        "FieldSize"    : "Etroit",
+        "EditorClass"  : "",
+        "FieldClass"   : "",
+        "defaultValue" : "",
+        "Help"         : "Write some text",
+        "Size"         : 255,
+        "InputType"    : "Text"
+    }
+}
