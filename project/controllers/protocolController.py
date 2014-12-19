@@ -43,7 +43,7 @@ def getKeywords():
 
 
 # Get protocol by ID
-@app.route('/forms/<formID>', methods = ['GET'])
+@app.route('/form/<formID>', methods = ['GET'])
 def getFormByID(formID):
     findForm = session.query(Form).filter_by(pk_Form = formID)
     if findForm.count() > 0:
@@ -54,10 +54,9 @@ def getFormByID(formID):
 
 # Create form
 @app.route('/form', methods = ['POST'])
-def createProtocole():
+def createForm():
 
     if request.json:
-
         #   Check if all parameters are present
         IfmissingParameters = True
 
@@ -66,18 +65,16 @@ def createProtocole():
         for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
 
         if IfmissingParameters == False:
-
             abort(make_response('Some parameters are missing', 400))
 
         else:
-            
             form            = Form(**request.json)              # new form Object
-            inputsList      = request.json['Schema'][input]     # form input list
             inputColumnList = Input.getColumnsList()            # common input list like LabelFR, LabelEN see Input class
 
             # for each element in Schema we create an input and its properties
             for input in request.json['Schema']:
-                
+                inputsList              = request.json['Schema'][input]
+
                 newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
                 newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
                 newInput                = Input( **newInputValues )                         # new Input object
@@ -90,7 +87,8 @@ def createProtocole():
                 # Add new input to the form
                 form.addInput(newInput)
 
-            form.addKeywords( request.json['Keywords'] )
+            form.addKeywords( request.json['KeywordsFR'], 'FR' )
+            form.addKeywords( request.json['KeywordsEN'], 'EN' )
 
             try:
                 session.add (form)
@@ -102,6 +100,7 @@ def createProtocole():
                 abort(make_response('Error during save', 500))
 
     else:
+        print("hein")
         abort(make_response('Data seems not be in JSON format', 400))
 
 
