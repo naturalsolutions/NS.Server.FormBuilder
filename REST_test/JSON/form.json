@@ -1,8 +1,9 @@
 {
-  "Name": "Mon protocole",
-  "Comment": "",
-  "LabelFR": "",
-  "LabelEN": "",
+  "Name": "Mon formulaire",
+  "DescriptionFR": "Mon formulaire de la mort",
+  "DescriptionEN": "My death form",
+  "LabelFR": "Formulaire de la mort",
+  "LabelEN": "Death form",
   "Schema": {
     "Field": {
       "LabelFR"     : "Label en frankais",
@@ -20,8 +21,11 @@
       "InputType"   : "Text"
     }
   },
-  "Keywords": [
-    "forms"
+  "KeywordsFR": [
+    "formulaire", "formule air"
+  ],
+  "KeywordsEN": [
+    "form", "for me"
   ],
   "Fieldsets": []
 }

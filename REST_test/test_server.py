@@ -26,8 +26,12 @@ if str(sys.argv[1]) == "GET":
         os.system('curl -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:5000/configurations')
 
     # return all forms
-    elif (str(sys.argv[2])) == "form":
+    elif (str(sys.argv[2])) == "forms":
         os.system('curl -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:5000/forms')
+
+    # return form with ID
+    elif (str(sys.argv[2])) == "formID":
+        os.system('curl -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:5000/form/1')
 
     # return all keywords
     elif (str(sys.argv[2])) == "keyword":
