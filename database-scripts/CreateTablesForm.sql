@@ -15,7 +15,8 @@ CREATE TABLE Form (
 	CreationDate       DATETIME 		NOT NULL,
 	ModificationDate   DATETIME 		NULL,
 	CurStatus		   TINYINT			NOT NULL,
-	Comment			   VARCHAR(MAX) 	NOT NULL
+	DescriptionFR	   VARCHAR(MAX) 	NOT NULL,
+	DescriptionEN	   VARCHAR(MAX) 	NOT NULL
 
 	CONSTRAINT pk_Form PRIMARY KEY CLUSTERED (pk_Form )
 )
@@ -29,6 +30,7 @@ CREATE TABLE KeyWord (
 	CreationDate		DATETIME 		NOT NULL,
 	ModificationDate    DATETIME 		NULL,
 	CurStatus			TINYINT			NOT NULL,
+	Lng					VARCHAR(2)		NOT NULL CHECK (Lng IN('FR', 'EN'))
 
 	CONSTRAINT pk_KeyWord PRIMARY KEY CLUSTERED (pk_KeyWord )
 )

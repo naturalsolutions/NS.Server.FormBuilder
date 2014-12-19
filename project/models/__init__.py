@@ -17,13 +17,14 @@ class Form(Base):
 
     pk_Form          = Column(BigInteger, primary_key=True)
 
-    Name             = Column(String(100, 'French_CI_AS'), nullable=False)
-    LabelFR          = Column(String(300, 'French_CI_AS'), nullable=False)
-    LabelEN          = Column(String(300, 'French_CI_AS'), nullable=False)
-    CreationDate     = Column(DateTime, nullable=False)
-    ModificationDate = Column(DateTime, nullable=True)
-    CurStatus        = Column(Integer, nullable=False)
-    Comment          = Column(String(collation='French_CI_AS'), nullable=False)
+    Name                   = Column(String(100, 'French_CI_AS'), nullable=False)
+    LabelFR                = Column(String(300, 'French_CI_AS'), nullable=False)
+    LabelEN                = Column(String(300, 'French_CI_AS'), nullable=False)
+    CreationDate           = Column(DateTime, nullable=False)
+    ModificationDate       = Column(DateTime, nullable=True)
+    CurStatus              = Column(Integer, nullable=False)
+    DescriptionFR          = Column(String(collation='French_CI_AS'), nullable=False)
+    DescriptionEN          = Column(String(collation='French_CI_AS'), nullable=False)
 
     # Relationship
     keywords         = relationship("KeyWord_Form")  # A form has many Keywords
@@ -31,54 +32,80 @@ class Form(Base):
 
     # Constructor
     def __init__(self, **kwargs):
-        self.Name             = kwargs['Name']
-        self.LabelFR          = kwargs['LabelFR']
-        self.LabelEN          = kwargs['LabelEN']
-        self.Comment          = kwargs['Comment']
-        self.CreationDate     = datetime.datetime.now()
-        self.ModificationDate = datetime.datetime.now()
-        self.CurStatus        = "1"
+        self.Name                   = kwargs['Name']
+        self.LabelFR                = kwargs['LabelFR']
+        self.LabelEN                = kwargs['LabelEN']
+        self.DescriptionEN          = kwargs['DescriptionEN']
+        self.DescriptionFR          = kwargs['DescriptionFR']
+        self.CreationDate           = datetime.datetime.now()
+        self.ModificationDate       = datetime.datetime.now()
+        self.CurStatus              = "1"
 
     # Update form values
-    def update(self, Name, LabelFR, LabelEN, Comment):
-        self.Name             = Name
-        self.LabelFR          = LabelFR
-        self.LabelEN          = LabelEN
-        self.Comment          = Comment
-        self.ModificationDate = datetime.datetime.now()
+    def update(self, **kwargs):
+        self.Name                   = kwargs['Name']
+        self.LabelFR                = kwargs['LabelFR']
+        self.LabelEN                = kwargs['LabelEN']
+        self.DescriptionEN          = kwargs['DescriptionEN']
+        self.DescriptionFR          = kwargs['DescriptionFR']
+        self.ModificationDate       = datetime.datetime.now()
 
     # Serialize a form in JSON object
     def toJSON(self):
         inputs = {}
         for each in self.inputs:
             inputs[each.Name] = each.toJSON()
-        keywords = []
+        keywordsFR = []
+        keywordsEN = []
+        tmpKeyword = None
         for each in self.keywords :
-            keywords.append (each.toJSON())
+            tmpKeyword = each.toJSON()
+            if tmpKeyword['Lng'] == 'FR':
+                del tmpKeyword['Lng']
+                keywordsFR.append (tmpKeyword)
+            else:
+                del tmpKeyword['Lng']
+                keywordsEN.append (tmpKeyword)
         return {
-            "ID"               : self.pk_Form,
-            "Name"             : self.Name,
-            "LabelFR"          : self.LabelFR,
-            "LabelEN"          : self.LabelEN,
-            "CreationDate"     : self.CreationDate.strftime("%Y-%m-%d"),
-            "ModificationDate" : self.ModificationDate.strftime("%Y-%m-%d"),
-            "CurStatus"        : self.CurStatus,
-            "Comment"          : self.Comment,
-            "Keywords"         : keywords,
-            "Schema"           : inputs
+            "ID"                       : self.pk_Form,
+            "Name"                     : self.Name,
+            "LabelFR"                  : self.LabelFR,
+            "LabelEN"                  : self.LabelEN,
+            "CreationDate"             : self.CreationDate.strftime("%Y-%m-%d"),
+            "ModificationDate"         : self.ModificationDate.strftime("%Y-%m-%d"),
+            "CurStatus"                : self.CurStatus,
+            "DescriptionFR"            : self.DescriptionFR,
+            "DescriptionEN"            : self.DescriptionEN,
+            "KeywordsFR"               : keywordsFR,
+            "KeywordsEN"               : keywordsEN,
+            "Schema"                   : inputs
         }
 
     # Add keyword to the form
-    def addKeywords(self, KeyWordList):
+    def addKeywords(self, KeyWordList, Language):
         for each in KeyWordList:
             a = KeyWord_Form()
-            a.KeyWord = KeyWord(each)
+            a.KeyWord = KeyWord(each, Language)
             #a.Form = self
             self.keywords.append(a)
 
     # Add Input to the form
     def addInput(self, newInput):
         self.inputs.append(newInput)
+
+    @classmethod
+    def getColumnList(cls):
+        return [
+            'Name'         ,
+            'DescriptionFR',
+            'DescriptionEN',
+            'KeywordsFR'   ,
+            'KeywordsEN'   ,
+            'LabelFR'      ,
+            'LabelEN'      ,
+            'Schema'       ,
+            'Fieldsets'
+        ]
 
 
 # KeyWord Class
@@ -88,17 +115,20 @@ class KeyWord(Base) :
     __tablename__ = 'KeyWord'
 
     pk_KeyWord       = Column(BigInteger, primary_key=True)
+
     Name             = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
     CreationDate     = Column(DateTime, nullable=False)
     ModificationDate = Column(DateTime, nullable=True)
     CurStatus        = Column(Integer, nullable=False)
+    Lng              = Column(Integer, nullable=False)
 
     # Constuctor
-    def __init__(self, name):
+    def __init__(self, name, Lng):
         self.Name             = name
         self.CreationDate     = datetime.datetime.now()
         self.ModificationDate = datetime.datetime.now()
         self.CurStatus        = "1"
+        self.Lng              = Lng
 
     # Serialize a KeyWord object in JSON format
     def toJSON(self):
@@ -108,6 +138,7 @@ class KeyWord(Base) :
             "CreationDate"  : self.CreationDate.strftime("%Y-%m-%d"),
             "ModifDate"     : self.ModificationDate.strftime("%Y-%m-%d"),
             "CurStatus"     : self.CurStatus,
+            "Lng"           : self.Lng
         }
 
 
@@ -177,7 +208,7 @@ class Input(Base):
     CurStatus     = Column(Integer, nullable=False)
     InputType     = Column(String(100, 'French_CI_AS'), nullable=False)
     EditorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
-    FieldCLass    = Column(String(100, 'French_CI_AS'), nullable=True)
+    FieldClass    = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty")
