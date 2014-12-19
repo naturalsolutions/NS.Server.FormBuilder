@@ -9,9 +9,7 @@ import sys
 import datetime
 import pprint
 
-pp = pprint.PrettyPrinter(indent=4)
 
-#   ---------------------------------------------------------
 #   Return all unit values
 @app.route('/unities', methods = ['GET'])
 def getUnities():
@@ -22,21 +20,19 @@ def getUnities():
     return jsonify ({ "options" : un })
 
 
-#   --------------------------------------------------------
-# Return a list of protocols name
-# Used for javascript autocomplete source
+
+# Return all forms
 @app.route('/forms', methods = ['GET'])
-def getProtocols():
-    protos      = session.query(Form).all()
-    protocols   = []
-    for each in protos :
-        protocols.append( each.toJSON() )
-    return jsonify({ "options" : protocols})
+def getForms():
+    allForms            = session.query(Form).all()
+    returnedFormsList   = []
+    for each in allForms :
+        returnedFormsList.append( each.toJSON() )
+
+    return jsonify({ "options" : returnedFormsList})
 
 
-#   --------------------------------------------------------
-# return a list a keyword values
-# Used for javascript autocomplete source
+# return all keywords
 @app.route('/keywords', methods = ['GET'])
 def getKeywords():
     keywords = session.query(KeyWord).all()
@@ -46,19 +42,17 @@ def getKeywords():
     return jsonify ({ "options" : ks })
 
 
-#   --------------------------------------------------------
-# Get protocol by name
-@app.route('/forms/<formName>', methods = ['GET'])
-def getProtocolsByName(formName):
-    forms = session.query(Form).filter_by(Name = formName)
-    if forms.count() > 0:
-        return jsonify({ formName : forms.one().toJSON() })
+# Get protocol by ID
+@app.route('/forms/<formID>', methods = ['GET'])
+def getFormByID(formID):
+    findForm = session.query(Form).filter_by(pk_Form = formID)
+    if findForm.count() > 0:
+        return jsonify({ "form" : findForm.one().toJSON() })
     else:
-        abort (404, 'Form found for this name')
+        abort (404, 'No form found')
 
 
-#   -------------------------------------------------------
-# POST routes, create a form with name and content
+# Create form
 @app.route('/form', methods = ['POST'])
 def createProtocole():
 
@@ -67,15 +61,7 @@ def createProtocole():
         #   Check if all parameters are present
         IfmissingParameters = True
 
-        neededParametersList = [
-            'Name',
-            'Comment',
-            'Keywords',
-            'LabelFR',
-            'LabelEN',
-            'Schema',
-            'Fieldsets'
-        ]
+        neededParametersList = Form.getColumnList()
 
         for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
 
@@ -84,16 +70,18 @@ def createProtocole():
             abort(make_response('Some parameters are missing', 400))
 
         else:
-            form = Form(**request.json)
+            
+            form            = Form(**request.json)              # new form Object
+            inputsList      = request.json['Schema'][input]     # form input list
+            inputColumnList = Input.getColumnsList()            # common input list like LabelFR, LabelEN see Input class
 
             # for each element in Schema we create an input and its properties
             for input in request.json['Schema']:
-                # new input values
-                newInputValues              = Utility._pick(request.json['Schema'][input], Input.getColumnsList())
-                # properties values
-                newPropertiesValues         = Utility._pickNot(request.json['Schema'][input], Input.getColumnsList())
-                # new Input object
-                newInput                    = Input( **newInputValues )
+                
+                newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
+                newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
+                newInput                = Input( **newInputValues )                         # new Input object
+
                 # Add properties to the new configurated field
                 for prop in newPropertiesValues:
                     property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
@@ -103,6 +91,7 @@ def createProtocole():
                 form.addInput(newInput)
 
             form.addKeywords( request.json['Keywords'] )
+
             try:
                 session.add (form)
                 session.commit ()
@@ -165,12 +154,12 @@ def updateProtocol(id):
     else:
         abort(make_response('Data seems not be in ' + format +' format', 400))
 
+
 # GET, returns all configurated fields
 @app.route('/configurations', methods = ['GET'])
 def getConfiguration():
     configuratedInputsList    = session.query(ConfiguratedInput).all()
-    configuratedInputs   = {}
-
+    configuratedInputs        = {}
     for each in configuratedInputsList :
         configuratedInputs[each.Name] = each.toJSON()
 
@@ -214,6 +203,7 @@ def createConfiguratedField():
             abort(make_response('An error occured, input not saved !', 500))
 
 
+# Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
 def index():
     return render_template('index.html')
