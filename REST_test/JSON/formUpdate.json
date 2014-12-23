@@ -7,7 +7,23 @@
   "Schema": {
     "Field": {
 	  "ID"			: 1,
-      "LabelFR"     : "Label en frankais",
+      "LabelFR"     : "Premier champs",
+      "LabelEN"     : "Label en anglais",
+      "Name"        : "Field",
+      "IsReadOnly"  : false,
+	  "IsRequired"  : false,
+      "EditorClass" : "",
+      "FieldClass"  : "",
+      "FieldSize"   : "",
+      "IsEOL"       : false,
+      "DefaultValue": "",
+      "Help"        : "Write some text please",
+      "Size"        : 255,
+      "InputType"   : "Text"
+    },
+	"SecondField": {
+	  "ID"			: 2,
+      "LabelFR"     : "second champs",
       "LabelEN"     : "Label en anglais",
       "Name"        : "Field",
       "IsReadOnly"  : false,

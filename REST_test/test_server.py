@@ -50,5 +50,11 @@ elif str(sys.argv[1]) == "POST":
     # Create a form with form.json file data
     elif (str(sys.argv[2])) == "form":
         os.system(' curl -H "Content-Type: application/json" -d @JSON/form.json http://localhost:5000/form')
+elif str(sys.argv[1]) == "PUT":
+
+    # Update form
+    if (str(sys.argv[2])) == "form":
+        os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdate.json http://localhost:5000/form/1')
+
 else:
-    print("PUT or DELETE")
+    print("DELETE")
