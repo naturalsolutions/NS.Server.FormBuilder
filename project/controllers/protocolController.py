@@ -2,6 +2,7 @@
 from project                import app
 from flask                  import jsonify, abort, render_template, request, make_response
 from ..models               import session, Form, KeyWord, Unity, ConfiguratedInput, ConfiguratedInputProperty, Input, InputProperty
+from ..models.InputRepository import InputRepository
 from ..utilities import Utility
 
 import os
@@ -9,6 +10,8 @@ import sys
 import datetime
 import pprint
 
+
+pp = pprint.PrettyPrinter(indent=4)
 
 #   Return all unit values
 @app.route('/unities', methods = ['GET'])
@@ -105,38 +108,50 @@ def createForm():
 
 
 # PUT routes, update protocol
-@app.route('/protocols/<int:id>', methods=['PUT'])
-def updateProtocol(id):
+@app.route('/form/<int:id>', methods=['PUT'])
+def updateForm(id):
     if request.json:
-        IfmissingParameters     = True
-        neededParametersList    = [
-            'name',
-            'description',
-            'keywords',
-            'labelFr',
-            'labelEn',
-            'schema',
-            'fieldsets'
-        ]
 
-        for a in neededParametersList:
-            IfmissingParameters = IfmissingParameters and (a in request.json)
+        IfmissingParameters = True
+
+        neededParametersList = Form.getColumnList()
+
+        for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
 
         if IfmissingParameters == False:
-
             abort(make_response('Some parameters are missing', 400))
 
         else:
-            form = self._session.query(Protocol).filter(Protocol.id == id).first()
+            form = session.query(Form).filter_by(pk_Form = id).first()
             if form != None:
 
-                form.Name      = request.json['name']
-                form.labelFR   = request.json['labelFr']
-                form.labelEN   = request.json['labelEn']
-                form.comment   = request.json['description']
-                form.ModifDate = datetime.datetime.now()
+                # Get form input ID list
+                presentInputs = form.getInputsIdList()
 
-                form.addKeywords( request.json['keywords'] )
+                # We check if input in JSON data are yet present in the form
+                # Yes : we update input
+                # No : we add an input to the form
+                for eachInput in request.json['Schema']:
+
+
+                    if request.json['Schema'][eachInput]['ID'] in presentInputs:
+
+                        # the field is present we update it
+                        foundInput        = session.query(Input).filter_by(pk_Input = request.json['Schema'][eachInput]['ID']).first()
+                        inputRepository   = InputRepository(foundInput)
+
+                        inputNewValues    = request.json['Schema'][eachInput]
+
+                        foundInputUpdated = inputRepository.updateInput(**inputNewValues)
+
+                        presentInputs.remove(foundInput.pk_Input)
+
+                    else:
+                        inputRepository   = InputRepository(None)
+                        # Add a new input to the form
+                        form.addInput( inputRepository.createInput(**request.json['Schema'][eachInput]) )
+
+                #form.addKeywords( request.json['keywords'] )
 
                 try:
                     session.add (form)
@@ -147,6 +162,7 @@ def updateProtocol(id):
                     print( sys.exc_info() )
                     abort(make_response('Error', 500))
 
+               
             else:
                 abort(make_response('No form found with this ID', 404))
 
