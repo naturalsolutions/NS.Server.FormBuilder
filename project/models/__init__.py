@@ -93,6 +93,13 @@ class Form(Base):
     def addInput(self, newInput):
         self.inputs.append(newInput)
 
+    # return a list of all form's inputs id
+    def getInputsIdList(self):
+        inputsIdList = []
+        for i in self.inputs:
+            inputsIdList.append(i.pk_Input)
+        return inputsIdList
+
     @classmethod
     def getColumnList(cls):
         return [
@@ -229,9 +236,23 @@ class Input(Base):
 
         self.StartDate = datetime.datetime.now()
 
+    # Update form values
+    def update(self, **kwargs):
+        self.Name        = kwargs['Name']
+        self.LabelFR     = kwargs['LabelFR']
+        self.LabelEN     = kwargs['LabelEN']
+        self.IsRequired  = kwargs['IsRequired']
+        self.IsReadOnly  = kwargs['IsReadOnly']
+        self.FieldSize   = kwargs['FieldSize']
+        self.IsEOL       = kwargs['IsEOL']
+        self.EditorClass = kwargs['EditorClass']
+        self.FieldClass  = kwargs['FieldClass']
+
+
     # Return convert object to JSON object
     def toJSON(self):
-        JSONObject = { 
+        JSONObject = {
+            "ID"          : self.pk_Input,
             "LabelFR"     : self.LabelFR.decode('latin-1').encode("utf-8"),
             "LabelEN"     : self.LabelEN,
             "IsRequired"  : self.IsRequired,
