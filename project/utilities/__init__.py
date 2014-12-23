@@ -1,3 +1,5 @@
+import pprint
+
 class Utility:
 
     @classmethod
@@ -14,6 +16,8 @@ class Utility:
 
     @classmethod
     def _getType(self, variable):
+        if variable is None:
+            return 'String'
         if isinstance(variable, bool):
             return "Boolean" 
         elif isinstance(variable, int):
@@ -22,3 +26,8 @@ class Utility:
             return "Double"
         else:
              return "String"
+
+    @classmethod
+    def _print_r(self, variable):
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(variable)
