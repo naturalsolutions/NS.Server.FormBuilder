@@ -34,6 +34,11 @@ class InputRepository:
             newInput.addProperty ( InputProperty(prop, str(newInputPropertiesValues[prop]), Utility._getType(newInputPropertiesValues[prop])) )
 
         return newInput
-        
+
+    # Set all inputs on the list (ID list) to current status 4 (deleted)
+    def removeInputs(self, inputsToRemoveList):
+        for ID in inputsToRemoveList:
+            # I know sqlalchemy give in_ instruction but it doesn't work for me
+            session.query(Input).filter_by( pk_Input = ID).update({"CurStatus" : 4})
 
 
