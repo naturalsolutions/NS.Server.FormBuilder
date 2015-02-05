@@ -4,11 +4,14 @@ from flask                  import jsonify, abort, render_template, request, mak
 from ..models               import session, Form, KeyWord, Unity, ConfiguratedInput, ConfiguratedInputProperty, Input, InputProperty
 from ..models.InputRepository import InputRepository
 from ..utilities import Utility
+import ConfigParser
+import urllib2
 
 import os
 import sys
 import datetime
 import pprint
+import json
 
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -151,6 +154,12 @@ def updateForm(id):
                         # Add a new input to the form
                         form.addInput( inputRepository.createInput(**request.json['Schema'][eachInput]) )
 
+
+                if len(presentInputs) > 0:
+                    # We need to remove some input
+                    inputRepository   = InputRepository(None)
+                    inputRepository.removeInputs(presentInputs)
+
                 #form.addKeywords( request.json['keywords'] )
 
                 try:
@@ -162,7 +171,7 @@ def updateForm(id):
                     print( sys.exc_info() )
                     abort(make_response('Error', 500))
 
-               
+
             else:
                 abort(make_response('No form found with this ID', 404))
 
@@ -217,6 +226,24 @@ def createConfiguratedField():
         except:
             abort(make_response('An error occured, input not saved !', 500))
 
+@app.route('/linked', methods = ['GET'])
+def getLinkedFields():
+    Config = ConfigParser.ConfigParser()
+    Config.read("project/config/config.ini")
+
+    linkedFieldsList = []
+    # Get all webServices link
+    for each in Config.options("webServices"):
+        try:
+            url     = Config.get("webServices", each)
+            content = urllib2.urlopen(url, timeout = 1).read()
+
+            # For each request we add the linked fields at the list
+            linkedFieldsList = linkedFieldsList + json.loads(content)
+        except urllib2.URLError, e:
+            pass
+
+    return jsonify({"linkedFields" : linkedFieldsList})
 
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
