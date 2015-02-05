@@ -54,7 +54,8 @@ class Form(Base):
     def toJSON(self):
         inputs = {}
         for each in self.inputs:
-            inputs[each.Name] = each.toJSON()
+            if each.CurStatus != 4:
+                inputs[each.Name] = each.toJSON()
         keywordsFR = []
         keywordsEN = []
         tmpKeyword = None
