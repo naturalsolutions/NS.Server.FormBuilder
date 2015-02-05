@@ -41,6 +41,9 @@ if str(sys.argv[1]) == "GET":
     elif (str(sys.argv[2])) == "unity":
         os.system('curl -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:5000/unities')
 
+    elif (str(sys.argv[2])) == "linked":
+        os.system('curl -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:5000/linked')
+
 elif str(sys.argv[1]) == "POST":
 
     # Create a configurated input with configuraedInput.json file data
@@ -50,11 +53,16 @@ elif str(sys.argv[1]) == "POST":
     # Create a form with form.json file data
     elif (str(sys.argv[2])) == "form":
         os.system(' curl -H "Content-Type: application/json" -d @JSON/form.json http://localhost:5000/form')
+
 elif str(sys.argv[1]) == "PUT":
 
     # Update form
     if (str(sys.argv[2])) == "form":
         os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdate.json http://localhost:5000/form/1')
+
+    # Update form
+    if (str(sys.argv[2])) == "form2":
+        os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdateWithRemovedInput.json http://localhost:5000/form/1')
 
 else:
     print("DELETE")

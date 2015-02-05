@@ -1,0 +1,32 @@
+{
+  "Name": "Mon formulaire",
+  "DescriptionFR": "Mon formulaire de la mort",
+  "DescriptionEN": "My death form",
+  "LabelFR": "Formulaire de la mort",
+  "LabelEN": "Death form of the death of the death",
+  "Schema": {
+	"SecondField": {
+	  "ID"			: 2,
+      "LabelFR"     : "second champs",
+      "LabelEN"     : "Label en anglais",
+      "Name"        : "Field",
+      "IsReadOnly"  : false,
+	  "IsRequired"  : true,
+      "EditorClass" : "",
+      "FieldClass"  : "",
+      "FieldSize"   : "",
+      "IsEOL"       : false,
+      "DefaultValue": "",
+      "Help"        : "Write some text",
+      "Size"        : 255,
+      "InputType"   : "Text"
+    }
+  },
+  "KeywordsFR": [
+    "formulaire", "formule air"
+  ],
+  "KeywordsEN": [
+    "form", "for me"
+  ],
+  "Fieldsets": []
+}
