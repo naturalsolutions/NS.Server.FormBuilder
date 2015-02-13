@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from project                import app
-from flask                  import jsonify, abort, render_template, request, make_response
-from ..models               import session, Form, KeyWord, Unity, ConfiguratedInput, ConfiguratedInputProperty, Input, InputProperty
-from ..models.InputRepository import InputRepository
-from ..utilities import Utility
+from project                    import app
+from flask                      import jsonify, abort, render_template, request, make_response
+from ..models                   import session, Form, KeyWord, Unity, ConfiguratedInput, ConfiguratedInputProperty, Input, InputProperty
+from ..models.InputRepository   import InputRepository
+from ..utilities                import Utility
+
 import ConfigParser
 import urllib2
-
 import os
 import sys
 import datetime
@@ -15,17 +15,6 @@ import json
 
 
 pp = pprint.PrettyPrinter(indent=4)
-
-#   Return all unit values
-@app.route('/unities', methods = ['GET'])
-def getUnities():
-    unities = session.query(Unity).all()
-    un   = []
-    for each in unities:
-        un.append( each.toJSON() )
-    return jsonify ({ "options" : un })
-
-
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
@@ -37,17 +26,6 @@ def getForms():
 
     return jsonify({ "options" : returnedFormsList})
 
-
-# return all keywords
-@app.route('/keywords', methods = ['GET'])
-def getKeywords():
-    keywords = session.query(KeyWord).all()
-    ks   = []
-    for each in keywords:
-        ks.append( each.toJSON() )
-    return jsonify ({ "options" : ks })
-
-
 # Get protocol by ID
 @app.route('/form/<formID>', methods = ['GET'])
 def getFormByID(formID):
@@ -56,7 +34,6 @@ def getFormByID(formID):
         return jsonify({ "form" : findForm.one().toJSON() })
     else:
         abort (404, 'No form found')
-
 
 # Create form
 @app.route('/form', methods = ['POST'])
@@ -78,8 +55,8 @@ def createForm():
             inputColumnList = Input.getColumnsList()            # common input list like LabelFR, LabelEN see Input class
 
             # for each element in Schema we create an input and its properties
-            for input in request.json['Schema']:
-                inputsList              = request.json['Schema'][input]
+            for input in request.json['schema']:
+                inputsList              = request.json['schema'][input]
 
                 newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
                 newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
@@ -93,8 +70,8 @@ def createForm():
                 # Add new input to the form
                 form.addInput(newInput)
 
-            form.addKeywords( request.json['KeywordsFR'], 'FR' )
-            form.addKeywords( request.json['KeywordsEN'], 'EN' )
+            form.addKeywords( request.json['keywordsFr'], 'FR' )
+            form.addKeywords( request.json['keywordsEn'], 'EN' )
 
             try:
                 session.add (form)
@@ -108,7 +85,6 @@ def createForm():
     else:
         print("hein")
         abort(make_response('Data seems not be in JSON format', 400))
-
 
 # PUT routes, update protocol
 @app.route('/form/<int:id>', methods=['PUT'])
@@ -134,7 +110,7 @@ def updateForm(id):
                 # We check if input in JSON data are yet present in the form
                 # Yes : we update input
                 # No : we add an input to the form
-                for eachInput in request.json['Schema']:
+                for eachInput in request.json['schema']:
 
 
                     if request.json['Schema'][eachInput]['ID'] in presentInputs:
@@ -177,73 +153,6 @@ def updateForm(id):
 
     else:
         abort(make_response('Data seems not be in ' + format +' format', 400))
-
-
-# GET, returns all configurated fields
-@app.route('/configurations', methods = ['GET'])
-def getConfiguration():
-    configuratedInputsList    = session.query(ConfiguratedInput).all()
-    configuratedInputs        = {}
-    for each in configuratedInputsList :
-        configuratedInputs[each.Name] = each.toJSON()
-
-    return jsonify({ "options" : configuratedInputs})
-
-
-# User want to save a input as a configurated input
-@app.route('/configurations', methods = ['POST'])
-def createConfiguratedField():
-
-    if not request.json:
-        abort(make_response('Data seems not be in JSON format', 400))
-    elif not 'field' in request.json:
-        abort(make_response('Some parameters are missing', 400))
-    else:
-        try:
-            # Configurated input values
-            # Main attributes like 'Name', 'LabelFR' or 'FieldSize' ...
-            newConfiguratedInputValues  = Utility._pick(request.json['field'], ConfiguratedInput.getColumnsList())
-            # Configurated input properties values
-            # E.G : for a text input we have 'help', 'size' and 'defaultValue' ...
-            newPropertiesValues         = Utility._pickNot(request.json['field'], ConfiguratedInput.getColumnsList())
-            # New Configurated input object
-            newConfiguratedField        = ConfiguratedInput( **newConfiguratedInputValues )
-
-            # Add properties to the new configurated field
-            for prop in newPropertiesValues:
-                property = ConfiguratedInputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
-                newConfiguratedField.addProperty(property)
-
-            try:
-                session.add (newConfiguratedField)
-                session.commit ()
-                return jsonify({ "result" : True})
-            except:
-                session.rollback()
-                print "Unexpected error:", sys.exc_info()[0]
-                return jsonify({ "result" : False})
-
-        except:
-            abort(make_response('An error occured, input not saved !', 500))
-
-@app.route('/linked', methods = ['GET'])
-def getLinkedFields():
-    Config = ConfigParser.ConfigParser()
-    Config.read("project/config/config.ini")
-
-    linkedFieldsList = []
-    # Get all webServices link
-    for each in Config.options("webServices"):
-        try:
-            url     = Config.get("webServices", each)
-            content = urllib2.urlopen(url, timeout = 1).read()
-
-            # For each request we add the linked fields at the list
-            linkedFieldsList = linkedFieldsList + json.loads(content)
-        except urllib2.URLError, e:
-            pass
-
-    return jsonify({"linkedFields" : linkedFieldsList})
 
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
