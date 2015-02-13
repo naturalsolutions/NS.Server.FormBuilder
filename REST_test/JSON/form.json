@@ -1,32 +1,57 @@
 {
-  "Name": "Mon formulaire",
-  "DescriptionFR": "Mon formulaire de la mort",
-  "DescriptionEN": "My death form",
-  "LabelFR": "Formulaire de la mort",
-  "LabelEN": "Death form",
-  "Schema": {
-    "Field": {
-	  "ID"			: 1,
-      "LabelFR"     : "Label en frankais",
-      "LabelEN"     : "Label en anglais",
-      "Name"        : "Field",
-      "IsReadOnly"  : false,
-	  "IsRequired"  : true,
-      "EditorClass" : "",
-      "FieldClass"  : "",
-      "FieldSize"   : "",
-      "IsEOL"       : false,
-      "DefaultValue": "",
-      "Help"        : "Write some text",
-      "Size"        : 255,
-      "InputType"   : "Text"
-    }
-  },
-  "KeywordsFR": [
-    "formulaire", "formule air"
-  ],
-  "KeywordsEN": [
-    "form", "for me"
-  ],
-  "Fieldsets": []
+    "name": "New form",
+    "descriptionFr": "Nouveau formulaire",
+    "descriptionEn": "New form",
+    "keywordsEn": [
+        "form"
+    ],
+    "keywordsFr": [
+        "formulaire"
+    ],
+    "labelFr": "Mon nouveau formulaire",
+    "labelEn": "My new form",
+    "schema": {
+        "Field1": {
+            "id"                           : 1,
+            "labelFr"                      : "Label en français",
+            "labelEn"                      : "Label en anglais",
+            "name"                         : "Field1",
+            "readonly"                     : false,
+            "required"                     : false,
+            "editorClass"                  : "",
+            "fieldClass"                   : "",
+            "fieldSize"                    : "",
+            "endOfLine"                    : false,
+            "linkedFieldTable"             : "",
+            "linkedFieldIdentifyingColumn" : "",
+            "linkedField"                  : "",
+            "formIdentifyingColumn"        : "",
+            "defaultValue"                 : "",
+            "help"                         : "Write some text",
+            "size"                         : 255,
+            "type"                         : "Text"
+        },
+        "Field2": {
+            "id"                           : 2,
+            "labelFr"                      : "aaa",
+            "labelEn"                      : "Label en anglais",
+            "name"                         : "Field2",
+            "readonly"                     : false,
+            "required"                     : true,
+            "editorClass"                  : "",
+            "fieldClass"                   : "",
+            "fieldSize"                    : "Etroit",
+            "endOfLine"                    : false,
+            "linkedFieldTable"             : "TIndividus",
+            "linkedFieldIdentifyingColumn" : "TInd_BagueID",
+            "linkedField"                  : "TInd_Status",
+            "formIdentifyingColumn"        : "Field1",
+            "defaultValue"                 : "",
+            "help"                         : "Write some text",
+            "size"                         : 255,
+            "multiline"                    : true,
+            "type"                         : "TextArea"
+        }
+    },
+    "fieldsets": []
 }

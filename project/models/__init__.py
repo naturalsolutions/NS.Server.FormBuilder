@@ -17,14 +17,14 @@ class Form(Base):
 
     pk_Form          = Column(BigInteger, primary_key=True)
 
-    Name                   = Column(String(100, 'French_CI_AS'), nullable=False)
-    LabelFR                = Column(String(300, 'French_CI_AS'), nullable=False)
-    LabelEN                = Column(String(300, 'French_CI_AS'), nullable=False)
-    CreationDate           = Column(DateTime, nullable=False)
-    ModificationDate       = Column(DateTime, nullable=True)
-    CurStatus              = Column(Integer, nullable=False)
-    DescriptionFR          = Column(String(collation='French_CI_AS'), nullable=False)
-    DescriptionEN          = Column(String(collation='French_CI_AS'), nullable=False)
+    name                   = Column(String(100, 'French_CI_AS'), nullable=False)
+    labelFr                = Column(String(300, 'French_CI_AS'), nullable=False)
+    labelEn                = Column(String(300, 'French_CI_AS'), nullable=False)
+    creationDate           = Column(DateTime, nullable=False)
+    modificationDate       = Column(DateTime, nullable=True)
+    curStatus              = Column(Integer, nullable=False)
+    descriptionFr          = Column(String(collation='French_CI_AS'), nullable=False)
+    descriptionEn          = Column(String(collation='French_CI_AS'), nullable=False)
 
     # Relationship
     keywords         = relationship("KeyWord_Form")  # A form has many Keywords
@@ -32,54 +32,54 @@ class Form(Base):
 
     # Constructor
     def __init__(self, **kwargs):
-        self.Name                   = kwargs['Name']
-        self.LabelFR                = kwargs['LabelFR']
-        self.LabelEN                = kwargs['LabelEN']
-        self.DescriptionEN          = kwargs['DescriptionEN']
-        self.DescriptionFR          = kwargs['DescriptionFR']
-        self.CreationDate           = datetime.datetime.now()
-        self.ModificationDate       = datetime.datetime.now()
-        self.CurStatus              = "1"
+        self.name                   = kwargs['name']
+        self.labelFr                = kwargs['labelFr']
+        self.labelEn                = kwargs['labelEn']
+        self.descriptionEn          = kwargs['descriptionEn']
+        self.descriptionFr          = kwargs['descriptionFr']
+        self.creationDate           = datetime.datetime.now()
+        self.modificationDate       = datetime.datetime.now()
+        self.curStatus              = "1"
 
     # Update form values
     def update(self, **kwargs):
-        self.Name                   = kwargs['Name']
-        self.LabelFR                = kwargs['LabelFR']
-        self.LabelEN                = kwargs['LabelEN']
-        self.DescriptionEN          = kwargs['DescriptionEN']
-        self.DescriptionFR          = kwargs['DescriptionFR']
-        self.ModificationDate       = datetime.datetime.now()
+        self.name                   = kwargs['name']
+        self.labelFr                = kwargs['labelFr']
+        self.labelEn                = kwargs['labelEn']
+        self.descriptionEn          = kwargs['descriptionEn']
+        self.descriptionFr          = kwargs['descriptionFr']
+        self.modificationDate       = datetime.datetime.now()
 
     # Serialize a form in JSON object
     def toJSON(self):
         inputs = {}
         for each in self.inputs:
-            if each.CurStatus != 4:
-                inputs[each.Name] = each.toJSON()
-        keywordsFR = []
-        keywordsEN = []
+            if each.curStatus != 4:
+                inputs[each.name] = each.toJSON()
+        keywordsFr = []
+        keywordsEn = []
         tmpKeyword = None
         for each in self.keywords :
             tmpKeyword = each.toJSON()
-            if tmpKeyword['Lng'] == 'FR':
-                del tmpKeyword['Lng']
-                keywordsFR.append (tmpKeyword)
+            if tmpKeyword['lng'] == 'FR':
+                del tmpKeyword['lng']
+                keywordsFr.append (tmpKeyword)
             else:
-                del tmpKeyword['Lng']
-                keywordsEN.append (tmpKeyword)
+                del tmpKeyword['lng']
+                keywordsEn.append (tmpKeyword)
         return {
-            "ID"                       : self.pk_Form,
-            "Name"                     : self.Name,
-            "LabelFR"                  : self.LabelFR,
-            "LabelEN"                  : self.LabelEN,
-            "CreationDate"             : self.CreationDate.strftime("%Y-%m-%d"),
-            "ModificationDate"         : self.ModificationDate.strftime("%Y-%m-%d"),
-            "CurStatus"                : self.CurStatus,
-            "DescriptionFR"            : self.DescriptionFR,
-            "DescriptionEN"            : self.DescriptionEN,
-            "KeywordsFR"               : keywordsFR,
-            "KeywordsEN"               : keywordsEN,
-            "Schema"                   : inputs
+            "id"                       : self.pk_Form,
+            "name"                     : self.name,
+            "labelFr"                  : self.labelFr,
+            "labelEn"                  : self.labelEn,
+            "creationDate"             : self.creationDate.strftime("%Y-%m-%d"),
+            "modificationDate"         : self.modificationDate.strftime("%Y-%m-%d"),
+            "curStatus"                : self.curStatus,
+            "descriptionFr"            : self.descriptionFr,
+            "descriptionEn"            : self.descriptionEn,
+            "keywordsFr"               : keywordsFr,
+            "keywordsEn"               : keywordsEn,
+            "schema"                   : inputs
         }
 
     # Add keyword to the form
@@ -92,6 +92,9 @@ class Form(Base):
 
     # Add Input to the form
     def addInput(self, newInput):
+        print ("------------------------")
+        print (newInput)
+        print ("------------------------")
         self.inputs.append(newInput)
 
     # return a list of all form's inputs id
@@ -104,15 +107,15 @@ class Form(Base):
     @classmethod
     def getColumnList(cls):
         return [
-            'Name'         ,
-            'DescriptionFR',
-            'DescriptionEN',
-            'KeywordsFR'   ,
-            'KeywordsEN'   ,
-            'LabelFR'      ,
-            'LabelEN'      ,
-            'Schema'       ,
-            'Fieldsets'
+            'name'         ,
+            'descriptionFr',
+            'descriptionEn',
+            'keywordsFr'   ,
+            'keywordsEn'   ,
+            'labelFr'      ,
+            'labelEn'      ,
+            'schema'       ,
+            'fieldsets'
         ]
 
 
@@ -124,29 +127,29 @@ class KeyWord(Base) :
 
     pk_KeyWord       = Column(BigInteger, primary_key=True)
 
-    Name             = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
-    CreationDate     = Column(DateTime, nullable=False)
-    ModificationDate = Column(DateTime, nullable=True)
-    CurStatus        = Column(Integer, nullable=False)
-    Lng              = Column(Integer, nullable=False)
+    name             = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
+    creationDate     = Column(DateTime, nullable=False)
+    modificationDate = Column(DateTime, nullable=True)
+    curStatus        = Column(Integer, nullable=False)
+    lng              = Column(String(2), nullable=False)
 
     # Constuctor
-    def __init__(self, name, Lng):
-        self.Name             = name
-        self.CreationDate     = datetime.datetime.now()
-        self.ModificationDate = datetime.datetime.now()
-        self.CurStatus        = "1"
-        self.Lng              = Lng
+    def __init__(self, name, lng):
+        self.name             = name
+        self.creationDate     = datetime.datetime.now()
+        self.modificationDate = datetime.datetime.now()
+        self.curStatus        = "1"
+        self.lng              = lng
 
     # Serialize a KeyWord object in JSON format
     def toJSON(self):
         return {
-            "ID"            : self.pk_KeyWord,
-            "Name"          : self.Name,
-            "CreationDate"  : self.CreationDate.strftime("%Y-%m-%d"),
-            "ModifDate"     : self.ModificationDate.strftime("%Y-%m-%d"),
-            "CurStatus"     : self.CurStatus,
-            "Lng"           : self.Lng
+            "id"            : self.pk_KeyWord,
+            "name"          : self.name,
+            "creationDate"  : self.creationDate.strftime("%Y-%m-%d"),
+            "ModifDate"     : self.modificationDate.strftime("%Y-%m-%d"),
+            "curStatus"     : self.curStatus,
+            "lng"           : self.lng
         }
 
 
@@ -160,17 +163,17 @@ class KeyWord_Form(Base):
     fk_KeyWord      = Column(ForeignKey('KeyWord.pk_KeyWord'), nullable=False)
     fk_Form         = Column(ForeignKey('Form.pk_Form'), nullable=False)
 
-    CreationDate    = Column(DateTime, nullable=False)
-    CurStatus       = Column(Integer, nullable=False)
+    creationDate    = Column(DateTime, nullable=False)
+    curStatus       = Column(Integer, nullable=False)
 
     Form    = relationship('Form')
     KeyWord = relationship('KeyWord')
 
     #   Constructor
     def __init__(self):
-        self.CreationDate = datetime.datetime.now()
+        self.creationDate = datetime.datetime.now()
         self.ModifDate = datetime.datetime.now()
-        self.CurStatus = "1"
+        self.curStatus = "1"
 
     # JSON serialization
     def toJSON(self):
@@ -183,16 +186,16 @@ class Unity(Base) :
     __tablename__ = "Unity"
 
     pk_Unity      = Column(BigInteger, primary_key=True)
-    Name          = Column(String(100, 'French_CI_AS'), nullable=False)
-    LabelFR       = Column(String(300, 'French_CI_AS'))
-    LabelEN       = Column(String(300, 'French_CI_AS'))
+    name          = Column(String(100, 'French_CI_AS'), nullable=False)
+    labelFr       = Column(String(300, 'French_CI_AS'))
+    labelEn       = Column(String(300, 'French_CI_AS'))
 
     def toJSON(self):
         return {
             "ID"        : self.pk_Unity,
-            "Name"      : self.Name,
-            "LabelFR"   : self.LabelFR,
-            "LabelEN"   : self.LabelEN
+            "name"      : self.name,
+            "labelFr"   : self.labelFr,
+            "labelEn"   : self.labelEn
         }
 
 
@@ -205,68 +208,94 @@ class Input(Base):
 
     fk_form       = Column(ForeignKey('Form.pk_Form'), nullable=False)
 
-    Name          = Column(String(100, 'French_CI_AS'), nullable=False)
-    LabelFR       = Column(String(300, 'French_CI_AS'), nullable=False)
-    LabelEN       = Column(String(300, 'French_CI_AS'), nullable=False)
-    IsRequired    = Column(BIT, nullable=False)
-    IsReadOnly    = Column(BIT, nullable=False)
-    FieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
-    IsEOL         = Column(BIT, nullable=False)
-    StartDate     = Column(DateTime, nullable=False)
-    CurStatus     = Column(Integer, nullable=False)
-    InputType     = Column(String(100, 'French_CI_AS'), nullable=False)
-    EditorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
-    FieldClass    = Column(String(100, 'French_CI_AS'), nullable=True)
+    name          = Column(String(100, 'French_CI_AS'), nullable=False)
+    labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
+    labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
+    required      = Column(BIT, nullable=False)
+    readonly      = Column(BIT, nullable=False)
+    fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
+    endOfLine     = Column(BIT, nullable=False)
+    startDate     = Column(DateTime, nullable=False)
+    curStatus     = Column(Integer, nullable=False)
+    type          = Column(String(100, 'French_CI_AS'), nullable=False)
+    editorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
+    fieldClass    = Column(String(100, 'French_CI_AS'), nullable=True)
+    
+    # linked field section
+    linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
+    linkedFieldIdentifyingColumn = Column(String(100, 'French_CI_AS'), nullable=True)
+    linkedField                  = Column(String(100, 'French_CI_AS'), nullable=True)
+    formIdentifyingColumn        = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty")
 
     # constructor
-    def __init__(self, Name, LabelFR, LabelEN, IsRequired, IsReadOnly, FieldSize, IsEOL, InputType, EditorClass, FieldClass):
-        self.Name        = Name
-        self.LabelFR     = LabelFR
-        self.LabelEN     = LabelEN
-        self.IsRequired  = IsRequired
-        self.IsReadOnly  = IsReadOnly
-        self.FieldSize   = FieldSize
-        self.IsEOL       = IsEOL
-        self.InputType   = InputType
-        self.EditorClass = EditorClass
-        self.FieldClass  = FieldClass
-        self.CurStatus  = "1"
+    def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn):
+        self.name        = name
+        self.labelFr     = labelFr
+        self.labelEn     = labelEn
+        self.required    = required
+        self.readonly    = readonly
+        self.fieldSize   = fieldSize
+        self.endOfLine   = endOfLine
+        self.type        = type
+        self.editorClass = editorClass
+        self.fieldClass  = fieldClass
+        self.linkedField = linkedField
+        self.curStatus   = "1"
 
-        self.StartDate = datetime.datetime.now()
+        # linked field
+        self.linkedFieldTable             = linkedFieldTable
+        self.linkedFieldIdentifyingColumn = linkedFieldIdentifyingColumn
+        self.linkedField                  = linkedField
+        self.formIdentifyingColumn        = formIdentifyingColumn
+
+        self.startDate = datetime.datetime.now()
 
     # Update form values
     def update(self, **kwargs):
-        self.Name        = kwargs['Name']
-        self.LabelFR     = kwargs['LabelFR']
-        self.LabelEN     = kwargs['LabelEN']
-        self.IsRequired  = kwargs['IsRequired']
-        self.IsReadOnly  = kwargs['IsReadOnly']
-        self.FieldSize   = kwargs['FieldSize']
-        self.IsEOL       = kwargs['IsEOL']
-        self.EditorClass = kwargs['EditorClass']
-        self.FieldClass  = kwargs['FieldClass']
+        self.name        = kwargs['name']
+        self.labelFr     = kwargs['labelFr']
+        self.labelEn     = kwargs['labelEn']
+        self.required    = kwargs['required']
+        self.readonly    = kwargs['readonly']
+        self.fieldSize   = kwargs['fieldSize']
+        self.endOfLine   = kwargs['endOfLine']
+        self.editorClass = kwargs['editorClass']
+        self.fieldClass  = kwargs['fieldClass']
+
+        # linked field
+        self.linkedFieldTable             = kwargs['linkedFieldTable']
+        self.linkedFieldIdentifyingColumn = kwargs['linkedFieldIdentifyingColumn']
+        self.linkedField                  = kwargs['linkedField']
+        self.formIdentifyingColumn        = kwargs['formIdentifyingColumn']
 
 
     # Return convert object to JSON object
     def toJSON(self):
         JSONObject = {
-            "ID"          : self.pk_Input,
-            "LabelFR"     : self.LabelFR.decode('latin-1').encode("utf-8"),
-            "LabelEN"     : self.LabelEN,
-            "IsRequired"  : self.IsRequired,
-            "IsEOL"       : self.IsEOL,
-            "IsReadOnly"  : self.IsReadOnly,
-            "FieldSize"   : self.FieldSize,
-            "EditorClass" : self.EditorClass,
-            "FieldClass"  : self.FieldClass,
-            "InputType"   : self.InputType
+            "id"          : self.pk_Input,
+            "labelFr"     : self.labelFr.decode('latin-1').encode("utf-8"),
+            "labelEn"     : self.labelEn,
+            "required"    : self.required,
+            "endOfLine"   : self.endOfLine,
+            "readonly"    : self.readonly,
+            "fieldSize"   : self.fieldSize,
+            "editorClass" : self.editorClass,
+            "fieldClass"  : self.fieldClass,
+            "type"        : self.type,
+
+            # linked field 
+
+            "linkedFieldTable"             : self.linkedFieldTable,
+            "linkedFieldIdentifyingColumn" : self.linkedFieldIdentifyingColumn,
+            "linkedField"                  : self.linkedField,
+            "formIdentifyingColumn"        : self.formIdentifyingColumn
         }
 
         for prop in self.Properties:
-            JSONObject[prop.Name] = prop.getValue()
+            JSONObject[prop.name] = prop.getvalue()
 
         return JSONObject
 
@@ -274,20 +303,24 @@ class Input(Base):
     def addProperty(self, prop):
         self.Properties.append(prop)
 
-    # get Column list except primary key and managed field like curStatus and StartDate
+    # get Column list except primary key and managed field like curStatus and startDate
     @classmethod
     def getColumnsList(cls):
         return [
-            'Name',
-            'LabelFR',
-            'LabelEN',
-            'IsRequired',
-            'IsReadOnly',
-            'FieldSize',
-            'IsEOL',
-            'InputType',
-            'EditorClass',
-            'FieldClass',
+            'name',
+            'labelFr',
+            'labelEn',
+            'required',
+            'readonly',
+            'fieldSize',
+            'endOfLine',
+            'type',
+            'editorClass',
+            'fieldClass',
+            'linkedFieldTable',
+            'linkedFieldIdentifyingColumn',
+            'linkedField',
+            'formIdentifyingColumn'
         ]
 
 
@@ -300,30 +333,30 @@ class InputProperty(Base):
 
     fk_Input         = Column(ForeignKey('Input.pk_Input'), nullable=False)
 
-    Name             = Column(String(255, 'French_CI_AS'), nullable=False)
-    Value            = Column(String(255, 'French_CI_AS'), nullable=False)
-    CreationDate     = Column(DateTime, nullable=False)
-    ValueType        = Column(String(10, 'French_CI_AS'), nullable=False)
+    name             = Column(String(255, 'French_CI_AS'), nullable=False)
+    value            = Column(String(255, 'French_CI_AS'), nullable=False)
+    creationDate     = Column(DateTime, nullable=False)
+    valueType        = Column(String(10, 'French_CI_AS'), nullable=False)
 
     Input = relationship('Input')
 
      # constructor
-    def __init__(self, Name, Value, ValueType):
-        self.Name         = Name
-        self.Value        = Value
-        self.ValueType    = ValueType
-        self.CreationDate = datetime.datetime.now()
+    def __init__(self, name, value, valueType):
+        self.name         = name
+        self.value        = value
+        self.valueType    = valueType
+        self.creationDate = datetime.datetime.now()
 
     # Return value casted on the correct format
-    def getValue(self): 
-        if self.ValueType == "Boolean":
-            return bool(self.Value)
-        elif self.ValueType == "Number":
-            return int(self.Value)
-        elif self.ValueType == "Double":
-            return float(int(self.Value))
+    def getvalue(self):
+        if self.valueType == "Boolean":
+            return bool(self.value)
+        elif self.valueType == "Number":
+            return int(self.value)
+        elif self.valueType == "Double":
+            return float(int(self.value))
         else:
-            return self.Value
+            return self.value
 
 
 # Configurated input
@@ -334,53 +367,53 @@ class ConfiguratedInput(Base):
 
     pk_ConfiguratedInput = Column(BigInteger, primary_key=True)
 
-    Name                 = Column(String(100, 'French_CI_AS'), nullable=False)
-    LabelFR              = Column(String(300, 'French_CI_AS'), nullable=False)
-    LabelEN              = Column(String(300, 'French_CI_AS'), nullable=False)
-    IsRequired           = Column(BIT, nullable=False)
-    IsReadOnly           = Column(BIT, nullable=False)
-    FieldSize            = Column(String(100, 'French_CI_AS'), nullable=False)
-    IsEOL                = Column(BIT, nullable=False)
-    StartDate            = Column(DateTime, nullable=False)
-    CurStatus            = Column(Integer, nullable=False)
-    InputType            = Column(String(100, 'French_CI_AS'), nullable=False)
-    EditorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
-    FieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
+    name                 = Column(String(100, 'French_CI_AS'), nullable=False)
+    labelFr              = Column(String(300, 'French_CI_AS'), nullable=False)
+    labelEn              = Column(String(300, 'French_CI_AS'), nullable=False)
+    required             = Column(BIT, nullable=False)
+    readonly             = Column(BIT, nullable=False)
+    fieldSize            = Column(String(100, 'French_CI_AS'), nullable=False)
+    endOfLine            = Column(BIT, nullable=False)
+    startDate            = Column(DateTime, nullable=False)
+    curStatus            = Column(Integer, nullable=False)
+    type                 = Column(String(100, 'French_CI_AS'), nullable=False)
+    editorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
+    fieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
 
-    Properties          = relationship("ConfiguratedInputProperty")
+    Properties           = relationship("ConfiguratedInputProperty")
 
     # constructor
-    def __init__(self, Name, LabelFR, LabelEN, IsRequired, IsReadOnly, FieldSize, IsEOL, InputType, EditorClass, FieldClass):
-        self.Name        = Name
-        self.LabelFR     = LabelFR
-        self.LabelEN     = LabelEN
-        self.IsRequired  = IsRequired
-        self.IsReadOnly  = IsReadOnly
-        self.FieldSize   = FieldSize
-        self.IsEOL       = IsEOL
-        self.InputType   = InputType
-        self.EditorClass = EditorClass
-        self.FieldClass  = FieldClass
-        self.CurStatus  = "1"
+    def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass):
+        self.name        = name
+        self.labelFr     = labelFr
+        self.labelEn     = labelEn
+        self.required    = required
+        self.readonly    = readonly
+        self.fieldSize   = fieldSize
+        self.endOfLine   = endOfLine
+        self.type        = type
+        self.editorClass = editorClass
+        self.fieldClass  = fieldClass
+        self.curStatus   = "1"
 
-        self.StartDate = datetime.datetime.now()
+        self.startDate = datetime.datetime.now()
 
     # Return convert object to JSON object
     def toJSON(self):
-        JSONObject = { 
-            "LabelFR"     : self.LabelFR.decode('latin-1').encode("utf-8"),
-            "LabelEN"     : self.LabelEN,
-            "IsRequired"  : self.IsRequired,
-            "IsEOL"       : self.IsEOL,
-            "IsReadOnly"  : self.IsReadOnly,
-            "FieldSize"   : self.FieldSize,
-            "EditorClass" : self.EditorClass,
-            "FieldClass"  : self.FieldClass,
-            "InputType"   : self.InputType
+        JSONObject = {
+            "labelFr"     : self.labelFr.decode('latin-1').encode("utf-8"),
+            "labelEn"     : self.labelEn,
+            "required"    : self.required,
+            "endOfLine"   : self.endOfLine,
+            "readonly"    : self.readonly,
+            "fieldSize"   : self.fieldSize,
+            "editorClass" : self.editorClass,
+            "fieldClass"  : self.fieldClass,
+            "type"        : self.type
         }
 
         for prop in self.Properties:
-            JSONObject[prop.Name] = prop.getValue()
+            JSONObject[prop.name] = prop.getvalue()
 
         return JSONObject
 
@@ -388,20 +421,20 @@ class ConfiguratedInput(Base):
     def addProperty(self, prop):
         self.Properties.append(prop)
 
-    # get Column list except primary key and managed field like curStatus and StartDate
+    # get Column list except primary key and managed field like curStatus and startDate
     @classmethod
     def getColumnsList(cls):
         return [
-            'Name',
-            'LabelFR',
-            'LabelEN',
-            'IsRequired',
-            'IsReadOnly',
-            'FieldSize',
-            'IsEOL',
-            'InputType',
-            'EditorClass',
-            'FieldClass',
+            'name',
+            'labelFr',
+            'labelEn',
+            'required',
+            'readonly',
+            'fieldSize',
+            'endOfLine',
+            'type',
+            'editorClass',
+            'fieldClass',
         ]
 
 
@@ -413,30 +446,30 @@ class ConfiguratedInputProperty(Base):
 
     fk_ConfiguratedInput         = Column(ForeignKey('ConfiguratedInput.pk_ConfiguratedInput'), nullable=False)
 
-    Name                         = Column(String(255, 'French_CI_AS'), nullable=False)
-    Value                        = Column(String(255, 'French_CI_AS'), nullable=False)
-    CreationDate                 = Column(DateTime, nullable=False)
-    ValueType                    = Column(String(10, 'French_CI_AS'), nullable=False)
+    name                         = Column(String(255, 'French_CI_AS'), nullable=False)
+    value                        = Column(String(255, 'French_CI_AS'), nullable=False)
+    creationDate                 = Column(DateTime, nullable=False)
+    valueType                    = Column(String(10, 'French_CI_AS'), nullable=False)
 
     ConfiguratedInput = relationship('ConfiguratedInput')
 
     # constructor
-    def __init__(self, Name, Value, ValueType):
-        self.Name         = Name
-        self.Value        = Value
-        self.ValueType    = ValueType
-        self.CreationDate = datetime.datetime.now()
+    def __init__(self, name, value, valueType):
+        self.name         = name
+        self.value        = value
+        self.valueType    = valueType
+        self.creationDate = datetime.datetime.now()
 
     # Return value casted on the correct format
-    def getValue(self): 
-        if self.ValueType == "Boolean":
-            return bool(self.Value)
-        elif self.ValueType == "Number":
-            return int(self.Value)
-        elif self.ValueType == "Double":
-            return float(int(self.Value))
+    def getvalue(self):
+        if self.valueType == "Boolean":
+            return bool(self.value)
+        elif self.valueType == "Number":
+            return int(self.value)
+        elif self.valueType == "Double":
+            return float(int(self.value))
         else:
-            return self.Value
+            return self.value
 
 
 # Database connexion
