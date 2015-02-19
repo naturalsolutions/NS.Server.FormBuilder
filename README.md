@@ -6,7 +6,7 @@ The database SQL script are currently for SQL Server (TSQL).
 
 Run :
 
-    pip install requirements-txt
+    pip install -r requirements-txt --allow-external pyodbc --allow-unverified pyodbc
 
 Depedancies :
 
