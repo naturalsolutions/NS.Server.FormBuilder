@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
+# 
 from project                    import app
 from flask                      import jsonify, abort, render_template, request, make_response
 from ..models                   import session, Form, KeyWord, Unity, ConfiguratedInput, ConfiguratedInputProperty, Input, InputProperty
 from ..models.InputRepository   import InputRepository
 from ..utilities                import Utility
 
-import ConfigParser
-import urllib2
-import os
-import sys
 import datetime
-import pprint
 import json
-
-
-pp = pprint.PrettyPrinter(indent=4)
+import sys
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
@@ -77,13 +71,12 @@ def createForm():
                 session.add (form)
                 session.commit ()
                 return jsonify({"form" : form.toJSON() })
-            except:
+            except Exception as e:
+                print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
-                print( sys.exc_info() )
                 abort(make_response('Error during save', 500))
 
     else:
-        print("hein")
         abort(make_response('Data seems not be in JSON format', 400))
 
 # PUT routes, update protocol
@@ -111,7 +104,6 @@ def updateForm(id):
                 # Yes : we update input
                 # No : we add an input to the form
                 for eachInput in request.json['schema']:
-
 
                     if request.json['Schema'][eachInput]['ID'] in presentInputs:
 
@@ -144,7 +136,6 @@ def updateForm(id):
                     return jsonify({"form" : form.toJSON() })
                 except:
                     session.rollback()
-                    print( sys.exc_info() )
                     abort(make_response('Error', 500))
 
 

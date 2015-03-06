@@ -4,28 +4,24 @@ from flask                      import jsonify, request, make_response
 from ..models                   import session
 from ..utilities                import Utility
 
-import ConfigParser
-import urllib2
-import os
-import sys
-import datetime
+import urllib.request
 import json
 
 @app.route('/linked', methods = ['GET'])
 def getLinkedFields():
-    Config = ConfigParser.ConfigParser()
-    Config.read("project/config/config.ini")
+    with open ("project/config/config.json", "r") as myfile:
+        data = json.loads( myfile.read() )        
 
     linkedFieldsList = []
     # Get all webServices link
-    for each in Config.options("webServices"):
+    for each in data["webServices"]:
         try:
-            url     = Config.get("webServices", each)
-            content = urllib2.urlopen(url, timeout = 1).read()
+            url     = data["webServices"][each]
+            content = urlopen(url, timeout = 1).read()
 
             # For each request we add the linked fields at the list
             linkedFieldsList = linkedFieldsList + json.loads(content)
-        except urllib2.URLError, e:
+        except:
             pass
 
     return jsonify({"linkedFields" : linkedFieldsList})

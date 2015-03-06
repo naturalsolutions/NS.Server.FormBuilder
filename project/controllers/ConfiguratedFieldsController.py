@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
+# 
 from project                    import app
-from flask                      import jsonify, request, make_response
+from flask                      import jsonify, request, make_response, abort
 from ..models                   import session, ConfiguratedInput, ConfiguratedInputProperty
 from ..utilities                import Utility
 
-import ConfigParser
-import urllib2
-import os
-import sys
-import datetime
-import pprint
 import json
 
 # GET, returns all configurated fields
@@ -51,10 +46,10 @@ def createConfiguratedField():
                 session.add (newConfiguratedField)
                 session.commit ()
                 return jsonify({ "result" : True})
-            except:
+            except:                
                 session.rollback()
-                print "Unexpected error:", sys.exc_info()[0]
                 return jsonify({ "result" : False})
 
-        except:
+        except Exception as e:
+            print (e.args)
             abort(make_response('An error occured, input not saved !', 500))
