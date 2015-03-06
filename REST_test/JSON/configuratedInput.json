@@ -1,17 +1,17 @@
 {
     "field" : {
-        "Name"         : "Fielda",
-        "LabelFR"      : "Label en français",
-        "LabelEN"      : "Label en anglais",
-        "IsRequired"   : false,
-        "IsEOL"        : false,
-        "IsReadOnly"   : false,
-        "FieldSize"    : "Etroit",
-        "EditorClass"  : "",
-        "FieldClass"   : "",
+        "name"         : "Field",
+        "labelFr"      : "Label en français",
+        "labelEn"      : "Label en anglais",
+        "required"     : false,
+        "endOfLine"    : false,
+        "readonly"     : false,
+        "fieldSize"    : "Etroit",
+        "editorClass"  : "",
+        "fieldClass"   : "",
         "defaultValue" : "",
-        "Help"         : "Write some text",
-        "Size"         : 255,
-        "InputType"    : "Text"
+        "help"         : "Write some text",
+        "size"         : 255,
+        "type"         : "Text"
     }
 }

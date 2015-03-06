@@ -13,7 +13,7 @@
     "schema": {
         "Field1": {
             "id"                           : 1,
-            "labelFr"                      : "Label en français",
+            "labelFr"                      : "Label en francais",
             "labelEn"                      : "Label en anglais",
             "name"                         : "Field1",
             "readonly"                     : false,
@@ -33,7 +33,7 @@
         },
         "Field2": {
             "id"                           : 2,
-            "labelFr"                      : "aaa",
+            "labelFr"                      : "french",
             "labelEn"                      : "Label en anglais",
             "name"                         : "Field2",
             "readonly"                     : false,
