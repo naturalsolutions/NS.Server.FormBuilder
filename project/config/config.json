@@ -1,0 +1,6 @@
+{
+	"webServices" : [
+		"http://localhost:57463/Service1.svc/json/linkedFields",
+		"http://itwillnotwork.com"
+	]
+}
