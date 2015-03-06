@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+# 
 from sqlalchemy                     import create_engine, Column, Integer, ForeignKey, BigInteger, String, DateTime
 from sqlalchemy.dialects.mssql.base import BIT
 from sqlalchemy.orm                 import Session, relationship, backref
@@ -92,9 +94,6 @@ class Form(Base):
 
     # Add Input to the form
     def addInput(self, newInput):
-        print ("------------------------")
-        print (newInput)
-        print ("------------------------")
         self.inputs.append(newInput)
 
     # return a list of all form's inputs id
@@ -276,7 +275,7 @@ class Input(Base):
     def toJSON(self):
         JSONObject = {
             "id"          : self.pk_Input,
-            "labelFr"     : self.labelFr.decode('latin-1').encode("utf-8"),
+            "labelFr"     : self.labelFr,
             "labelEn"     : self.labelEn,
             "required"    : self.required,
             "endOfLine"   : self.endOfLine,
@@ -401,7 +400,7 @@ class ConfiguratedInput(Base):
     # Return convert object to JSON object
     def toJSON(self):
         JSONObject = {
-            "labelFr"     : self.labelFr.decode('latin-1').encode("utf-8"),
+            "labelFr"     : self.labelFr,
             "labelEn"     : self.labelEn,
             "required"    : self.required,
             "endOfLine"   : self.endOfLine,
