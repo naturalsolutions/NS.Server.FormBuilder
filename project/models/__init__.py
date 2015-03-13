@@ -75,7 +75,7 @@ class Form(Base):
             "labelFr"                  : self.labelFr,
             "labelEn"                  : self.labelEn,
             "creationDate"             : self.creationDate.strftime("%Y-%m-%d"),
-            "modificationDate"         : self.modificationDate.strftime("%Y-%m-%d"),
+            "modificationDate"         : "" if self.modificationDate == 'NULL' or self.modificationDate is None else self.modificationDate.strftime("%Y-%m-%d"),
             "curStatus"                : self.curStatus,
             "descriptionFr"            : self.descriptionFr,
             "descriptionEn"            : self.descriptionEn,
@@ -291,7 +291,7 @@ class Input(Base):
             "linkedFieldIdentifyingColumn" : self.linkedFieldIdentifyingColumn,
             "linkedField"                  : self.linkedField,
             "formIdentifyingColumn"        : self.formIdentifyingColumn
-        }
+        }        
 
         for prop in self.Properties:
             JSONObject[prop.name] = prop.getvalue()
