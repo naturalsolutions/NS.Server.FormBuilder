@@ -18,7 +18,7 @@ def getForms():
     for each in allForms :
         returnedFormsList.append( each.toJSON() )
 
-    return jsonify({ "options" : returnedFormsList})
+    return json.dumps(returnedFormsList)
 
 # Get protocol by ID
 @app.route('/form/<formID>', methods = ['GET'])
