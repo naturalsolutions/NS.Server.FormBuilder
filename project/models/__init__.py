@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 # 
-from sqlalchemy                     import create_engine, Column, Integer, ForeignKey, BigInteger, String, DateTime
+from sqlalchemy                     import create_engine, Column, Integer, ForeignKey, BigInteger, String, DateTime,Boolean
 from sqlalchemy.dialects.mssql.base import BIT
 from sqlalchemy.orm                 import Session, relationship, backref
 from sqlalchemy.ext.declarative     import declarative_base
@@ -19,14 +19,15 @@ class Form(Base):
 
     pk_Form          = Column(BigInteger, primary_key=True)
 
-    name                   = Column(String(100, 'French_CI_AS'), nullable=False)
-    labelFr                = Column(String(300, 'French_CI_AS'), nullable=False)
-    labelEn                = Column(String(300, 'French_CI_AS'), nullable=False)
+    name                   = Column(String(100, 'latin1_swedish_ci'), nullable=False)
+    tag                    = Column(String(300, 'latin1_swedish_ci'), nullable=True)
+    labelFr                = Column(String(300, 'latin1_swedish_ci'), nullable=False)
+    labelEn                = Column(String(300, 'latin1_swedish_ci'), nullable=False)
     creationDate           = Column(DateTime, nullable=False)
     modificationDate       = Column(DateTime, nullable=True)
     curStatus              = Column(Integer, nullable=False)
-    descriptionFr          = Column(String(collation='French_CI_AS'), nullable=False)
-    descriptionEn          = Column(String(collation='French_CI_AS'), nullable=False)
+    descriptionFr          = Column(String(300, 'latin1_swedish_ci'), nullable=False)
+    descriptionEn          = Column(String(300, 'latin1_swedish_ci'), nullable=False)
 
     # Relationship
     keywords         = relationship("KeyWord_Form")  # A form has many Keywords
@@ -35,6 +36,7 @@ class Form(Base):
     # Constructor
     def __init__(self, **kwargs):
         self.name                   = kwargs['name']
+        self.tag                    = kwargs['tag']
         self.labelFr                = kwargs['labelFr']
         self.labelEn                = kwargs['labelEn']
         self.descriptionEn          = kwargs['descriptionEn']
@@ -46,6 +48,7 @@ class Form(Base):
     # Update form values
     def update(self, **kwargs):
         self.name                   = kwargs['name']
+        self.tag                    = kwargs['tag']
         self.labelFr                = kwargs['labelFr']
         self.labelEn                = kwargs['labelEn']
         self.descriptionEn          = kwargs['descriptionEn']
@@ -72,9 +75,10 @@ class Form(Base):
         return {
             "id"                       : self.pk_Form,
             "name"                     : self.name,
+            "tag"                      : self.tag,
             "labelFr"                  : self.labelFr,
             "labelEn"                  : self.labelEn,
-            "creationDate"             : self.creationDate.strftime("%Y-%m-%d"),
+            "creationDate"             : "" if self.creationDate == 'NULL' or self.creationDate is None else self.creationDate.strftime("%Y-%m-%d"),
             "modificationDate"         : "" if self.modificationDate == 'NULL' or self.modificationDate is None else self.modificationDate.strftime("%Y-%m-%d"),
             "curStatus"                : self.curStatus,
             "descriptionFr"            : self.descriptionFr,
@@ -107,6 +111,7 @@ class Form(Base):
     def getColumnList(cls):
         return [
             'name'         ,
+            'tag'          ,
             'descriptionFr',
             'descriptionEn',
             'keywordsFr'   ,
@@ -126,7 +131,7 @@ class KeyWord(Base) :
 
     pk_KeyWord       = Column(BigInteger, primary_key=True)
 
-    name             = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
+    name             = Column(String(100, 'latin1_swedish_ci'), nullable=False, unique=True)
     creationDate     = Column(DateTime, nullable=False)
     modificationDate = Column(DateTime, nullable=True)
     curStatus        = Column(Integer, nullable=False)
@@ -185,9 +190,9 @@ class Unity(Base) :
     __tablename__ = "Unity"
 
     pk_Unity      = Column(BigInteger, primary_key=True)
-    name          = Column(String(100, 'French_CI_AS'), nullable=False)
-    labelFr       = Column(String(300, 'French_CI_AS'))
-    labelEn       = Column(String(300, 'French_CI_AS'))
+    name          = Column(String(100, 'latin1_swedish_ci'), nullable=False)
+    labelFr       = Column(String(300, 'latin1_swedish_ci'))
+    labelEn       = Column(String(300, 'latin1_swedish_ci'))
 
     def toJSON(self):
         return {
@@ -207,24 +212,24 @@ class Input(Base):
 
     fk_form       = Column(ForeignKey('Form.pk_Form'), nullable=False)
 
-    name          = Column(String(100, 'French_CI_AS'), nullable=False)
-    labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
-    labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
-    required      = Column(BIT, nullable=False)
-    readonly      = Column(BIT, nullable=False)
-    fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
-    endOfLine     = Column(BIT, nullable=False)
+    name          = Column(String(100, 'latin1_swedish_ci'), nullable=False)
+    labelFr       = Column(String(300, 'latin1_swedish_ci'), nullable=False)
+    labelEn       = Column(String(300, 'latin1_swedish_ci'), nullable=False)
+    required      = Column(Boolean, nullable=False)
+    readonly      = Column(Boolean, nullable=False)
+    fieldSize     = Column(String(100, 'latin1_swedish_ci'), nullable=False)
+    endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
-    type          = Column(String(100, 'French_CI_AS'), nullable=False)
-    editorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
-    fieldClass    = Column(String(100, 'French_CI_AS'), nullable=True)
+    type          = Column(String(100, 'latin1_swedish_ci'), nullable=False)
+    editorClass   = Column(String(100, 'latin1_swedish_ci'), nullable=True)
+    fieldClass    = Column(String(100, 'latin1_swedish_ci'), nullable=True)
     
     # linked field section
-    linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
-    linkedFieldIdentifyingColumn = Column(String(100, 'French_CI_AS'), nullable=True)
-    linkedField                  = Column(String(100, 'French_CI_AS'), nullable=True)
-    formIdentifyingColumn        = Column(String(100, 'French_CI_AS'), nullable=True)
+    linkedFieldTable             = Column(String(100, 'latin1_swedish_ci'), nullable=True)
+    linkedFieldIdentifyingColumn = Column(String(100, 'latin1_swedish_ci'), nullable=True)
+    linkedField                  = Column(String(100, 'latin1_swedish_ci'), nullable=True)
+    formIdentifyingColumn        = Column(String(100, 'latin1_swedish_ci'), nullable=True)
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty")
@@ -332,10 +337,10 @@ class InputProperty(Base):
 
     fk_Input         = Column(ForeignKey('Input.pk_Input'), nullable=False)
 
-    name             = Column(String(255, 'French_CI_AS'), nullable=False)
-    value            = Column(String(255, 'French_CI_AS'), nullable=False)
+    name             = Column(String(255, 'latin1_swedish_ci'), nullable=False)
+    value            = Column(String(255, 'latin1_swedish_ci'), nullable=False)
     creationDate     = Column(DateTime, nullable=False)
-    valueType        = Column(String(10, 'French_CI_AS'), nullable=False)
+    valueType        = Column(String(10, 'latin1_swedish_ci'), nullable=False)
 
     Input = relationship('Input')
 
@@ -366,18 +371,18 @@ class ConfiguratedInput(Base):
 
     pk_ConfiguratedInput = Column(BigInteger, primary_key=True)
 
-    name                 = Column(String(100, 'French_CI_AS'), nullable=False)
-    labelFr              = Column(String(300, 'French_CI_AS'), nullable=False)
-    labelEn              = Column(String(300, 'French_CI_AS'), nullable=False)
-    required             = Column(BIT, nullable=False)
-    readonly             = Column(BIT, nullable=False)
-    fieldSize            = Column(String(100, 'French_CI_AS'), nullable=False)
-    endOfLine            = Column(BIT, nullable=False)
+    name                 = Column(String(100, 'latin1_swedish_ci'), nullable=False)
+    labelFr              = Column(String(300, 'latin1_swedish_ci'), nullable=False)
+    labelEn              = Column(String(300, 'latin1_swedish_ci'), nullable=False)
+    required             = Column(Boolean, nullable=False)
+    readonly             = Column(Boolean, nullable=False)
+    fieldSize            = Column(String(100, 'latin1_swedish_ci'), nullable=False)
+    endOfLine            = Column(Boolean, nullable=False)
     startDate            = Column(DateTime, nullable=False)
     curStatus            = Column(Integer, nullable=False)
-    type                 = Column(String(100, 'French_CI_AS'), nullable=False)
-    editorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
-    fieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
+    type                 = Column(String(100, 'latin1_swedish_ci'), nullable=False)
+    editorClass          = Column(String(100, 'latin1_swedish_ci'), nullable=True)
+    fieldClass           = Column(String(100, 'latin1_swedish_ci'), nullable=True)
 
     Properties           = relationship("ConfiguratedInputProperty")
 
@@ -445,10 +450,10 @@ class ConfiguratedInputProperty(Base):
 
     fk_ConfiguratedInput         = Column(ForeignKey('ConfiguratedInput.pk_ConfiguratedInput'), nullable=False)
 
-    name                         = Column(String(255, 'French_CI_AS'), nullable=False)
-    value                        = Column(String(255, 'French_CI_AS'), nullable=False)
+    name                         = Column(String(255, ''), nullable=False)
+    value                        = Column(String(255, 'latin1_swedish_ci'), nullable=False)
     creationDate                 = Column(DateTime, nullable=False)
-    valueType                    = Column(String(10, 'French_CI_AS'), nullable=False)
+    valueType                    = Column(String(10, 'latin1_swedish_ci'), nullable=False)
 
     ConfiguratedInput = relationship('ConfiguratedInput')
 
@@ -473,7 +478,7 @@ class ConfiguratedInputProperty(Base):
 
 # Database connexion
 # We use pyodbc and SQL Server for the moment
-engine = create_engine('mssql+pyodbc://CORLEONE-PC/formbuilder')
+engine = create_engine('mysql+pymysql://root@localhost/formbuilder?charset=utf8')
 
 Base.metadata.create_all(engine)
 
