@@ -222,6 +222,7 @@ class Input(Base):
     endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
+    order         = Column(Integer, nullable=False)
     type          = Column(String(100, 'French_CI_AS'), nullable=False)
     editorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClass    = Column(String(100, 'French_CI_AS'), nullable=True)
@@ -236,7 +237,7 @@ class Input(Base):
     Properties  = relationship("InputProperty")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn):
+    def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn, order):
         self.name        = name
         self.labelFr     = labelFr
         self.labelEn     = labelEn
@@ -249,6 +250,7 @@ class Input(Base):
         self.fieldClass  = fieldClass
         self.linkedField = linkedField
         self.curStatus   = "1"
+        self.order       = order
 
         # linked field
         self.linkedFieldTable             = linkedFieldTable
@@ -269,6 +271,7 @@ class Input(Base):
         self.endOfLine   = kwargs['endOfLine']
         self.editorClass = kwargs['editorClass']
         self.fieldClass  = kwargs['fieldClass']
+        self.order       = kwargs['order']
 
         # linked field
         self.linkedFieldTable             = kwargs['linkedFieldTable']
@@ -290,6 +293,7 @@ class Input(Base):
             "editorClass" : self.editorClass,
             "fieldClass"  : self.fieldClass,
             "type"        : self.type,
+            "order"        : self.order,
 
             # linked field 
 
@@ -325,7 +329,8 @@ class Input(Base):
             'linkedFieldTable',
             'linkedFieldIdentifyingColumn',
             'linkedField',
-            'formIdentifyingColumn'
+            'formIdentifyingColumn',
+            'order'
         ]
 
 
@@ -381,6 +386,8 @@ class ConfiguratedInput(Base):
     endOfLine            = Column(Boolean, nullable=False)
     startDate            = Column(DateTime, nullable=False)
     curStatus            = Column(Integer, nullable=False)
+    order                = Column(Integer, nullable=False)
+
     type                 = Column(String(100, 'French_CI_AS'), nullable=False)
     editorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
@@ -388,7 +395,7 @@ class ConfiguratedInput(Base):
     Properties           = relationship("ConfiguratedInputProperty")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass):
+    def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, order):
         self.name        = name
         self.labelFr     = labelFr
         self.labelEn     = labelEn
@@ -397,6 +404,7 @@ class ConfiguratedInput(Base):
         self.fieldSize   = fieldSize
         self.endOfLine   = endOfLine
         self.type        = type
+        self.order       = order
         self.editorClass = editorClass
         self.fieldClass  = fieldClass
         self.curStatus   = "1"
@@ -414,7 +422,8 @@ class ConfiguratedInput(Base):
             "fieldSize"   : self.fieldSize,
             "editorClass" : self.editorClass,
             "fieldClass"  : self.fieldClass,
-            "type"        : self.type
+            "type"        : self.type,
+            "order"        : self.order
         }
 
         for prop in self.Properties:
@@ -438,6 +447,7 @@ class ConfiguratedInput(Base):
             'fieldSize',
             'endOfLine',
             'type',
+            'order',
             'editorClass',
             'fieldClass',
         ]
