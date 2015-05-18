@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 # 
-from sqlalchemy                     import create_engine, Column, Integer, ForeignKey, BigInteger, String, DateTime,Boolean
+from sqlalchemy                     import create_engine, Column, Integer, ForeignKey, BigInteger, String, DateTime,Boolean, SmallInteger
 from sqlalchemy.dialects.mssql.base import BIT
 from sqlalchemy.orm                 import Session, relationship, backref
 from sqlalchemy.ext.declarative     import declarative_base
@@ -222,7 +222,7 @@ class Input(Base):
     endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
-    order         = Column(Integer, nullable=False)
+    order         = Column(SmallInteger, nullable=True)
     type          = Column(String(100, 'French_CI_AS'), nullable=False)
     editorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClass    = Column(String(100, 'French_CI_AS'), nullable=True)
@@ -386,7 +386,7 @@ class ConfiguratedInput(Base):
     endOfLine            = Column(Boolean, nullable=False)
     startDate            = Column(DateTime, nullable=False)
     curStatus            = Column(Integer, nullable=False)
-    order                = Column(Integer, nullable=False)
+    order                = Column(SmallInteger, nullable=True)
 
     type                 = Column(String(100, 'French_CI_AS'), nullable=False)
     editorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
