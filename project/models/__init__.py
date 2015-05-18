@@ -58,10 +58,6 @@ class Form(Base):
 
     # Serialize a form in JSON object
     def toJSON(self):
-        inputs = {}
-        for each in self.inputs:
-            if each.curStatus != 4:
-                inputs[each.name] = each.toJSON()
         keywordsFr = []
         keywordsEn = []
         tmpKeyword = None
@@ -84,9 +80,8 @@ class Form(Base):
             "curStatus"                : self.curStatus,
             "descriptionFr"            : self.descriptionFr,
             "descriptionEn"            : self.descriptionEn,
-            "keywordsFr"               : keywordsFr,
-            "keywordsEn"               : keywordsEn,
-            "schema"                   : inputs
+            "keywordsFr" : keywordsFr,
+            "keywordsEn" : keywordsEn
         }
 
     # Add keyword to the form
@@ -301,11 +296,7 @@ class Input(Base):
             "linkedFieldIdentifyingColumn" : self.linkedFieldIdentifyingColumn,
             "linkedField"                  : self.linkedField,
             "formIdentifyingColumn"        : self.formIdentifyingColumn
-        }        
-
-        for prop in self.Properties:
-            JSONObject[prop.name] = prop.getvalue()
-
+        }
         return JSONObject
 
     # add property to the configurated input

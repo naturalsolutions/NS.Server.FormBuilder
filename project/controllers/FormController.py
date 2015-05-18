@@ -6,19 +6,41 @@ from ..models                   import session, Form, KeyWord, Unity, Configurat
 from ..models.InputRepository   import InputRepository
 from ..utilities                import Utility
 
-import datetime
 import json
 import sys
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
 def getForms():
-    allForms            = session.query(Form).all()
-    returnedFormsList   = []
-    for each in allForms :
-        returnedFormsList.append( each.toJSON() )
 
-    return json.dumps(returnedFormsList)
+    # Forms list who will be returned at the end
+    forms = []
+    # Used to stock each form yet added
+    formsAdded = []
+    # Current form iteration
+    currentFormIndex = -1
+
+    query   = session.query(Form, Input, InputProperty).join(Input).join(InputProperty)
+    results = query.all()
+
+    for each in results:
+        if each[0].pk_Form not in formsAdded:
+            # Add form to the list and update current index
+            forms.append(each[0].toJSON())
+            currentFormIndex += 1
+            # Initialize schema attribute
+            forms[currentFormIndex]["schema"] = {}
+            # Mark this current as added
+            formsAdded.append(each[0].pk_Form)
+
+        # Add field if it is not yet done
+        if each[1].name not in forms[currentFormIndex]["schema"]:
+            forms[currentFormIndex]["schema"][each[1].name] = each[1].toJSON()
+
+        # Add input property
+        forms[currentFormIndex]["schema"][each[1].name][each[2].name] = each[2].getvalue()
+
+    return json.dumps(forms, ensure_ascii=False)
 
 # Get protocol by ID
 @app.route('/form/<formID>', methods = ['GET'])
