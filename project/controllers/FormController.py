@@ -34,7 +34,7 @@ def getForms():
             formsAdded.append(each[0].pk_Form)
 
         # Add field if it is not yet done
-        if each[1].name not in forms[currentFormIndex]["schema"]:
+        if each[1].name not in forms[currentFormIndex]["schema"] and each[1].curStatus != 4:
             forms[currentFormIndex]["schema"][each[1].name] = each[1].toJSON()
 
         # Add input property
