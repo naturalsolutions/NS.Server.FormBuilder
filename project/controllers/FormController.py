@@ -74,6 +74,18 @@ def createForm():
             for input in request.json['schema']:
                 inputsList              = request.json['schema'][input]
 
+                try:
+                    inputsList['required'] = inputsList['validators'].index('required') >= 0
+                except ValueError:
+                    inputsList['required'] = False
+
+                try:
+                    inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
+                except ValueError:
+                    inputsList['readonly'] = False
+
+                del inputsList['validators']
+
                 newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
                 newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
                 newInput                = Input( **newInputValues )                         # new Input object
