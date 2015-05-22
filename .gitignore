@@ -4,3 +4,4 @@ formBuilder.egg-info
 setup.py
 *.pyc
 web.config
+.idea/

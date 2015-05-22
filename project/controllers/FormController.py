@@ -8,6 +8,7 @@ from ..utilities                import Utility
 
 import json
 import sys
+import pprint
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
@@ -37,8 +38,8 @@ def getForms():
         if each[1].name not in forms[currentFormIndex]["schema"] and each[1].curStatus != 4:
             forms[currentFormIndex]["schema"][each[1].name] = each[1].toJSON()
 
-        # Add input property
-        forms[currentFormIndex]["schema"][each[1].name][each[2].name] = each[2].getvalue()
+        if each[1].curStatus != 4:
+            forms[currentFormIndex]["schema"][each[1].name][each[2].name] = each[2].getvalue()
 
     return json.dumps(forms, ensure_ascii=False)
 
@@ -124,7 +125,7 @@ def updateForm(id):
 
         for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
 
-        if IfmissingParameters == False:
+        if IfmissingParameters is False:
             abort(make_response('Some parameters are missing', 400))
 
         else:
@@ -139,22 +140,36 @@ def updateForm(id):
                 # No : we add an input to the form
                 for eachInput in request.json['schema']:
 
-                    if request.json['Schema'][eachInput]['ID'] in presentInputs:
+                    if request.json['schema'][eachInput]['id'] in presentInputs:
 
                         # the field is present we update it
-                        foundInput        = session.query(Input).filter_by(pk_Input = request.json['Schema'][eachInput]['ID']).first()
+                        foundInput        = session.query(Input).filter_by(pk_Input = request.json['schema'][eachInput]['id']).first()
                         inputRepository   = InputRepository(foundInput)
 
-                        inputNewValues    = request.json['Schema'][eachInput]
+                        inputNewValues    = request.json['schema'][eachInput]
 
-                        foundInputUpdated = inputRepository.updateInput(**inputNewValues)
+                        # foundInputUpdated = inputRepository.updateInput(**inputNewValues)
+                        inputRepository.updateInput(**inputNewValues)
 
                         presentInputs.remove(foundInput.pk_Input)
 
                     else:
                         inputRepository   = InputRepository(None)
                         # Add a new input to the form
-                        form.addInput( inputRepository.createInput(**request.json['Schema'][eachInput]) )
+
+                        inputsList = request.json['schema'][eachInput]
+
+                        try:
+                            inputsList['required'] = inputsList['validators'].index('required') >= 0
+                        except ValueError:
+                            inputsList['required'] = False
+
+                        try:
+                            inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
+                        except ValueError:
+                            inputsList['readonly'] = False
+
+                        form.addInput( inputRepository.createInput(**inputsList) )
 
 
                 if len(presentInputs) > 0:
@@ -162,7 +177,7 @@ def updateForm(id):
                     inputRepository   = InputRepository(None)
                     inputRepository.removeInputs(presentInputs)
 
-                #form.addKeywords( request.json['keywords'] )
+                # form.addKeywords( request.json['keywords'] )
 
                 try:
                     session.add (form)
@@ -171,7 +186,6 @@ def updateForm(id):
                 except:
                     session.rollback()
                     abort(make_response('Error', 500))
-
 
             else:
                 abort(make_response('No form found with this ID', 404))
