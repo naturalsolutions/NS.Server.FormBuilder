@@ -127,7 +127,7 @@ class KeyWord(Base) :
 
     pk_KeyWord       = Column(BigInteger, primary_key=True)
 
-    name             = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
+    name             = Column(String(100, 'French_CI_AS'), nullable=False)
     creationDate     = Column(DateTime, nullable=False)
     modificationDate = Column(DateTime, nullable=True)
     curStatus        = Column(Integer, nullable=False)
