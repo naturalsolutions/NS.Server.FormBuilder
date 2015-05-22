@@ -39,6 +39,6 @@ class InputRepository:
     def removeInputs(self, inputsToRemoveList):
         for ID in inputsToRemoveList:
             # I know sqlalchemy give in_ instruction but it doesn't work for me
-            session.query(Input).filter_by( pk_Input = ID).update({"CurStatus" : 4})
+            session.query(Input).filter_by( pk_Input = ID).update({"curStatus" : 4})
 
 
