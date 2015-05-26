@@ -31,8 +31,8 @@ class Form(Base):
     descriptionEn          = Column(String(300, 'French_CI_AS'), nullable=False)
 
     # Relationship
-    keywords         = relationship("KeyWord_Form")  # A form has many Keywords
-    inputs           = relationship("Input")         # A form has many Inputs
+    keywords         = relationship("KeyWord_Form", cascade="delete")  # A form has many Keywords
+    inputs           = relationship("Input", cascade="delete")         # A form has many Inputs
 
     # Constructor
     def __init__(self, **kwargs):
@@ -229,7 +229,7 @@ class Input(Base):
     formIdentifyingColumn        = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Form        = relationship('Form')
-    Properties  = relationship("InputProperty")
+    Properties  = relationship("InputProperty", cascade="delete")
 
     # constructor
     def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn, order):
@@ -383,7 +383,7 @@ class ConfiguratedInput(Base):
     editorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
 
-    Properties           = relationship("ConfiguratedInputProperty")
+    Properties           = relationship("ConfiguratedInputProperty", cascade="delete")
 
     # constructor
     def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, order):

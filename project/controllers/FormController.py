@@ -44,7 +44,7 @@ def getForms():
     return json.dumps(forms, ensure_ascii=False)
 
 # Get protocol by ID
-@app.route('/form/<formID>', methods = ['GET'])
+@app.route('/forms/<formID>', methods = ['GET'])
 def getFormByID(formID):
     findForm = session.query(Form).filter_by(pk_Form = formID)
     if findForm.count() > 0:
@@ -53,7 +53,7 @@ def getFormByID(formID):
         abort (404, 'No form found')
 
 # Create form
-@app.route('/form', methods = ['POST'])
+@app.route('/forms', methods = ['POST'])
 def createForm():
 
     if request.json:
@@ -115,7 +115,7 @@ def createForm():
         abort(make_response('Data seems not be in JSON format', 400))
 
 # PUT routes, update protocol
-@app.route('/form/<int:id>', methods=['PUT'])
+@app.route('/forms/<int:id>', methods=['PUT'])
 def updateForm(id):
     if request.json:
 
@@ -192,6 +192,18 @@ def updateForm(id):
 
     else:
         abort(make_response('Data seems not be in ' + format +' format', 400))
+
+@app.route('/forms/<int:id>', methods=['DELETE'])
+def removeForm(id):
+    form = session.query(Form).filter_by(pk_Form = id).first()
+
+    try:
+        session.delete(form)
+        session.commit()
+        return jsonify({"deleted" : True})
+    except:
+        session.rollback()
+        abort(make_response('Error during delete', 500))
 
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
