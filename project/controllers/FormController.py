@@ -8,7 +8,6 @@ from ..utilities                import Utility
 
 import json
 import sys
-import pprint
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
@@ -86,6 +85,7 @@ def createForm():
                     inputsList['readonly'] = False
 
                 del inputsList['validators']
+                del inputsList['id']
 
                 newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
                 newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values

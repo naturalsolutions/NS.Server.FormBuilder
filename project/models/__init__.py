@@ -20,7 +20,7 @@ class Form(Base):
 
     pk_Form          = Column(BigInteger, primary_key=True)
 
-    name                   = Column(String(100, 'French_CI_AS'), nullable=False)
+    name                   = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
     tag                    = Column(String(300, 'French_CI_AS'), nullable=True)
     labelFr                = Column(String(300, 'French_CI_AS'), nullable=False)
     labelEn                = Column(String(300, 'French_CI_AS'), nullable=False)
@@ -32,7 +32,7 @@ class Form(Base):
 
     # Relationship
     keywords         = relationship("KeyWord_Form", cascade="delete")  # A form has many Keywords
-    inputs           = relationship("Input", cascade="delete")         # A form has many Inputs
+    inputs           = relationship("Input", cascade="all")         # A form has many Inputs
 
     # Constructor
     def __init__(self, **kwargs):
