@@ -229,7 +229,7 @@ class Input(Base):
     formIdentifyingColumn        = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Form        = relationship('Form')
-    Properties  = relationship("InputProperty", cascade="delete")
+    Properties  = relationship("InputProperty", cascade="all")
 
     # constructor
     def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn, order):
@@ -383,7 +383,7 @@ class ConfiguratedInput(Base):
     editorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
 
-    Properties           = relationship("ConfiguratedInputProperty", cascade="delete")
+    Properties           = relationship("ConfiguratedInputProperty", cascade="all")
 
     # constructor
     def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, order):
