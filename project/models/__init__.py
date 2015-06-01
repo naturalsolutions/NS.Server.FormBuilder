@@ -14,6 +14,7 @@ from . import KeyWord
 from . import KeyWord_Form
 from . import ConfiguratedInput
 from . import ConfiguratedInputProperty
+from . import Fieldset
 
 
 # Database connexion

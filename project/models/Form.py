@@ -24,8 +24,9 @@ class Form(Base):
     descriptionEn          = Column(String(300, 'French_CI_AS'), nullable=False)
 
     # Relationship
-    keywords         = relationship("KeyWord_Form", cascade="delete")  # A form has many Keywords
-    inputs           = relationship("Input", cascade="all")         # A form has many Inputs
+    keywords         = relationship("KeyWord_Form", cascade="delete")
+    fieldsets        = relationship("Fieldset", cascade="all")
+    inputs           = relationship("Input", cascade="all")
 
     # Constructor
     def __init__(self, **kwargs):
@@ -48,6 +49,12 @@ class Form(Base):
         self.descriptionEn          = kwargs['descriptionEn']
         self.descriptionFr          = kwargs['descriptionFr']
         self.modificationDate       = datetime.datetime.now()
+
+    def getFieldset(self):
+        fieldsets = []
+        for each in self.fieldsets:
+            fieldsets.append(each.toJSON())
+        return fieldsets
 
     # Serialize a form in JSON object
     def toJSON(self):
@@ -74,8 +81,19 @@ class Form(Base):
             "descriptionFr"            : self.descriptionFr,
             "descriptionEn"            : self.descriptionEn,
             "keywordsFr" : keywordsFr,
-            "keywordsEn" : keywordsEn
+            "keywordsEn" : keywordsEn,
+            "fieldsets" : self.getFieldset()
         }
+
+    def recuriseToJSON(self):
+        json = self.toJSON()
+        inputs = {}
+        for each in self.inputs:
+            inputs[each.name] = each.toJSON()
+
+        json['schema'] = inputs
+
+        return json
 
     # Add keyword to the form
     def addKeywords(self, KeyWordList, Language):
@@ -88,6 +106,10 @@ class Form(Base):
     # Add Input to the form
     def addInput(self, newInput):
         self.inputs.append(newInput)
+
+    # Add fieldset to the form
+    def addFieldset(self, fieldset):
+        self.fieldsets.append(fieldset)
 
     # return a list of all form's inputs id
     def getInputsIdList(self):
