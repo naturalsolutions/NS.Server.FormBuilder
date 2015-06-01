@@ -8,9 +8,9 @@ from ..models.Form import Form
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
+from ..models.Fieldset import Fieldset
 import json
 import sys
-
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
@@ -105,10 +105,14 @@ def createForm():
             form.addKeywords( request.json['keywordsFr'], 'FR' )
             form.addKeywords( request.json['keywordsEn'], 'EN' )
 
+            for fieldset in request.json['fieldsets']:
+                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False)
+                form.addFieldset(newfieldset)
+
             try:
                 session.add (form)
                 session.commit ()
-                return jsonify({"form" : form.toJSON() })
+                return jsonify({"form" : form.recuriseToJSON() })
             except Exception as e:
                 print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
