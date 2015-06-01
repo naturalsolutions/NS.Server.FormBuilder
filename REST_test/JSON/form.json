@@ -13,12 +13,12 @@
     "labelEn": "My new form",
     "schema": {
         "Field1": {
+            "validators": [
+            ],
             "id"                           : 1,
             "labelFr"                      : "Label en francais",
             "labelEn"                      : "Label en anglais",
             "name"                         : "Field1",
-            "readonly"                     : false,
-            "required"                     : false,
             "editorClass"                  : "",
             "fieldClass"                   : "",
             "fieldSize"                    : "",
@@ -30,9 +30,13 @@
             "defaultValue"                 : "",
             "help"                         : "Write some text",
             "size"                         : 255,
-            "type"                         : "Text"
+            "type"                         : "Text",
+            "order"                        : 2
         },
         "Field2": {
+            "validators": [
+              "required"
+            ],
             "id"                           : 2,
             "labelFr"                      : "french",
             "labelEn"                      : "Label en anglais",
@@ -51,7 +55,8 @@
             "help"                         : "Write some text",
             "size"                         : 255,
             "multiline"                    : true,
-            "type"                         : "TextArea"
+            "type"                         : "TextArea",
+            "order"                        : 1
         }
     },
     "fieldsets": []

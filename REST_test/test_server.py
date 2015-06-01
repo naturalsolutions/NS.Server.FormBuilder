@@ -52,17 +52,17 @@ elif str(sys.argv[1]) == "POST":
 
     # Create a form with form.json file data
     elif (str(sys.argv[2])) == "form":
-        os.system(' curl -H "Content-Type: application/json" -d @JSON/form.json http://localhost:5000/form')
+        os.system(' curl -H "Content-Type: application/json" -d @JSON/form.json http://localhost:5000/forms')
 
 elif str(sys.argv[1]) == "PUT":
 
     # Update form
     if (str(sys.argv[2])) == "form":
-        os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdate.json http://localhost:5000/form/1')
+        os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdate.json http://localhost:5000/forms/1')
 
     # Update form
     if (str(sys.argv[2])) == "form2":
-        os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdateWithRemovedInput.json http://localhost:5000/form/1')
+        os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdateWithRemovedInput.json http://localhost:5000/forms/1')
 
 else:
     print("DELETE")

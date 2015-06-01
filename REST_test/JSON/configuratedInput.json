@@ -12,6 +12,7 @@
         "defaultValue" : "",
         "help"         : "Write some text",
         "size"         : 255,
-        "type"         : "Text"
+        "type"         : "Text",
+        "order"        : 2
     }
 }
