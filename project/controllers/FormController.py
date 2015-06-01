@@ -50,7 +50,7 @@ def getForms():
 def getFormByID(formID):
     findForm = session.query(Form).filter_by(pk_Form = formID)
     if findForm.count() > 0:
-        return jsonify({ "form" : findForm.one().toJSON() })
+        return jsonify({ "form" : findForm.one().recuriseToJSON() })
     else:
         abort (404, 'No form found')
 

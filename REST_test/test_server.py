@@ -31,7 +31,7 @@ if str(sys.argv[1]) == "GET":
 
     # return form with ID
     elif (str(sys.argv[2])) == "formID":
-        os.system('curl -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:5000/form/1')
+        os.system('curl -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:5000/forms/530')
 
     # return all keywords
     elif (str(sys.argv[2])) == "keyword":

@@ -96,6 +96,7 @@ class Input(Base):
             "fieldClass"  : self.fieldClass,
             "type"        : self.type,
             "order"        : self.order,
+            "name" : self.name,
 
             # linked field 
 
