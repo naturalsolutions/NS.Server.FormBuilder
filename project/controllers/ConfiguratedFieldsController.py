@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # 
-from project                    import app
-from flask                      import jsonify, request, make_response, abort
-from ..models                   import session, ConfiguratedInput, ConfiguratedInputProperty
-from ..utilities                import Utility
-
-import json
+from project import app
+from flask import jsonify, request, make_response, abort
+from ..models import session
+from ..models.ConfiguratedInput import ConfiguratedInput
+from ..models.ConfiguratedInputProperty import ConfiguratedInputProperty
+from ..utilities import Utility
+import pprint
 
 # GET, returns all configurated fields
 @app.route('/configurations', methods = ['GET'])
@@ -13,7 +14,7 @@ def getConfiguration():
     configuratedInputsList    = session.query(ConfiguratedInput).all()
     configuratedInputs        = {}
     for each in configuratedInputsList :
-        configuratedInputs[each.Name] = each.toJSON()
+        configuratedInputs[each.name] = each.toJSON()
 
     return jsonify({ "options" : configuratedInputs})
 
@@ -22,9 +23,7 @@ def getConfiguration():
 @app.route('/configurations', methods = ['POST'])
 def createConfiguratedField():
 
-    if not request.json:
-        abort(make_response('Data seems not be in JSON format', 400))
-    elif not 'field' in request.json:
+    if 'field' not in request.json:
         abort(make_response('Some parameters are missing', 400))
     else:
         try:
@@ -52,4 +51,4 @@ def createConfiguratedField():
 
         except Exception as e:
             print (e.args)
-            abort(make_response('An error occured, input not saved !', 500))
+            abort(make_response('An error occurred, input not saved !', 500))

@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
-from project                    import app
-from flask                      import jsonify, request, make_response
-from ..models                   import session
-from ..utilities                import Utility
-
-import urllib.request
+from project import app
+from flask import jsonify
 import json
 
 @app.route('/linked', methods = ['GET'])

@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 # 
-from project                    import app
-from flask                      import jsonify, abort, render_template, request, make_response
-from ..models                   import session, Form, KeyWord, Unity, ConfiguratedInput, ConfiguratedInputProperty, Input, InputProperty
-from ..models.InputRepository   import InputRepository
-from ..utilities                import Utility
-
+from project import app
+from flask import jsonify, abort, render_template, request, make_response
+from ..utilities import Utility
+from ..models import session
+from ..models.Form import Form
+from ..models.Input import Input
+from ..models.InputProperty import InputProperty
+from ..models.InputRepository import InputRepository
 import json
 import sys
+
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # 
-from project                    import app
-from ..models                   import session, Form
-
+from project import app
+from ..models import session
+from ..models.Form import Form
 import json
 
 # Return all forms

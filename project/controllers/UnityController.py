@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from project                    import app
-from flask                      import jsonify
-from ..models                   import session, Unity
+from project import app
+from flask import jsonify
+from ..models import session
+from ..models.Unity import Unity
 
 #   Return all unit values
 @app.route('/unities', methods = ['GET'])

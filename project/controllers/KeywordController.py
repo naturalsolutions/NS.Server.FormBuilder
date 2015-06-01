@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from project                    import app
-from flask                      import jsonify
-from ..models                   import session, KeyWord
+from project import app
+from ..models import session
+from ..models.KeyWord import KeyWord
+from flask import jsonify
 
 # return all keywords
 @app.route('/keywords', methods = ['GET'])
