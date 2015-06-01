@@ -7,6 +7,7 @@ from .KeyWord_Form import  KeyWord_Form
 from .KeyWord import KeyWord
 import datetime
 
+import pprint
 
 class Form(Base):
     __tablename__ = 'Form'
@@ -76,8 +77,8 @@ class Form(Base):
             "tag"                      : self.tag,
             "labelFr"                  : self.labelFr,
             "labelEn"                  : self.labelEn,
-            "creationDate"             : "" if self.creationDate == 'NULL' or self.creationDate is None else self.creationDate.strftime("%Y-%m-%d"),
-            "modificationDate"         : "" if self.modificationDate == 'NULL' or self.modificationDate is None else self.modificationDate.strftime("%Y-%m-%d"),
+            "creationDate"             : "" if self.creationDate == 'NULL' or self.creationDate is None else self.creationDate.strftime("%d/%m/%Y - %H:%M:%S"),
+            "modificationDate"         : "" if self.modificationDate == 'NULL' or self.modificationDate is None else self.modificationDate.strftime("%d/%m/%Y - %H:%M:%S"),
             "curStatus"                : self.curStatus,
             "descriptionFr"            : self.descriptionFr,
             "descriptionEn"            : self.descriptionEn,
