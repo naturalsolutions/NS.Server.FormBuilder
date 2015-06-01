@@ -178,13 +178,19 @@ def updateForm(id):
 
                         form.addInput( inputRepository.createInput(**inputsList) )
 
-
                 if len(presentInputs) > 0:
                     # We need to remove some input
                     inputRepository   = InputRepository(None)
                     inputRepository.removeInputs(presentInputs)
 
-                # form.addKeywords( request.json['keywords'] )
+                for each in form.fieldsets:
+                    each.curStatus = 4
+
+                for each in request.json['fieldsets']:
+                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False))
+
+                form.addKeywords( request.json['keywordsFr'], 'FR' )
+                form.addKeywords( request.json['keywordsEn'], 'EN' )
 
                 try:
                     session.add (form)

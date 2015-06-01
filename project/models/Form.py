@@ -53,7 +53,8 @@ class Form(Base):
     def getFieldset(self):
         fieldsets = []
         for each in self.fieldsets:
-            fieldsets.append(each.toJSON())
+            if each.curStatus != 4:
+                fieldsets.append(each.toJSON())
         return fieldsets
 
     # Serialize a form in JSON object

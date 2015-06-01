@@ -16,6 +16,7 @@ class Fieldset(Base):
     legend = Column(String(255, 'French_CI_AS'), nullable=False)
     fields = Column(String(255, 'French_CI_AS'), nullable=False)
     multiple = Column(Boolean, nullable=True)
+    curStatus = Column(Integer, nullable=False)
 
     Form = relationship('Form')
 
@@ -23,6 +24,7 @@ class Fieldset(Base):
         self.legend = legend
         self.fields = fields
         self.multiple = multiple
+        self.curStatus = 0
 
     def update(self, legend, fields, multiple):
         self.legend = legend
