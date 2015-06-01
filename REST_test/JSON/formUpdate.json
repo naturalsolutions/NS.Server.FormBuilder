@@ -1,5 +1,6 @@
 {
     "name": "New form",
+    "id" : 524,
     "descriptionFr": "Nouveau formulaire",
     "descriptionEn": "New form",
     "tag" : "",
@@ -14,7 +15,6 @@
     "schema": {
         "Field1": {
             "validators": [
-              "required"
             ],
             "id"                           : 1,
             "labelFr"                      : "Label en francais",
@@ -42,10 +42,12 @@
             "labelFr"                      : "french",
             "labelEn"                      : "Label en anglais",
             "name"                         : "Field2",
+            "readonly"                     : false,
+            "required"                     : true,
             "editorClass"                  : "",
             "fieldClass"                   : "",
             "fieldSize"                    : "Etroit",
-            "endOfLine"                    : true,
+            "endOfLine"                    : false,
             "linkedFieldTable"             : "TIndividus",
             "linkedFieldIdentifyingColumn" : "TInd_BagueID",
             "linkedField"                  : "TInd_Status",
@@ -58,5 +60,11 @@
             "order"                        : 1
         }
     },
-    "fieldsets": []
+    "fieldsets": [{
+      "legend": "Legend",
+      "fields" : ["Field2"]
+    },{
+      "legend": "Legend 2",
+      "fields" : ["Field1"]
+    }]
 }

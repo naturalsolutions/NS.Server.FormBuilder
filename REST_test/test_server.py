@@ -58,7 +58,7 @@ elif str(sys.argv[1]) == "PUT":
 
     # Update form
     if (str(sys.argv[2])) == "form":
-        os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdate.json http://localhost:5000/forms/1')
+        os.system(' curl -X PUT -H "Content-Type: application/json" -d @JSON/formUpdate.json http://localhost:5000/forms/524')
 
     # Update form
     if (str(sys.argv[2])) == "form2":
