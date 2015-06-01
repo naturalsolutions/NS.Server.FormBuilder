@@ -1,5 +1,8 @@
-from ..models import Input, session, InputProperty
+from ..models import session
+from ..models.Input import Input
+from ..models.InputProperty import InputProperty
 from ..utilities import Utility
+
 
 # InputRepository contains some method to lighten controllers
 class InputRepository:
