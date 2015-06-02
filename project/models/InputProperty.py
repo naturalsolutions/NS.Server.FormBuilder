@@ -31,11 +31,14 @@ class InputProperty(Base):
 
     # Return value casted on the correct format
     def getvalue(self):
-        if self.valueType == "Boolean":
-            return bool(self.value)
-        elif self.valueType == "Number":
-            return int(self.value)
-        elif self.valueType == "Double":
-            return float(int(self.value))
-        else:
+        try:
+            if self.valueType == "Boolean":
+                return bool(self.value)
+            elif self.valueType == "Number":
+                return int(self.value)
+            elif self.valueType == "Double":
+                return float(int(self.value))
+            else:
+                return self.value
+        except:
             return self.value

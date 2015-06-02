@@ -12,7 +12,6 @@ from ..models.Fieldset import Fieldset
 import json
 import sys
 import datetime
-import pprint
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
