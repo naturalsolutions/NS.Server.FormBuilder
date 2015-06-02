@@ -11,6 +11,8 @@ from ..models.InputRepository import InputRepository
 from ..models.Fieldset import Fieldset
 import json
 import sys
+import datetime
+import pprint
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
@@ -64,7 +66,7 @@ def createForm():
 
         neededParametersList = Form.getColumnList()
 
-        for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
+        for a in neededParametersList: IfmissingParameters = IfmissingParameters and (a in request.json)
 
         if IfmissingParameters == False:
             abort(make_response('Some parameters are missing', 400))
@@ -79,12 +81,12 @@ def createForm():
 
                 try:
                     inputsList['required'] = inputsList['validators'].index('required') >= 0
-                except ValueError:
+                except:
                     inputsList['required'] = False
 
                 try:
                     inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
-                except ValueError:
+                except:
                     inputsList['readonly'] = False
 
                 del inputsList['validators']
@@ -192,6 +194,8 @@ def updateForm(id):
                 form.addKeywords( request.json['keywordsFr'], 'FR' )
                 form.addKeywords( request.json['keywordsEn'], 'EN' )
 
+                form.modificationDate = datetime.datetime.now()
+
                 try:
                     session.add (form)
                     session.commit ()
@@ -204,7 +208,7 @@ def updateForm(id):
                 abort(make_response('No form found with this ID', 404))
 
     else:
-        abort(make_response('Data seems not be in ' + format +' format', 400))
+        abort(make_response('Data seems not be in ' + format + ' format', 400))
 
 @app.route('/forms/<int:id>', methods=['DELETE'])
 def removeForm(id):
