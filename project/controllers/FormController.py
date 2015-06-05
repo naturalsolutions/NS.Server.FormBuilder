@@ -24,7 +24,7 @@ def getForms():
     # Current form iteration
     currentFormIndex = -1
 
-    query   = session.query(Form, Input, InputProperty).join(Input).join(InputProperty)
+    query   = session.query(Form, Input, InputProperty).join(Input).join(InputProperty).order_by(Form.name)
     results = query.all()
 
     for each in results:
