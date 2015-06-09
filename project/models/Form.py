@@ -23,6 +23,7 @@ class Form(Base):
     curStatus              = Column(Integer, nullable=False)
     descriptionFr          = Column(String(300, 'French_CI_AS'), nullable=False)
     descriptionEn          = Column(String(300, 'French_CI_AS'), nullable=False)
+    obsolete               = Column(Boolean)
 
     # Relationship
     keywords         = relationship("KeyWord_Form", cascade="delete")
@@ -40,6 +41,7 @@ class Form(Base):
         self.creationDate           = datetime.datetime.now()
         self.modificationDate       = datetime.datetime.now()
         self.curStatus              = "1"
+        self.obsolete = kwargs['obsolete']
 
     # Update form values
     def update(self, **kwargs):
@@ -82,6 +84,7 @@ class Form(Base):
             "curStatus"                : self.curStatus,
             "descriptionFr"            : self.descriptionFr,
             "descriptionEn"            : self.descriptionEn,
+            "obsolete"                 : self.obsolete,
             "keywordsFr" : keywordsFr,
             "keywordsEn" : keywordsEn,
             "fieldsets" : self.getFieldset()
@@ -132,5 +135,6 @@ class Form(Base):
             'labelFr'      ,
             'labelEn'      ,
             'schema'       ,
-            'fieldsets'
+            'fieldsets',
+            'obsolete'
         ]
