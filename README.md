@@ -8,6 +8,12 @@ Run :
 
     pip install -r requirements-txt --allow-external pyodbc --allow-unverified pyodbc
 
+On windows it can be more difficult to install pyodbc, so the best way is to download the whl package [on this page](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyodbc).
+
+To install the whl package on windows :
+
+    pip install pyodbc-3.0.10-cp34-none-win_amd64.whl
+
 Depedancies :
 
 * Flask-SQLAlchemy==2.0
