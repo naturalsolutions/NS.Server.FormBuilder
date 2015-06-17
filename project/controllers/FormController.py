@@ -148,6 +148,18 @@ def updateForm(id):
                 # No : we add an input to the form
                 for eachInput in request.json['schema']:
 
+                    try:
+                        request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
+                    except:
+                        request.json['schema'][eachInput]['required'] = False
+
+                    try:
+                        request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
+                    except:
+                        request.json['schema'][eachInput]['readonly'] = False
+
+                    del request.json['schema'][eachInput]['validators']
+
                     if request.json['schema'][eachInput]['id'] in presentInputs:
 
                         # the field is present we update it
