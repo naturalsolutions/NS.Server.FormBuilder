@@ -1,0 +1,9 @@
+{
+	"webServices" : [
+		"http://firstWebService",
+		"http://secondWebService"
+	],
+    "sql" : {
+      "url" : "databaseConnectionString"
+    }
+}

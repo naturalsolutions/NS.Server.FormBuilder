@@ -1,9 +1,0 @@
-{
-	"webServices" : [
-		"http://localhost:57463/Service1.svc/json/linkedFields",
-		"http://itwillnotwork.com"
-	],
-    "sql" : {
-      "url" : "mssql+pyodbc://CORLEONE-PC/formbuilder"
-    }
-}
