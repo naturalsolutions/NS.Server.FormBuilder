@@ -14,16 +14,17 @@ class Form(Base):
 
     pk_Form          = Column(BigInteger, primary_key=True)
 
-    name                   = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
-    tag                    = Column(String(300, 'French_CI_AS'), nullable=True)
-    labelFr                = Column(String(300, 'French_CI_AS'), nullable=False)
-    labelEn                = Column(String(300, 'French_CI_AS'), nullable=False)
-    creationDate           = Column(DateTime, nullable=False)
-    modificationDate       = Column(DateTime, nullable=True)
-    curStatus              = Column(Integer, nullable=False)
-    descriptionFr          = Column(String(300, 'French_CI_AS'), nullable=False)
-    descriptionEn          = Column(String(300, 'French_CI_AS'), nullable=False)
-    obsolete               = Column(Boolean)
+    name                    = Column(String(100, 'French_CI_AS'), nullable=False, unique=True)
+    tag                     = Column(String(300, 'French_CI_AS'), nullable=True)
+    labelFr                 = Column(String(300, 'French_CI_AS'), nullable=False)
+    labelEn                 = Column(String(300, 'French_CI_AS'), nullable=False)
+    creationDate            = Column(DateTime, nullable=False)
+    modificationDate        = Column(DateTime, nullable=True)
+    curStatus               = Column(Integer, nullable=False)
+    descriptionFr           = Column(String(300, 'French_CI_AS'), nullable=False)
+    descriptionEn           = Column(String(300, 'French_CI_AS'), nullable=False)
+    obsolete                = Column(Boolean)
+    isTemplate              = Column(Boolean, nullable=False)
 
     # Relationship
     keywords         = relationship("KeyWord_Form", cascade="delete")
@@ -41,7 +42,8 @@ class Form(Base):
         self.creationDate           = datetime.datetime.now()
         self.modificationDate       = datetime.datetime.now()
         self.curStatus              = "1"
-        self.obsolete = kwargs['obsolete']
+        self.obsolete               = kwargs['obsolete']
+        self.isTemplate             = kwargs['isTemplate']
 
     # Update form values
     def update(self, **kwargs):
@@ -52,6 +54,7 @@ class Form(Base):
         self.descriptionEn          = kwargs['descriptionEn']
         self.descriptionFr          = kwargs['descriptionFr']
         self.modificationDate       = datetime.datetime.now()
+        self.isTemplate             = kwargs['isTemplate']
 
     def getFieldset(self):
         fieldsets = []
@@ -85,9 +88,10 @@ class Form(Base):
             "descriptionFr"            : self.descriptionFr,
             "descriptionEn"            : self.descriptionEn,
             "obsolete"                 : self.obsolete,
-            "keywordsFr" : keywordsFr,
-            "keywordsEn" : keywordsEn,
-            "fieldsets" : self.getFieldset()
+            "isTemplate"               : self.isTemplate,
+            "keywordsFr"               : keywordsFr,
+            "keywordsEn"               : keywordsEn,
+            "fieldsets"                : self.getFieldset()
         }
 
     def recuriseToJSON(self):
@@ -135,6 +139,7 @@ class Form(Base):
             'labelFr'      ,
             'labelEn'      ,
             'schema'       ,
-            'fieldsets',
-            'obsolete'
+            'fieldsets'    ,
+            'obsolete'     ,
+            'isTemplate'
         ]
