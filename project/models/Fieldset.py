@@ -34,7 +34,7 @@ class Fieldset(Base):
     def toJSON(self):
         return {
             "legend"    : self.legend,
-            "fields"    : self.fields.split(','),
+            "fields"    : self.fields.split(',') if len(self.fields)> 0 else [],
             'multiple'  : self.multiple
         }
 
