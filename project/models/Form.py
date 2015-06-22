@@ -33,6 +33,11 @@ class Form(Base):
 
     # Constructor
     def __init__(self, **kwargs):
+        """
+        Constructor
+        :param kwargs:dict Dicth with initialized values
+        :return:
+        """
         self.name                   = kwargs['name']
         self.tag                    = kwargs['tag']
         self.labelFr                = kwargs['labelFr']
@@ -47,6 +52,11 @@ class Form(Base):
 
     # Update form values
     def update(self, **kwargs):
+        """
+        Update form attributes with dict
+        :param kwargs: dict
+        :return:
+        """
         self.name                   = kwargs['name']
         self.tag                    = kwargs['tag']
         self.labelFr                = kwargs['labelFr']
@@ -56,26 +66,24 @@ class Form(Base):
         self.modificationDate       = datetime.datetime.now()
         self.isTemplate             = kwargs['isTemplate']
 
-    def getFieldset(self):
+
+    def get_fieldsets(self):
+        """
+        Return all form fieldsets
+        :return: form fieldsets as json
+        """
         fieldsets = []
         for each in self.fieldsets:
             if each.curStatus != 4:
                 fieldsets.append(each.toJSON())
         return fieldsets
 
-    # Serialize a form in JSON object
-    def toJSON(self):
-        keywordsFr = []
-        keywordsEn = []
-        tmpKeyword = None
-        for each in self.keywords :
-            tmpKeyword = each.toJSON()
-            if tmpKeyword['lng'] == 'FR':
-                del tmpKeyword['lng']
-                keywordsFr.append (tmpKeyword)
-            else:
-                del tmpKeyword['lng']
-                keywordsEn.append (tmpKeyword)
+
+    def to_json(self):
+        """
+        Return form as json without relationship
+        :return: form as json without relationship
+        """
         return {
             "id"                       : self.pk_Form,
             "name"                     : self.name,
@@ -88,11 +96,26 @@ class Form(Base):
             "descriptionFr"            : self.descriptionFr,
             "descriptionEn"            : self.descriptionEn,
             "obsolete"                 : self.obsolete,
-            "isTemplate"               : self.isTemplate,
-            "keywordsFr"               : keywordsFr,
-            "keywordsEn"               : keywordsEn,
-            "fieldsets"                : self.getFieldset()
+            "isTemplate"               : self.isTemplate
         }
+
+    # Serialize a form in JSON object
+    def toJSON(self):
+        json = self.to_json()
+        keywordsFr = []
+        keywordsEn = []
+        tmpKeyword = None
+        for each in self.keywords :
+            tmpKeyword = each.toJSON()
+            if tmpKeyword['lng'] == 'FR':
+                del tmpKeyword['lng']
+                keywordsFr.append (tmpKeyword)
+            else:
+                del tmpKeyword['lng']
+                keywordsEn.append (tmpKeyword)
+        json['keywordsFr'] = keywordsFr
+        json['keywordsEn'] = keywordsEn
+        return json
 
     def recuriseToJSON(self):
         json = self.toJSON()
@@ -101,6 +124,8 @@ class Form(Base):
             inputs[each.name] = each.toJSON()
 
         json['schema'] = inputs
+
+        json['fieldsets'] = self.get_fieldsets()
 
         return json
 

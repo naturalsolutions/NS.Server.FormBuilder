@@ -3,46 +3,47 @@
 from project import app
 from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
-from ..models import session
+from ..models import session, engine
 from ..models.Form import Form
+from ..models.KeyWord_Form import KeyWord_Form
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
 from ..models.Fieldset import Fieldset
+from sqlalchemy import *
 import json
 import sys
 import datetime
+import pprint
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
-def getForms():
+def get_forms():
 
     # Forms list who will be returned at the end
     forms = []
-    # Used to stock each form yet added
-    formsAdded = []
-    # Current form iteration
-    currentFormIndex = -1
 
-    query   = session.query(Form, Input, InputProperty).join(Input).join(InputProperty).order_by(Form.name)
+    forms_added        = []
+    keywords_added     = []
+    current_form_index = -1
+
+    query   = session.query(Form, KeyWord_Form).outerjoin(KeyWord_Form).order_by(Form.name)
     results = query.all()
 
-    for each in results:
-        if each[0].pk_Form not in formsAdded:
-            # Add form to the list and update current index
-            forms.append(each[0].toJSON())
-            currentFormIndex += 1
-            # Initialize schema attribute
-            forms[currentFormIndex]["schema"] = {}
-            # Mark this current as added
-            formsAdded.append(each[0].pk_Form)
+    for form, keyword in results:
 
-        # Add field if it is not yet done
-        if each[1].name not in forms[currentFormIndex]["schema"] and each[1].curStatus != 4:
-            forms[currentFormIndex]["schema"][each[1].name] = each[1].toJSON()
+        if form.pk_Form not in forms_added:
+            f = form.to_json()
+            current_form_index += 1
+            f['keywordsFr'] = []
+            f['keywordsEn'] = []
+            forms.append(f)
+            forms_added.append(form.pk_Form)
 
-        if each[1].curStatus != 4:
-            forms[currentFormIndex]["schema"][each[1].name][each[2].name] = each[2].getvalue()
+        if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
+            k = keyword.toJSON()
+            forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
+            keywords_added.append(keyword.pk_KeyWord_Form)
 
     return json.dumps(forms, ensure_ascii=False)
 
