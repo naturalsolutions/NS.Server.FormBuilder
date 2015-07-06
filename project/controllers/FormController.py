@@ -153,11 +153,13 @@ def updateForm(id):
                         request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
                     except:
                         request.json['schema'][eachInput]['required'] = False
+                        pass
 
                     try:
                         request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
                     except:
                         request.json['schema'][eachInput]['readonly'] = False
+                        pass
 
                     del request.json['schema'][eachInput]['validators']
 
@@ -179,16 +181,6 @@ def updateForm(id):
                         # Add a new input to the form
 
                         inputsList = request.json['schema'][eachInput]
-
-                        try:
-                            inputsList['required'] = inputsList['validators'].index('required') >= 0
-                        except ValueError:
-                            inputsList['required'] = False
-
-                        try:
-                            inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
-                        except ValueError:
-                            inputsList['readonly'] = False
 
                         form.addInput( inputRepository.createInput(**inputsList) )
 
