@@ -18,8 +18,7 @@ class Input(Base):
     name          = Column(String(100, 'French_CI_AS'), nullable=False)
     labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
     labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
-    required      = Column(Boolean, nullable=False)
-    readonly      = Column(Boolean, nullable=False)
+    editMode      = Column(Integer, nullable=False)
     fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
     endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
@@ -39,12 +38,11 @@ class Input(Base):
     Properties  = relationship("InputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn, order):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn, order):
         self.name        = name
         self.labelFr     = labelFr
         self.labelEn     = labelEn
-        self.required    = required
-        self.readonly    = readonly
+        self.editMode    = editMode
         self.fieldSize   = fieldSize
         self.endOfLine   = endOfLine
         self.type        = type
@@ -67,8 +65,7 @@ class Input(Base):
         self.name        = kwargs['name']
         self.labelFr     = kwargs['labelFr']
         self.labelEn     = kwargs['labelEn']
-        self.required    = kwargs['required']
-        self.readonly    = kwargs['readonly']
+        self.editMode    = kwargs['editMode']
         self.fieldSize   = kwargs['fieldSize']
         self.endOfLine   = kwargs['endOfLine']
         self.editorClass = kwargs['editorClass']
@@ -88,9 +85,8 @@ class Input(Base):
             "id"          : self.pk_Input,
             "labelFr"     : self.labelFr,
             "labelEn"     : self.labelEn,
-            "required"    : self.required,
             "endOfLine"   : self.endOfLine,
-            "readonly"    : self.readonly,
+            "editMode"    : self.editMode,
             "fieldSize"   : self.fieldSize,
             "editorClass" : self.editorClass,
             "fieldClass"  : self.fieldClass,
@@ -105,6 +101,10 @@ class Input(Base):
             "linkedField"                  : self.linkedField,
             "formIdentifyingColumn"        : self.formIdentifyingColumn
         }
+
+        for prop in self.Properties :
+            JSONObject[prop.name] = prop.value
+
         return JSONObject
 
     # add property to the configurated input
@@ -118,8 +118,7 @@ class Input(Base):
             'name',
             'labelFr',
             'labelEn',
-            'required',
-            'readonly',
+            'editMode',
             'fieldSize',
             'endOfLine',
             'type',

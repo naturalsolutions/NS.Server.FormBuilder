@@ -17,8 +17,7 @@ class ConfiguratedInput(Base):
     name                 = Column(String(100, 'French_CI_AS'), nullable=False)
     labelFr              = Column(String(300, 'French_CI_AS'), nullable=False)
     labelEn              = Column(String(300, 'French_CI_AS'), nullable=False)
-    required             = Column(Boolean, nullable=False)
-    readonly             = Column(Boolean, nullable=False)
+    editMode             = Column(Integer, nullable=False)
     fieldSize            = Column(String(100, 'French_CI_AS'), nullable=False)
     endOfLine            = Column(Boolean, nullable=False)
     startDate            = Column(DateTime, nullable=False)
@@ -31,12 +30,11 @@ class ConfiguratedInput(Base):
     Properties           = relationship("ConfiguratedInputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, required, readonly, fieldSize, endOfLine, type, editorClass, fieldClass):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClass):
         self.name        = name
         self.labelFr     = labelFr
         self.labelEn     = labelEn
-        self.required    = required
-        self.readonly    = readonly
+        self.editMode    = editMode
         self.fieldSize   = fieldSize
         self.endOfLine   = endOfLine
         self.type        = type
@@ -53,7 +51,7 @@ class ConfiguratedInput(Base):
             "labelEn"     : self.labelEn,
             "required"    : self.required,
             "endOfLine"   : self.endOfLine,
-            "readonly"    : self.readonly,
+            "editMode"    : self.editMode,
             "fieldSize"   : self.fieldSize,
             "editorClass" : self.editorClass,
             "fieldClass"  : self.fieldClass,
@@ -76,8 +74,7 @@ class ConfiguratedInput(Base):
             'name',
             'labelFr',
             'labelEn',
-            'required',
-            'readonly',
+            'editMode',
             'fieldSize',
             'endOfLine',
             'type',

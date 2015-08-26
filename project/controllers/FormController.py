@@ -50,11 +50,8 @@ def get_forms():
 # Get protocol by ID
 @app.route('/forms/<formID>', methods = ['GET'])
 def getFormByID(formID):
-    findForm = session.query(Form).filter_by(pk_Form = formID)
-    if findForm.count() > 0:
-        return jsonify({ "form" : findForm.one().recuriseToJSON() })
-    else:
-        abort (404, 'No form found')
+    findForm = session.query(Form).get(formID)
+    return jsonify({ "form" : findForm.recuriseToJSON() })
 
 # Create form
 @app.route('/forms', methods = ['POST'])
@@ -118,7 +115,7 @@ def createForm():
             except Exception as e:
                 print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
-                abort(make_response('Error during save', 500))
+                abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
 
     else:
         abort(make_response('Data seems not be in JSON format', 400))
@@ -135,7 +132,7 @@ def updateForm(id):
         for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
 
         if IfmissingParameters is False:
-            abort(make_response('Some parameters are missing', 400))
+            abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
 
         else:
             form = session.query(Form).filter_by(pk_Form = id).first()
