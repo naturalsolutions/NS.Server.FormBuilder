@@ -33,30 +33,32 @@ class Input(Base):
     linkedFieldIdentifyingColumn = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedField                  = Column(String(100, 'French_CI_AS'), nullable=True)
     formIdentifyingColumn        = Column(String(100, 'French_CI_AS'), nullable=True)
+    linkedFieldset               = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn, order):
-        self.name        = name
-        self.labelFr     = labelFr
-        self.labelEn     = labelEn
-        self.editMode    = editMode
-        self.fieldSize   = fieldSize
-        self.endOfLine   = endOfLine
-        self.type        = type
-        self.editorClass = editorClass
-        self.fieldClass  = fieldClass
-        self.linkedField = linkedField
-        self.curStatus   = "1"
-        self.order       = order
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, formIdentifyingColumn, order):
+        self.name           = name
+        self.labelFr        = labelFr
+        self.labelEn        = labelEn
+        self.editMode       = editMode
+        self.fieldSize      = fieldSize
+        self.endOfLine      = endOfLine
+        self.type           = type
+        self.editorClass    = editorClass
+        self.fieldClass     = fieldClass
+        self.linkedField    = linkedField
+        self.curStatus      = "1"
+        self.order          = order
 
         # linked field
         self.linkedFieldTable             = linkedFieldTable
         self.linkedFieldIdentifyingColumn = linkedFieldIdentifyingColumn
         self.linkedField                  = linkedField
         self.formIdentifyingColumn        = formIdentifyingColumn
+        self.linkedFieldset               = linkedFieldset
 
         self.startDate = datetime.datetime.now()
 
@@ -77,22 +79,24 @@ class Input(Base):
         self.linkedFieldIdentifyingColumn = kwargs['linkedFieldIdentifyingColumn']
         self.linkedField                  = kwargs['linkedField']
         self.formIdentifyingColumn        = kwargs['formIdentifyingColumn']
+        self.linkedFieldset               = kwargs['linkedFieldset']
 
 
     # Return convert object to JSON object
     def toJSON(self):
         JSONObject = {
-            "id"          : self.pk_Input,
-            "labelFr"     : self.labelFr,
-            "labelEn"     : self.labelEn,
-            "endOfLine"   : self.endOfLine,
-            "editMode"    : self.editMode,
-            "fieldSize"   : self.fieldSize,
-            "editorClass" : self.editorClass,
-            "fieldClass"  : self.fieldClass,
-            "type"        : self.type,
-            "order"        : self.order,
-            "name" : self.name,
+            "id"                : self.pk_Input,
+            "labelFr"           : self.labelFr,
+            "labelEn"           : self.labelEn,
+            "endOfLine"         : self.endOfLine,
+            "editMode"          : self.editMode,
+            "fieldSize"         : self.fieldSize,
+            "editorClass"       : self.editorClass,
+            "fieldClass"        : self.fieldClass,
+            "type"              : self.type,
+            "order"             : self.order,
+            "name"              : self.name,
+            "linkedFieldset"    : self.linkedFieldset,
 
             # linked field 
 
@@ -127,6 +131,7 @@ class Input(Base):
             'linkedFieldTable',
             'linkedFieldIdentifyingColumn',
             'linkedField',
+            'linkedFieldset',
             'formIdentifyingColumn',
             'order'
         ]

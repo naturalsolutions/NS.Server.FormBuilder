@@ -26,36 +26,39 @@ class ConfiguratedInput(Base):
     type                 = Column(String(100, 'French_CI_AS'), nullable=False)
     editorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
+    linkedFieldset       = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Properties           = relationship("ConfiguratedInputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClass):
-        self.name        = name
-        self.labelFr     = labelFr
-        self.labelEn     = labelEn
-        self.editMode    = editMode
-        self.fieldSize   = fieldSize
-        self.endOfLine   = endOfLine
-        self.type        = type
-        self.editorClass = editorClass
-        self.fieldClass  = fieldClass
-        self.curStatus   = "1"
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldset):
+        self.name           = name
+        self.labelFr        = labelFr
+        self.labelEn        = labelEn
+        self.editMode       = editMode
+        self.fieldSize      = fieldSize
+        self.endOfLine      = endOfLine
+        self.type           = type
+        self.editorClass    = editorClass
+        self.fieldClass     = fieldClass
+        self.linkedFieldset = linkedFieldset
+        self.curStatus      = "1"
 
         self.startDate = datetime.datetime.now()
 
     # Return convert object to JSON object
     def toJSON(self):
         JSONObject = {
-            "labelFr"     : self.labelFr,
-            "labelEn"     : self.labelEn,
-            "required"    : self.required,
-            "endOfLine"   : self.endOfLine,
-            "editMode"    : self.editMode,
-            "fieldSize"   : self.fieldSize,
-            "editorClass" : self.editorClass,
-            "fieldClass"  : self.fieldClass,
-            "type"        : self.type
+            "labelFr"           : self.labelFr,
+            "labelEn"           : self.labelEn,
+            "required"          : self.required,
+            "endOfLine"         : self.endOfLine,
+            "editMode"          : self.editMode,
+            "fieldSize"         : self.fieldSize,
+            "editorClass"       : self.editorClass,
+            "fieldClass"        : self.fieldClass,
+            "linkedFieldset"    : self.linkedFieldset,
+            "type"              : self.type
         }
 
         for prop in self.Properties:
@@ -79,5 +82,6 @@ class ConfiguratedInput(Base):
             'endOfLine',
             'type',
             'editorClass',
+            'linkedFieldset',
             'fieldClass',
         ]

@@ -89,6 +89,8 @@ def createForm():
                 del inputsList['validators']
                 del inputsList['id']
 
+                # abort(make_response('inputsList : %s \nand %s \nand %s \nand %s' % (str(inputsList), str(inputColumnList), str(form), str(request.json)), 400))
+
                 newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
                 newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
                 newInput                = Input( **newInputValues )                         # new Input object
@@ -105,8 +107,13 @@ def createForm():
             form.addKeywords( request.json['keywordsEn'], 'EN' )
 
             for fieldset in request.json['fieldsets']:
-                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False)
+                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['cid'])#fieldset['LOL']
                 form.addFieldset(newfieldset)
+                # newInputValues              = key:"" for key in keys 
+                # newInput                    = Input( **newInputValues )
+                # newInput.addProperty("cid") = "lol01"
+                # form.addInput(newInput)
+
 
             try:
                 session.add (form)
@@ -190,7 +197,7 @@ def updateForm(id):
                     each.curStatus = 4
 
                 for each in request.json['fieldsets']:
-                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False))
+                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['cid']))
 
                 form.addKeywords( request.json['keywordsFr'], 'FR' )
                 form.addKeywords( request.json['keywordsEn'], 'EN' )

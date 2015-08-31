@@ -17,25 +17,29 @@ class Fieldset(Base):
     fields = Column(String(255, 'French_CI_AS'), nullable=False)
     multiple = Column(Boolean, nullable=True)
     curStatus = Column(Integer, nullable=False)
+    cid = Column(String(20, 'French_CI_AS'), nullable=False)
 
     Form = relationship('Form')
 
-    def __init__(self, legend, fields, multiple):
+    def __init__(self, legend, fields, multiple, cid):
         self.legend = legend
         self.fields = fields
         self.multiple = multiple
         self.curStatus = 0
+        self.cid = cid
 
-    def update(self, legend, fields, multiple):
+    def update(self, legend, fields, multiple, cid):
         self.legend = legend
         self.fields = fields
         self.multiple = multiple
+        self.cid = cid
 
     def toJSON(self):
         return {
             "legend"    : self.legend,
             "fields"    : self.fields.split(',') if len(self.fields)> 0 else [],
-            'multiple'  : self.multiple
+            "multiple"    : self.multiple,
+            "cid"    : self.cid
         }
 
     @classmethod
@@ -43,5 +47,6 @@ class Fieldset(Base):
         return [
             "legend",
             "fields",
-            "multiple"
+            "multiple",
+            "cid"
         ]
