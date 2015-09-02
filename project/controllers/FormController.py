@@ -107,11 +107,11 @@ def createForm():
             form.addKeywords( request.json['keywordsEn'], 'EN' )
 
             for fieldset in request.json['fieldsets']:
-                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['cid'])#fieldset['LOL']
+                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['legend'] + " " + fieldset['cid'])#fieldset['LOL']
                 form.addFieldset(newfieldset)
                 # newInputValues              = key:"" for key in keys 
                 # newInput                    = Input( **newInputValues )
-                # newInput.addProperty("cid") = "lol01"
+                # newInput.addProperty("refid") = "lol01"
                 # form.addInput(newInput)
 
 
@@ -197,7 +197,7 @@ def updateForm(id):
                     each.curStatus = 4
 
                 for each in request.json['fieldsets']:
-                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['cid']))
+                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['refid']))
 
                 form.addKeywords( request.json['keywordsFr'], 'FR' )
                 form.addKeywords( request.json['keywordsEn'], 'EN' )

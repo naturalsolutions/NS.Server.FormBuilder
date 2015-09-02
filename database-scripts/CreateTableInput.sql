@@ -17,13 +17,15 @@ CREATE TABLE Input (
 	LabelEN			VARCHAR(300) 	NOT NULL,
 	IsRequired		BIT 			NOT NULL,
 	IsReadOnly		BIT 			NOT NULL,
-	FieldSize	    VARCHAR(100) 	NOT NULL,
+	FieldSizeEdit	    VARCHAR(100) 	NOT NULL,
+	FieldSizeDisplay	    VARCHAR(100) 	NOT NULL,
 	--	is End Of Line
 	IsEOL			BIT 			NOT NULL,
 	StartDate		DATETIME 		NOT NULL,
 	CurStatus		TINYINT			NOT NULL,
 	EditorClass		VARCHAR(255)	NULL,
-	FieldClass		VARCHAR(255)	NULL,
+	FieldClassEdit		VARCHAR(255)	NULL,
+	FieldClassDisplay		VARCHAR(255)	NULL,
 	InputType		VARCHAR(255)	NOT NULL,
 
 	CONSTRAINT pk_Input PRIMARY KEY CLUSTERED (pk_Input ),

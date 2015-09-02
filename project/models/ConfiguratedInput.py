@@ -18,29 +18,33 @@ class ConfiguratedInput(Base):
     labelFr              = Column(String(300, 'French_CI_AS'), nullable=False)
     labelEn              = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode             = Column(Integer, nullable=False)
-    fieldSize            = Column(String(100, 'French_CI_AS'), nullable=False)
+    fieldSizeEdit            = Column(String(100, 'French_CI_AS'), nullable=False)
+    fieldSizeDisplay            = Column(String(100, 'French_CI_AS'), nullable=False)
     endOfLine            = Column(Boolean, nullable=False)
     startDate            = Column(DateTime, nullable=False)
     curStatus            = Column(Integer, nullable=False)
 
     type                 = Column(String(100, 'French_CI_AS'), nullable=False)
     editorClass          = Column(String(100, 'French_CI_AS'), nullable=True)
-    fieldClass           = Column(String(100, 'French_CI_AS'), nullable=True)
+    fieldClassEdit           = Column(String(100, 'French_CI_AS'), nullable=True)
+    fieldClassDisplay           = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedFieldset       = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Properties           = relationship("ConfiguratedInputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldset):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSizeEdit, fieldSizeDisplay, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldset):
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn
         self.editMode       = editMode
-        self.fieldSize      = fieldSize
+        self.fieldSizeEdit      = fieldSizeEdit
+        self.fieldSizeDisplay      = fieldSizeDisplay
         self.endOfLine      = endOfLine
         self.type           = type
         self.editorClass    = editorClass
-        self.fieldClass     = fieldClass
+        self.fieldClassEdit     = fieldClassEdit
+        self.fieldClassDisplay     = fieldClassDisplay
         self.linkedFieldset = linkedFieldset
         self.curStatus      = "1"
 
@@ -54,9 +58,11 @@ class ConfiguratedInput(Base):
             "required"          : self.required,
             "endOfLine"         : self.endOfLine,
             "editMode"          : self.editMode,
-            "fieldSize"         : self.fieldSize,
+            "fieldSizeEdit"         : self.fieldSizeEdit,
+            "fieldSizeDisplay"         : self.fieldSizeDisplay,
             "editorClass"       : self.editorClass,
-            "fieldClass"        : self.fieldClass,
+            "fieldClassEdit"        : self.fieldClassEdit,
+            "fieldClassDisplay"        : self.fieldClassDisplay,
             "linkedFieldset"    : self.linkedFieldset,
             "type"              : self.type
         }
@@ -78,10 +84,12 @@ class ConfiguratedInput(Base):
             'labelFr',
             'labelEn',
             'editMode',
-            'fieldSize',
+            'fieldSizeEdit',
+            'fieldSizeDisplay',
             'endOfLine',
             'type',
             'editorClass',
             'linkedFieldset',
-            'fieldClass',
+            'fieldClassEdit',
+            'fieldClassDisplay'
         ]
