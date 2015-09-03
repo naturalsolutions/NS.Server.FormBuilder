@@ -4,6 +4,7 @@
 		"http://secondWebService"
 	],
     "sql" : {
-      "url" : "databaseConnectionString"
+      "url" : "databaseConnectionString",
+	  "_comment" : "mssql+pyodbc://user:userpsw@dbpath"
     }
 }
