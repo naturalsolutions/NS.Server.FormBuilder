@@ -232,6 +232,19 @@ def removeForm(id):
         session.rollback()
         abort(make_response('Error during delete', 500))
 
+@app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
+def deleteInputFromForm(formid, inputid):
+    form = session.query(Form).filter_by(pk_Form = formid).first()
+    inputfield = session.query(Input).filter_by(pk_Input = inputid, fk_form = formid).first()
+
+    try:
+        session.delete(inputfield)
+        session.commit()
+        return jsonify({"deleted" : True})
+    except:
+        session.rollback()
+        abort(make_response('Error during inputfield delete', 500))
+
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
 def index():
