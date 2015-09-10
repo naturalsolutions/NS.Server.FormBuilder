@@ -1,0 +1,10 @@
+{
+	"webServices" : [
+		"http://firstWebService",
+		"http://secondWebService"
+	],
+    "sql" : {
+      "url" : "databaseConnectionString",
+	  "_comment" : "mssql+pyodbc://user:userpsw@dbpath"
+    }
+}

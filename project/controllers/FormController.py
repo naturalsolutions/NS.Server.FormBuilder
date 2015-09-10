@@ -89,6 +89,8 @@ def createForm():
                 del inputsList['validators']
                 del inputsList['id']
 
+                # abort(make_response('inputsList : %s \nand %s \nand %s \nand %s' % (str(inputsList), str(inputColumnList), str(form), str(request.json)), 400))
+
                 newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
                 newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
                 newInput                = Input( **newInputValues )                         # new Input object
@@ -105,8 +107,14 @@ def createForm():
             form.addKeywords( request.json['keywordsEn'], 'EN' )
 
             for fieldset in request.json['fieldsets']:
-                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False)
+                # TODO FIX
+                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['legend'] + " " + fieldset['cid'])#fieldset['LOL']
                 form.addFieldset(newfieldset)
+                # newInputValues              = key:"" for key in keys 
+                # newInput                    = Input( **newInputValues )
+                # newInput.addProperty("refid") = "lol01"
+                # form.addInput(newInput)
+
 
             try:
                 session.add (form)
@@ -190,7 +198,8 @@ def updateForm(id):
                     each.curStatus = 4
 
                 for each in request.json['fieldsets']:
-                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False))
+                    # TODO FIX
+                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['legend'] + " " + each['cid']))
 
                 form.addKeywords( request.json['keywordsFr'], 'FR' )
                 form.addKeywords( request.json['keywordsEn'], 'EN' )
@@ -222,6 +231,19 @@ def removeForm(id):
     except:
         session.rollback()
         abort(make_response('Error during delete', 500))
+
+@app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
+def deleteInputFromForm(formid, inputid):
+    form = session.query(Form).filter_by(pk_Form = formid).first()
+    inputfield = session.query(Input).filter_by(pk_Input = inputid, fk_form = formid).first()
+
+    try:
+        session.delete(inputfield)
+        session.commit()
+        return jsonify({"deleted" : True})
+    except:
+        session.rollback()
+        abort(make_response('Error during inputfield delete', 500))
 
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])

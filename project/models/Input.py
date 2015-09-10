@@ -19,44 +19,50 @@ class Input(Base):
     labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
     labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode      = Column(Integer, nullable=False)
-    fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
+    fieldSizeEdit     = Column(String(100, 'French_CI_AS'), nullable=False)
+    fieldSizeDisplay     = Column(String(100, 'French_CI_AS'), nullable=False)
     endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
     order         = Column(SmallInteger, nullable=True)
     type          = Column(String(100, 'French_CI_AS'), nullable=False)
     editorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
-    fieldClass    = Column(String(100, 'French_CI_AS'), nullable=True)
+    fieldClassEdit    = Column(String(100, 'French_CI_AS'), nullable=True)
+    fieldClassDisplay    = Column(String(100, 'French_CI_AS'), nullable=True)
     
     # linked field section
     linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedFieldIdentifyingColumn = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedField                  = Column(String(100, 'French_CI_AS'), nullable=True)
     formIdentifyingColumn        = Column(String(100, 'French_CI_AS'), nullable=True)
+    linkedFieldset               = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClass, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, formIdentifyingColumn, order):
-        self.name        = name
-        self.labelFr     = labelFr
-        self.labelEn     = labelEn
-        self.editMode    = editMode
-        self.fieldSize   = fieldSize
-        self.endOfLine   = endOfLine
-        self.type        = type
-        self.editorClass = editorClass
-        self.fieldClass  = fieldClass
-        self.linkedField = linkedField
-        self.curStatus   = "1"
-        self.order       = order
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSizeEdit, fieldSizeDisplay, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, formIdentifyingColumn, order):
+        self.name           = name
+        self.labelFr        = labelFr
+        self.labelEn        = labelEn
+        self.editMode       = editMode
+        self.fieldSizeEdit      = fieldSizeEdit
+        self.fieldSizeDisplay      = fieldSizeDisplay
+        self.endOfLine      = endOfLine
+        self.type           = type
+        self.editorClass    = editorClass
+        self.fieldClassEdit     = fieldClassEdit
+        self.fieldClassDisplay     = fieldClassDisplay
+        self.linkedField    = linkedField
+        self.curStatus      = "1"
+        self.order          = order
 
         # linked field
         self.linkedFieldTable             = linkedFieldTable
         self.linkedFieldIdentifyingColumn = linkedFieldIdentifyingColumn
         self.linkedField                  = linkedField
         self.formIdentifyingColumn        = formIdentifyingColumn
+        self.linkedFieldset               = linkedFieldset
 
         self.startDate = datetime.datetime.now()
 
@@ -66,10 +72,12 @@ class Input(Base):
         self.labelFr     = kwargs['labelFr']
         self.labelEn     = kwargs['labelEn']
         self.editMode    = kwargs['editMode']
-        self.fieldSize   = kwargs['fieldSize']
+        self.fieldSizeEdit   = kwargs['fieldSizeEdit']
+        self.fieldSizeDisplay   = kwargs['fieldSizeDisplay']
         self.endOfLine   = kwargs['endOfLine']
         self.editorClass = kwargs['editorClass']
-        self.fieldClass  = kwargs['fieldClass']
+        self.fieldClassEdit  = kwargs['fieldClassEdit']
+        self.fieldClassDisplay  = kwargs['fieldClassDisplay']
         self.order       = kwargs['order']
 
         # linked field
@@ -77,22 +85,26 @@ class Input(Base):
         self.linkedFieldIdentifyingColumn = kwargs['linkedFieldIdentifyingColumn']
         self.linkedField                  = kwargs['linkedField']
         self.formIdentifyingColumn        = kwargs['formIdentifyingColumn']
+        self.linkedFieldset               = kwargs['linkedFieldset']
 
 
     # Return convert object to JSON object
     def toJSON(self):
         JSONObject = {
-            "id"          : self.pk_Input,
-            "labelFr"     : self.labelFr,
-            "labelEn"     : self.labelEn,
-            "endOfLine"   : self.endOfLine,
-            "editMode"    : self.editMode,
-            "fieldSize"   : self.fieldSize,
-            "editorClass" : self.editorClass,
-            "fieldClass"  : self.fieldClass,
-            "type"        : self.type,
-            "order"        : self.order,
-            "name" : self.name,
+            "id"                : self.pk_Input,
+            "labelFr"           : self.labelFr,
+            "labelEn"           : self.labelEn,
+            "endOfLine"         : self.endOfLine,
+            "editMode"          : self.editMode,
+            "fieldSizeEdit"         : self.fieldSizeEdit,
+            "fieldSizeDisplay"         : self.fieldSizeDisplay,
+            "editorClass"       : self.editorClass,
+            "fieldClassEdit"        : self.fieldClassEdit,
+            "fieldClassDisplay"        : self.fieldClassDisplay,
+            "type"              : self.type,
+            "order"             : self.order,
+            "name"              : self.name,
+            "linkedFieldset"    : self.linkedFieldset,
 
             # linked field 
 
@@ -119,14 +131,17 @@ class Input(Base):
             'labelFr',
             'labelEn',
             'editMode',
-            'fieldSize',
+            'fieldSizeEdit',
+            'fieldSizeDisplay',
             'endOfLine',
             'type',
             'editorClass',
-            'fieldClass',
+            'fieldClassEdit',
+            'fieldClassDisplay',
             'linkedFieldTable',
             'linkedFieldIdentifyingColumn',
             'linkedField',
+            'linkedFieldset',
             'formIdentifyingColumn',
             'order'
         ]
