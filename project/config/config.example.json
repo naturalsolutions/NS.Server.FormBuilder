@@ -5,6 +5,6 @@
 	],
     "sql" : {
       "url" : "databaseConnectionString",
-	  "_comment" : "mssql+pyodbc://user:userpsw@dbpath"
+	  "_comment" : "mssql+pyodbc://user:userpsw@dbpath?driver=ODBC+Driver+11+for+SQL+Server"
     }
 }
