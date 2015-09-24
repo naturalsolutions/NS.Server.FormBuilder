@@ -97,6 +97,9 @@ def createForm():
 
                 # Add properties to the new configurated field
                 for prop in newPropertiesValues:
+                    # TODO FIND BETTER WORKAROUND
+                    if prop == 'defaultValue' and newPropertiesValues[prop] == None :
+                        newPropertiesValues[prop] = ''
                     property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
                     newInput.addProperty(property)
 
