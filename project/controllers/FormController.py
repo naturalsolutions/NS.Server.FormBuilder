@@ -111,13 +111,12 @@ def createForm():
 
             for fieldset in request.json['fieldsets']:
                 # TODO FIX
-                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['legend'] + " " + fieldset['cid'])#fieldset['LOL']
+                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['legend'] + " " + fieldset['cid'], fieldset['order'])#fieldset['LOL']
                 form.addFieldset(newfieldset)
                 # newInputValues              = key:"" for key in keys 
                 # newInput                    = Input( **newInputValues )
                 # newInput.addProperty("refid") = "lol01"
                 # form.addInput(newInput)
-
 
             try:
                 session.add (form)
@@ -185,6 +184,7 @@ def updateForm(id):
                         presentInputs.remove(foundInput.pk_Input)
 
                     else:
+                        del request.json['schema'][eachInput]['id']
                         inputRepository   = InputRepository(None)
                         # Add a new input to the form
 
@@ -202,7 +202,7 @@ def updateForm(id):
 
                 for each in request.json['fieldsets']:
                     # TODO FIX
-                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['legend'] + " " + each['cid']))
+                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['legend'] + " " + each['cid'], each['order']))
 
                 form.addKeywords( request.json['keywordsFr'], 'FR' )
                 form.addKeywords( request.json['keywordsEn'], 'EN' )
@@ -212,7 +212,7 @@ def updateForm(id):
                 try:
                     session.add (form)
                     session.commit ()
-                    return jsonify({"form" : form.toJSON() })
+                    return jsonify({"form" : form.recuriseToJSON() })
                 except:
                     session.rollback()
                     abort(make_response('Error', 500))
