@@ -30,6 +30,7 @@ class Form(Base):
     keywords         = relationship("KeyWord_Form", cascade="delete")
     fieldsets        = relationship("Fieldset", cascade="all")
     inputs           = relationship("Input", cascade="all")
+    childForms       = relationship("FormsRelationships", cascade="all")
 
     # Constructor
     def __init__(self, **kwargs):
@@ -120,9 +121,15 @@ class Form(Base):
     def recuriseToJSON(self):
         json = self.toJSON()
         inputs = {}
+        loops = 1;
+
         for each in self.inputs:
             inputs[each.name] = each.toJSON()
 
+        for each in self.childForms:
+            inputs["childForm"+str(loops)] = each.toJSON()
+            loops += 1
+            
         json['schema'] = inputs
 
         json['fieldsets'] = self.get_fieldsets()

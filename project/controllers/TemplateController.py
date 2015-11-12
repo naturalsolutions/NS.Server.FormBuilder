@@ -9,6 +9,7 @@ from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
 from ..models.Fieldset import Fieldset
+from ..models.FormsRelationships import FormsRelationships
 import json
 import sys
 import datetime

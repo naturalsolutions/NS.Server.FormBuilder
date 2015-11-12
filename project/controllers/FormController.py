@@ -10,6 +10,7 @@ from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
 from ..models.Fieldset import Fieldset
+from ..models import FormsRelationships
 from sqlalchemy import *
 import json
 import sys
@@ -70,41 +71,47 @@ def createForm():
 
         else:
             form            = Form(**request.json)              # new form Object
+            FormsRelationships(form.name, None)
             inputColumnList = Input.getColumnsList()            # common input list like LabelFR, LabelEN see Input class
 
             # for each element in Schema we create an input and its properties
             for input in request.json['schema']:
                 inputsList              = request.json['schema'][input]
+                print('coucou 0 !', input)
+                if input[:9] == "childform":
+                    print('coucou 1 !')
+                    newChildForm = FormsRelationships(form.name, inputsList['childFormName'])
+                else:
+                    print('coucou 2 !')
+                    try:
+                        inputsList['required'] = inputsList['validators'].index('required') >= 0
+                    except:
+                        inputsList['required'] = False
 
-                try:
-                    inputsList['required'] = inputsList['validators'].index('required') >= 0
-                except:
-                    inputsList['required'] = False
+                    try:
+                        inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
+                    except:
+                        inputsList['readonly'] = False
 
-                try:
-                    inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
-                except:
-                    inputsList['readonly'] = False
+                    del inputsList['validators']
+                    del inputsList['id']
 
-                del inputsList['validators']
-                del inputsList['id']
+                    # abort(make_response('inputsList : %s \nand %s \nand %s \nand %s' % (str(inputsList), str(inputColumnList), str(form), str(request.json)), 400))
 
-                # abort(make_response('inputsList : %s \nand %s \nand %s \nand %s' % (str(inputsList), str(inputColumnList), str(form), str(request.json)), 400))
+                    newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
+                    newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
+                    newInput                = Input( **newInputValues )                         # new Input object
 
-                newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
-                newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
-                newInput                = Input( **newInputValues )                         # new Input object
+                    # Add properties to the new configurated field
+                    for prop in newPropertiesValues:
+                        # TODO FIND BETTER WORKAROUND
+                        if prop == 'defaultValue' and newPropertiesValues[prop] == None :
+                            newPropertiesValues[prop] = ''
+                        property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
+                        newInput.addProperty(property)
 
-                # Add properties to the new configurated field
-                for prop in newPropertiesValues:
-                    # TODO FIND BETTER WORKAROUND
-                    if prop == 'defaultValue' and newPropertiesValues[prop] == None :
-                        newPropertiesValues[prop] = ''
-                    property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
-                    newInput.addProperty(property)
-
-                # Add new input to the form
-                form.addInput(newInput)
+                    # Add new input to the form
+                    form.addInput(newInput)
 
             form.addKeywords( request.json['keywordsFr'], 'FR' )
             form.addKeywords( request.json['keywordsEn'], 'EN' )
@@ -252,3 +259,25 @@ def deleteInputFromForm(formid, inputid):
 @app.route('/', methods = ['GET'])
 def index():
     return render_template('index.html')
+
+
+@app.route('/childforms/<int:formid>', methods = ['GET'])
+def get_childforms(formid):
+    forms = []
+
+    forms_added        = []
+    keywords_added     = []
+    current_form_index = -1
+
+    query   = session.query(Form).order_by(Form.name)
+    results = query.all()
+
+    for form in results:
+
+        if form.pk_Form not in forms_added and (formid == 0 or (formid != 0 and form.pk_Form != formid)):
+            f = {"id":form.pk_Form,"name":form.name}
+            current_form_index += 1
+            forms.append(f)
+            forms_added.append(form.pk_Form)
+
+    return json.dumps(forms, ensure_ascii=False)
