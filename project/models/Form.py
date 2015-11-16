@@ -30,7 +30,7 @@ class Form(Base):
     keywords         = relationship("KeyWord_Form", cascade="delete")
     fieldsets        = relationship("Fieldset", cascade="all")
     inputs           = relationship("Input", cascade="all")
-    childForms       = relationship("FormsRelationships", cascade="all")
+    linkedForms      = relationship("FormsRelationships", cascade="all")
 
     # Constructor
     def __init__(self, **kwargs):
@@ -106,6 +106,9 @@ class Form(Base):
         keywordsFr = []
         keywordsEn = []
         tmpKeyword = None
+        parentForms = {}
+        loops = 1
+
         for each in self.keywords :
             tmpKeyword = each.toJSON()
             if tmpKeyword['lng'] == 'FR':
@@ -114,6 +117,13 @@ class Form(Base):
             else:
                 del tmpKeyword['lng']
                 keywordsEn.append (tmpKeyword)
+        for each in self.linkedForms:
+            if each.parent_Form != self.name:
+                parentForms["parentForm"+str(loops)] = each.toJSON()
+                loops += 1
+        
+        if (loops > 1):
+            json["parentForms"] = parentForms
         json['keywordsFr'] = keywordsFr
         json['keywordsEn'] = keywordsEn
         return json
@@ -121,14 +131,15 @@ class Form(Base):
     def recuriseToJSON(self):
         json = self.toJSON()
         inputs = {}
-        loops = 1;
+        loops = 1
 
         for each in self.inputs:
             inputs[each.name] = each.toJSON()
 
-        for each in self.childForms:
-            inputs["childForm"+str(loops)] = each.toJSON()
-            loops += 1
+        for each in self.linkedForms:
+            if each.parent_Form == self.name and each.child_Form != None:
+                inputs["childForm"+str(loops)] = each.toJSON()
+                loops += 1
             
         json['schema'] = inputs
 

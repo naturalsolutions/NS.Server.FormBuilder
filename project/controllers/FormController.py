@@ -77,12 +77,9 @@ def createForm():
             # for each element in Schema we create an input and its properties
             for input in request.json['schema']:
                 inputsList              = request.json['schema'][input]
-                print('coucou 0 !', input)
                 if input[:9] == "childform":
-                    print('coucou 1 !')
                     newChildForm = FormsRelationships(form.name, inputsList['childFormName'])
                 else:
-                    print('coucou 2 !')
                     try:
                         inputsList['required'] = inputsList['validators'].index('required') >= 0
                     except:
@@ -120,10 +117,6 @@ def createForm():
                 # TODO FIX
                 newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['legend'] + " " + fieldset['cid'], fieldset['order'])#fieldset['LOL']
                 form.addFieldset(newfieldset)
-                # newInputValues              = key:"" for key in keys 
-                # newInput                    = Input( **newInputValues )
-                # newInput.addProperty("refid") = "lol01"
-                # form.addInput(newInput)
 
             try:
                 session.add (form)
@@ -150,8 +143,15 @@ def updateForm(id):
 
         if IfmissingParameters is False:
             abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
-
         else:
+            formsrels = session.query(FormsRelationships).all()
+            try:
+                session.delete(formsrels)
+                session.commit()
+            except:
+                session.rollback()
+                # abort(make_response('Error during FormsRelationships delete', 500))
+
             form = session.query(Form).filter_by(pk_Form = id).first()
             if form != None:
 
@@ -162,42 +162,47 @@ def updateForm(id):
                 # Yes : we update input
                 # No : we add an input to the form
                 for eachInput in request.json['schema']:
+                    inputsList = request.json['schema'][eachInput]
 
-                    try:
-                        request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
-                    except:
-                        request.json['schema'][eachInput]['required'] = False
-                        pass
-
-                    try:
-                        request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
-                    except:
-                        request.json['schema'][eachInput]['readonly'] = False
-                        pass
-
-                    del request.json['schema'][eachInput]['validators']
-
-                    if request.json['schema'][eachInput]['id'] in presentInputs:
-
-                        # the field is present we update it
-                        foundInput        = session.query(Input).filter_by(pk_Input = request.json['schema'][eachInput]['id']).first()
-                        inputRepository   = InputRepository(foundInput)
-
-                        inputNewValues    = request.json['schema'][eachInput]
-
-                        # foundInputUpdated = inputRepository.updateInput(**inputNewValues)
-                        inputRepository.updateInput(**inputNewValues)
-
-                        presentInputs.remove(foundInput.pk_Input)
-
+                    if eachInput[:9] == "childform":
+                        print('childform PUT !')
+                        newChildForm = FormsRelationships(form.name, inputsList['childFormName'])
                     else:
-                        del request.json['schema'][eachInput]['id']
-                        inputRepository   = InputRepository(None)
-                        # Add a new input to the form
+                        try:
+                            request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
+                        except:
+                            request.json['schema'][eachInput]['required'] = False
+                            pass
 
-                        inputsList = request.json['schema'][eachInput]
+                        try:
+                            request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
+                        except:
+                            request.json['schema'][eachInput]['readonly'] = False
+                            pass
 
-                        form.addInput( inputRepository.createInput(**inputsList) )
+                        del request.json['schema'][eachInput]['validators']
+
+                        if request.json['schema'][eachInput]['id'] in presentInputs:
+
+                            # the field is present we update it
+                            foundInput        = session.query(Input).filter_by(pk_Input = request.json['schema'][eachInput]['id']).first()
+                            inputRepository   = InputRepository(foundInput)
+
+                            inputNewValues    = request.json['schema'][eachInput]
+
+                            # foundInputUpdated = inputRepository.updateInput(**inputNewValues)
+                            inputRepository.updateInput(**inputNewValues)
+
+                            presentInputs.remove(foundInput.pk_Input)
+
+                        else:
+                            del request.json['schema'][eachInput]['id']
+                            inputRepository   = InputRepository(None)
+                            # Add a new input to the form
+
+                            inputsList = request.json['schema'][eachInput]
+
+                            form.addInput( inputRepository.createInput(**inputsList) )
 
                 if len(presentInputs) > 0:
                     # We need to remove some input
