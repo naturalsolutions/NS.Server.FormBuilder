@@ -25,12 +25,13 @@ class Form(Base):
     descriptionEn           = Column(String(300, 'French_CI_AS'), nullable=False)
     obsolete                = Column(Boolean)
     isTemplate              = Column(Boolean, nullable=False)
+    context                 = Column(String(50, 'French_CI_AS'), nullable=False)
 
     # Relationship
     keywords         = relationship("KeyWord_Form", cascade="delete")
     fieldsets        = relationship("Fieldset", cascade="all")
     inputs           = relationship("Input", cascade="all")
-    linkedForms      = relationship("FormsRelationships", cascade="all")
+    Properties       = relationship("FormProperty", cascade="all")
 
     # Constructor
     def __init__(self, **kwargs):
@@ -50,6 +51,7 @@ class Form(Base):
         self.curStatus              = "1"
         self.obsolete               = kwargs['obsolete']
         self.isTemplate             = kwargs['isTemplate']
+        self.context                = kwargs['context']
 
     # Update form values
     def update(self, **kwargs):
@@ -66,6 +68,7 @@ class Form(Base):
         self.descriptionFr          = kwargs['descriptionFr']
         self.modificationDate       = datetime.datetime.now()
         self.isTemplate             = kwargs['isTemplate']
+        self.context                = kwargs['context']
 
 
     def get_fieldsets(self):
@@ -97,7 +100,8 @@ class Form(Base):
             "descriptionFr"            : self.descriptionFr,
             "descriptionEn"            : self.descriptionEn,
             "obsolete"                 : self.obsolete,
-            "isTemplate"               : self.isTemplate
+            "isTemplate"               : self.isTemplate,
+            "context"                  : self.context
         }
 
     # Serialize a form in JSON object
@@ -117,16 +121,18 @@ class Form(Base):
             else:
                 del tmpKeyword['lng']
                 keywordsEn.append (tmpKeyword)
-        for each in self.linkedForms:
-            if each.parent_Form != self.name:
-                parentForms["parentForm"+str(loops)] = each.toJSON()
-                loops += 1
         
         if (loops > 1):
             json["parentForms"] = parentForms
         json['keywordsFr'] = keywordsFr
         json['keywordsEn'] = keywordsEn
+
         return json
+
+    def addFormProperties(self, jsonobject):
+        for prop in self.Properties:
+            jsonobject[prop.name] = prop.value
+        return jsonobject
 
     def recuriseToJSON(self):
         json = self.toJSON()
@@ -135,16 +141,12 @@ class Form(Base):
 
         for each in self.inputs:
             inputs[each.name] = each.toJSON()
-
-        for each in self.linkedForms:
-            if each.parent_Form == self.name and each.child_Form != None:
-                inputs["childForm"+str(loops)] = each.toJSON()
-                loops += 1
             
         json['schema'] = inputs
 
         json['fieldsets'] = self.get_fieldsets()
 
+        json = self.addFormProperties(json);
         return json
 
     # Add keyword to the form
@@ -170,6 +172,9 @@ class Form(Base):
             inputsIdList.append(i.pk_Input)
         return inputsIdList
 
+    def addProperty(self, prop):
+        self.Properties.append(prop)
+
     @classmethod
     def getColumnList(cls):
         return [
@@ -184,5 +189,6 @@ class Form(Base):
             'schema'       ,
             'fieldsets'    ,
             'obsolete'     ,
-            'isTemplate'
+            'isTemplate'   ,
+            'context'
         ]
