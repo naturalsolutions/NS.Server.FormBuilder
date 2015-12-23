@@ -9,11 +9,11 @@ import datetime
 # Form Property
 class FormProperty(Base):
 
-    __tablename__ = "FormProperty"
+    __tablename__    = 'FormProperty'
 
-    pk_FormProperty = Column(BigInteger, primary_key=True)
+    pk_FormProperty  = Column(BigInteger, primary_key=True)
 
-    fk_Form         = Column(ForeignKey('Form.pk_Form'), nullable=False)
+    fk_Form          = Column(ForeignKey('Form.pk_Form'), nullable=False)
 
     name             = Column(String(255, 'French_CI_AS'), nullable=False)
     value            = Column(String(255, 'French_CI_AS'), nullable=False)
