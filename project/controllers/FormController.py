@@ -264,8 +264,8 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/childforms/<int:formid>', methods = ['GET'])
-def get_childforms(formid):
+@app.route('/allforms', methods = ['GET'])
+def quick_getAllForms():
     forms = []
 
     forms_added        = []
@@ -276,11 +276,33 @@ def get_childforms(formid):
     results = query.all()
 
     for form in results:
+        f = {"id":form.pk_Form,"name":form.name}
+        current_form_index += 1
+        forms.append(f)
+        forms_added.append(form.pk_Form)
 
-        if form.pk_Form not in forms_added and (formid == 0 or (formid != 0 and form.pk_Form != formid)):
-            f = {"id":form.pk_Form,"name":form.name}
-            current_form_index += 1
-            forms.append(f)
-            forms_added.append(form.pk_Form)
+    return json.dumps(forms, ensure_ascii=False)
+
+
+
+@app.route('/childforms/<int:formid>', methods = ['GET'])
+def get_childforms(formid):
+    forms = []
+
+    forms_added        = []
+    keywords_added     = []
+    current_form_index = -1
+
+    if (formid > 0):
+        formName = session.query(Form).filter_by(pk_Form = formid).first().name
+
+        for childFormInputProp in session.query(InputProperty).filter_by(value = formName, name = "childFormName").all():
+            childFormInput = session.query(Input).filter_by(pk_Input = childFormInputProp.fk_Input).first()
+            childForm = session.query(Form).filter_by(pk_Form = childFormInput.fk_form).first()
+            if childForm.pk_Form not in forms_added:
+                f = {"id":childForm.pk_Form,"name":childForm.name}
+                current_form_index += 1
+                forms.append(f)
+                forms_added.append(childForm.pk_Form)
 
     return json.dumps(forms, ensure_ascii=False)
