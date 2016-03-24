@@ -5,6 +5,8 @@ from sqlalchemy.orm import relationship
 from .base import Base
 from .KeyWord_Form import  KeyWord_Form
 from .KeyWord import KeyWord
+from ..utilities import Utility
+from ..models.FormProperty import FormProperty
 import datetime
 
 import pprint
@@ -53,6 +55,8 @@ class Form(Base):
         self.isTemplate             = kwargs['isTemplate']
         self.context                = kwargs['context']
 
+        print ("Form Init !! " + kwargs['name'] + " ; " + kwargs['tag'] + " ; " + kwargs['labelFr'] + " ; " + kwargs['labelEn'] + " ; " + kwargs['descriptionEn'] + " ; " + kwargs['descriptionFr'] + " ; OVER OVER OVER ")
+
     # Update form values
     def update(self, **kwargs):
         """
@@ -69,6 +73,8 @@ class Form(Base):
         self.modificationDate       = datetime.datetime.now()
         self.isTemplate             = kwargs['isTemplate']
         self.context                = kwargs['context']
+
+        print ("Form Update !! " + kwargs['name'] + " ; " + kwargs['tag'] + " ; " + kwargs['labelFr'] + " ; " + kwargs['labelEn'] + " ; " + kwargs['descriptionEn'] + " ; " + kwargs['descriptionFr'] + " ; OVER OVER OVER ")
 
 
     def get_fieldsets(self):
@@ -174,6 +180,17 @@ class Form(Base):
 
     def addProperty(self, prop):
         self.Properties.append(prop)
+
+    def updateProperties(self, properties):
+        for prop in properties:
+            formProperty = FormProperty(prop, properties[prop], Utility._getType(properties[prop]))
+            self.updateProperty(formProperty)
+
+    def updateProperty(self, prop):
+        for formprop in self.Properties:
+            if formprop.name == prop.name:
+                formprop.update(prop.name, prop.value, prop.creationDate, prop.valueType)
+                break
 
     @classmethod
     def getColumnList(cls):

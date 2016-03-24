@@ -51,8 +51,34 @@ def get_forms():
 # Get protocol by ID
 @app.route('/forms/<formID>', methods = ['GET'])
 def getFormByID(formID):
-    findForm = session.query(Form).get(formID)
-    return jsonify({ "form" : findForm.recuriseToJSON() })
+    if (formID.isdigit()):
+        findForm = session.query(Form).get(formID)
+        return jsonify({ "form" : findForm.recuriseToJSON() })
+    else:
+        forms = []
+
+        forms_added        = []
+        keywords_added     = []
+        current_form_index = -1
+
+        query   = session.query(Form, KeyWord_Form).outerjoin(KeyWord_Form).order_by(Form.name)
+        results = query.all()
+
+        for form, keyword in results:
+            if form.pk_Form not in forms_added and (form.context == formID or formID.lower() == "all"):
+                f = form.to_json()
+                current_form_index += 1
+                f['keywordsFr'] = []
+                f['keywordsEn'] = []
+                forms.append(f)
+                forms_added.append(form.pk_Form)
+
+            if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
+                k = keyword.toJSON()
+                forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
+                keywords_added.append(keyword.pk_KeyWord_Form)
+
+        return json.dumps(forms, ensure_ascii=False)
 
 # Create form
 @app.route('/forms', methods = ['POST'])
@@ -155,6 +181,12 @@ def updateForm(id):
             abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
         else:
             form = session.query(Form).filter_by(pk_Form = id).first()
+
+            newFormValues   = Utility._pick(request.json, neededParametersList)
+            newFormPropVals = Utility._pickNot(request.json, neededParametersList)
+            form.update(**newFormValues)              # new form Object
+            form.updateProperties(newFormPropVals)
+
             if form != None:
 
                 # Get form input ID list
@@ -218,6 +250,10 @@ def updateForm(id):
                 form.addKeywords( request.json['keywordsEn'], 'EN' )
 
                 form.modificationDate = datetime.datetime.now()
+
+                neededParametersList = Form.getColumnList()
+
+                
 
                 try:
                     session.add (form)
