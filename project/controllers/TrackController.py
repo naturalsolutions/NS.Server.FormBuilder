@@ -31,15 +31,7 @@ def getData():
 					toret[dataType][row[0]] = row[0]
 		finally:
 			pass
-
-		#
-		#Base.metadata.create_all()
-		#engine = create_engine(sqlConnexion)
-		#Base.metadata.create_all(engine)
-		#Session = sessionmaker(bind=engine)
-		#session = Session()
-		#
-
+			
 		return json.dumps(toret, ensure_ascii=False)
 	else:
 		abort(make_response('No datas given !', 400))
