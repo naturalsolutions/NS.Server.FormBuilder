@@ -5,6 +5,7 @@
 	],
     "sql" : {
       "url" : "databaseConnectionString",
+      "urlTrack" : "TrackDatabaseConnectionString",
 	  "_comment" : "mssql+pyodbc://user:userpsw@dbpath?driver=ODBC+Driver+11+for+SQL+Server"
     }
 }

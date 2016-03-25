@@ -21,7 +21,7 @@ from . import Fieldset
 # Database connexion
 # We use pyodbc and SQL Server for the moment
 with open("project/config/config.json", "r") as config:
-        data = json.loads( config.read() )
+    data = json.loads( config.read() )
 sqlConnexion = data["sql"]["url"] if 'sql' in data and 'url' in data['sql'] else 'mssql+pyodbc://CASIMIR/formbuilder'
 
 engine = create_engine(sqlConnexion)
