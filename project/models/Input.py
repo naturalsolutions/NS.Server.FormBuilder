@@ -34,14 +34,13 @@ class Input(Base):
     linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedFieldIdentifyingColumn = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedField                  = Column(String(100, 'French_CI_AS'), nullable=True)
-    formIdentifyingColumn        = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedFieldset               = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSizeEdit, fieldSizeDisplay, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, formIdentifyingColumn, order):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSizeEdit, fieldSizeDisplay, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, order):
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn
@@ -61,7 +60,6 @@ class Input(Base):
         self.linkedFieldTable             = linkedFieldTable
         self.linkedFieldIdentifyingColumn = linkedFieldIdentifyingColumn
         self.linkedField                  = linkedField
-        self.formIdentifyingColumn        = formIdentifyingColumn
         self.linkedFieldset               = linkedFieldset
 
         self.startDate = datetime.datetime.now()
@@ -84,7 +82,6 @@ class Input(Base):
         self.linkedFieldTable             = kwargs['linkedFieldTable']
         self.linkedFieldIdentifyingColumn = kwargs['linkedFieldIdentifyingColumn']
         self.linkedField                  = kwargs['linkedField']
-        self.formIdentifyingColumn        = kwargs['formIdentifyingColumn']
         self.linkedFieldset               = kwargs['linkedFieldset']
 
 
@@ -110,8 +107,7 @@ class Input(Base):
 
             "linkedFieldTable"             : self.linkedFieldTable,
             "linkedFieldIdentifyingColumn" : self.linkedFieldIdentifyingColumn,
-            "linkedField"                  : self.linkedField,
-            "formIdentifyingColumn"        : self.formIdentifyingColumn
+            "linkedField"                  : self.linkedField
         }
 
         for prop in self.Properties :
@@ -142,6 +138,5 @@ class Input(Base):
             'linkedFieldIdentifyingColumn',
             'linkedField',
             'linkedFieldset',
-            'formIdentifyingColumn',
             'order'
         ]

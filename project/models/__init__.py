@@ -7,6 +7,7 @@ import json
 
 from .base import Base
 from . import Form
+from . import FormProperty
 from . import Input
 from . import InputProperty
 from . import Unity
@@ -15,7 +16,6 @@ from . import KeyWord_Form
 from . import ConfiguratedInput
 from . import ConfiguratedInputProperty
 from . import Fieldset
-from .FormsRelationships import FormsRelationships
 
 
 # Database connexion

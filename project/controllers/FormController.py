@@ -5,12 +5,12 @@ from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
 from ..models import session, engine
 from ..models.Form import Form
+from ..models.FormProperty import FormProperty
 from ..models.KeyWord_Form import KeyWord_Form
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
 from ..models.Fieldset import Fieldset
-from ..models import FormsRelationships
 from sqlalchemy import *
 import json
 import sys
@@ -51,8 +51,34 @@ def get_forms():
 # Get protocol by ID
 @app.route('/forms/<formID>', methods = ['GET'])
 def getFormByID(formID):
-    findForm = session.query(Form).get(formID)
-    return jsonify({ "form" : findForm.recuriseToJSON() })
+    if (formID.isdigit()):
+        findForm = session.query(Form).get(formID)
+        return jsonify({ "form" : findForm.recuriseToJSON() })
+    else:
+        forms = []
+
+        forms_added        = []
+        keywords_added     = []
+        current_form_index = -1
+
+        query   = session.query(Form, KeyWord_Form).outerjoin(KeyWord_Form).order_by(Form.name)
+        results = query.all()
+
+        for form, keyword in results:
+            if form.pk_Form not in forms_added and (form.context == formID or formID.lower() == "all"):
+                f = form.to_json()
+                current_form_index += 1
+                f['keywordsFr'] = []
+                f['keywordsEn'] = []
+                forms.append(f)
+                forms_added.append(form.pk_Form)
+
+            if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
+                k = keyword.toJSON()
+                forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
+                keywords_added.append(keyword.pk_KeyWord_Form)
+
+        return json.dumps(forms, ensure_ascii=False)
 
 # Create form
 @app.route('/forms', methods = ['POST'])
@@ -64,51 +90,61 @@ def createForm():
 
         neededParametersList = Form.getColumnList()
 
-        for a in neededParametersList: IfmissingParameters = IfmissingParameters and (a in request.json)
+        for a in request.json:
+            print (">>>>>>>>>>>>>", a)
+
+        for a in neededParametersList:
+            print ("<<<<<<<<<<<<<", a)
+            print (a in request.json)
+            IfmissingParameters = IfmissingParameters and (a in request.json)
 
         if IfmissingParameters == False:
-            abort(make_response('Some parameters are missing', 400))
-
+            abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
         else:
-            form            = Form(**request.json)              # new form Object
-            FormsRelationships(form.name, None)
+            newFormValues   = Utility._pick(request.json, neededParametersList)
+            newFormPropVals = Utility._pickNot(request.json, neededParametersList)
+            form            = Form( **newFormValues )              # new form Object
+
+            for prop in newFormPropVals:
+                if newFormPropVals[prop] == None :
+                    newFormPropVals[prop] = ''
+                formProperty = FormProperty(prop, newFormPropVals[prop], Utility._getType(newFormPropVals[prop]))
+                form.addProperty(formProperty)
+
             inputColumnList = Input.getColumnsList()            # common input list like LabelFR, LabelEN see Input class
 
             # for each element in Schema we create an input and its properties
             for input in request.json['schema']:
                 inputsList              = request.json['schema'][input]
-                if input[:9] == "childform":
-                    newChildForm = FormsRelationships(form.name, inputsList['childFormName'])
-                else:
-                    try:
-                        inputsList['required'] = inputsList['validators'].index('required') >= 0
-                    except:
-                        inputsList['required'] = False
+                try:
+                    inputsList['required'] = inputsList['validators'].index('required') >= 0
+                except:
+                    inputsList['required'] = False
 
-                    try:
-                        inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
-                    except:
-                        inputsList['readonly'] = False
+                try:
+                    inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
+                except:
+                    inputsList['readonly'] = False
 
-                    del inputsList['validators']
-                    del inputsList['id']
+                del inputsList['validators']
+                del inputsList['id']
 
-                    # abort(make_response('inputsList : %s \nand %s \nand %s \nand %s' % (str(inputsList), str(inputColumnList), str(form), str(request.json)), 400))
+                # abort(make_response('inputsList : %s \nand %s \nand %s \nand %s' % (str(inputsList), str(inputColumnList), str(form), str(request.json)), 400))
 
-                    newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
-                    newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
-                    newInput                = Input( **newInputValues )                         # new Input object
+                newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
+                newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
+                newInput                = Input( **newInputValues )                         # new Input object
 
-                    # Add properties to the new configurated field
-                    for prop in newPropertiesValues:
-                        # TODO FIND BETTER WORKAROUND
-                        if newPropertiesValues[prop] == None :
-                            newPropertiesValues[prop] = ''
-                        property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
-                        newInput.addProperty(property)
+                # Add properties to the new configurated field
+                for prop in newPropertiesValues:
+                    # TODO FIND BETTER WORKAROUND
+                    if newPropertiesValues[prop] == None :
+                        newPropertiesValues[prop] = ''
+                    property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
+                    newInput.addProperty(property)
 
-                    # Add new input to the form
-                    form.addInput(newInput)
+                # Add new input to the form
+                form.addInput(newInput)
 
             form.addKeywords( request.json['keywordsFr'], 'FR' )
             form.addKeywords( request.json['keywordsEn'], 'EN' )
@@ -144,15 +180,13 @@ def updateForm(id):
         if IfmissingParameters is False:
             abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
         else:
-            formsrels = session.query(FormsRelationships).all()
-            try:
-                session.delete(formsrels)
-                session.commit()
-            except:
-                session.rollback()
-                # abort(make_response('Error during FormsRelationships delete', 500))
-
             form = session.query(Form).filter_by(pk_Form = id).first()
+
+            newFormValues   = Utility._pick(request.json, neededParametersList)
+            newFormPropVals = Utility._pickNot(request.json, neededParametersList)
+            form.update(**newFormValues)              # new form Object
+            form.updateProperties(newFormPropVals)
+
             if form != None:
 
                 # Get form input ID list
@@ -164,45 +198,41 @@ def updateForm(id):
                 for eachInput in request.json['schema']:
                     inputsList = request.json['schema'][eachInput]
 
-                    if eachInput[:9] == "childform":
-                        print('childform PUT !')
-                        newChildForm = FormsRelationships(form.name, inputsList['childFormName'])
+                    try:
+                        request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
+                    except:
+                        request.json['schema'][eachInput]['required'] = False
+                        pass
+
+                    try:
+                        request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
+                    except:
+                        request.json['schema'][eachInput]['readonly'] = False
+                        pass
+
+                    del request.json['schema'][eachInput]['validators']
+
+                    if request.json['schema'][eachInput]['id'] in presentInputs:
+
+                        # the field is present we update it
+                        foundInput        = session.query(Input).filter_by(pk_Input = request.json['schema'][eachInput]['id']).first()
+                        inputRepository   = InputRepository(foundInput)
+
+                        inputNewValues    = request.json['schema'][eachInput]
+
+                        # foundInputUpdated = inputRepository.updateInput(**inputNewValues)
+                        inputRepository.updateInput(**inputNewValues)
+
+                        presentInputs.remove(foundInput.pk_Input)
+
                     else:
-                        try:
-                            request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
-                        except:
-                            request.json['schema'][eachInput]['required'] = False
-                            pass
+                        del request.json['schema'][eachInput]['id']
+                        inputRepository   = InputRepository(None)
+                        # Add a new input to the form
 
-                        try:
-                            request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
-                        except:
-                            request.json['schema'][eachInput]['readonly'] = False
-                            pass
+                        inputsList = request.json['schema'][eachInput]
 
-                        del request.json['schema'][eachInput]['validators']
-
-                        if request.json['schema'][eachInput]['id'] in presentInputs:
-
-                            # the field is present we update it
-                            foundInput        = session.query(Input).filter_by(pk_Input = request.json['schema'][eachInput]['id']).first()
-                            inputRepository   = InputRepository(foundInput)
-
-                            inputNewValues    = request.json['schema'][eachInput]
-
-                            # foundInputUpdated = inputRepository.updateInput(**inputNewValues)
-                            inputRepository.updateInput(**inputNewValues)
-
-                            presentInputs.remove(foundInput.pk_Input)
-
-                        else:
-                            del request.json['schema'][eachInput]['id']
-                            inputRepository   = InputRepository(None)
-                            # Add a new input to the form
-
-                            inputsList = request.json['schema'][eachInput]
-
-                            form.addInput( inputRepository.createInput(**inputsList) )
+                        form.addInput( inputRepository.createInput(**inputsList) )
 
                 if len(presentInputs) > 0:
                     # We need to remove some input
@@ -220,6 +250,10 @@ def updateForm(id):
                 form.addKeywords( request.json['keywordsEn'], 'EN' )
 
                 form.modificationDate = datetime.datetime.now()
+
+                neededParametersList = Form.getColumnList()
+
+                
 
                 try:
                     session.add (form)
@@ -266,8 +300,8 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/childforms/<int:formid>', methods = ['GET'])
-def get_childforms(formid):
+@app.route('/allforms', methods = ['GET'])
+def quick_getAllForms():
     forms = []
 
     forms_added        = []
@@ -278,11 +312,33 @@ def get_childforms(formid):
     results = query.all()
 
     for form in results:
+        f = {"id":form.pk_Form,"name":form.name}
+        current_form_index += 1
+        forms.append(f)
+        forms_added.append(form.pk_Form)
 
-        if form.pk_Form not in forms_added and (formid == 0 or (formid != 0 and form.pk_Form != formid)):
-            f = {"id":form.pk_Form,"name":form.name}
-            current_form_index += 1
-            forms.append(f)
-            forms_added.append(form.pk_Form)
+    return json.dumps(forms, ensure_ascii=False)
+
+
+
+@app.route('/childforms/<int:formid>', methods = ['GET'])
+def get_childforms(formid):
+    forms = []
+
+    forms_added        = []
+    keywords_added     = []
+    current_form_index = -1
+
+    if (formid > 0):
+        formName = session.query(Form).filter_by(pk_Form = formid).first().name
+
+        for childFormInputProp in session.query(InputProperty).filter_by(value = formName, name = "childFormName").all():
+            childFormInput = session.query(Input).filter_by(pk_Input = childFormInputProp.fk_Input).first()
+            childForm = session.query(Form).filter_by(pk_Form = childFormInput.fk_form).first()
+            if childForm.pk_Form not in forms_added:
+                f = {"id":childForm.pk_Form,"name":childForm.name}
+                current_form_index += 1
+                forms.append(f)
+                forms_added.append(childForm.pk_Form)
 
     return json.dumps(forms, ensure_ascii=False)
