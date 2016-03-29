@@ -55,8 +55,6 @@ class Form(Base):
         self.isTemplate             = kwargs['isTemplate']
         self.context                = kwargs['context']
 
-        print ("Form Init !! " + kwargs['name'] + " ; " + kwargs['tag'] + " ; " + kwargs['labelFr'] + " ; " + kwargs['labelEn'] + " ; " + kwargs['descriptionEn'] + " ; " + kwargs['descriptionFr'] + " ; OVER OVER OVER ")
-
     # Update form values
     def update(self, **kwargs):
         """
@@ -73,9 +71,6 @@ class Form(Base):
         self.modificationDate       = datetime.datetime.now()
         self.isTemplate             = kwargs['isTemplate']
         self.context                = kwargs['context']
-
-        print ("Form Update !! " + kwargs['name'] + " ; " + kwargs['tag'] + " ; " + kwargs['labelFr'] + " ; " + kwargs['labelEn'] + " ; " + kwargs['descriptionEn'] + " ; " + kwargs['descriptionFr'] + " ; OVER OVER OVER ")
-
 
     def get_fieldsets(self):
         """

@@ -44,11 +44,6 @@ class FormProperty(Base):
             return self.value
 
     def update(self, newName, newValue, newCreationDate, newValueType):
-        print(newName)
-        print(newValue)
-        print(newCreationDate)
-        print(newValueType)
-        print("OLE OLE OLE OLEOLE OLE OLE OLEOLE OLE OLE OLEOLE OLE OLE OLEOLE OLE OLE OLEOLE OLE OLE OLE")
         self.name           = newName
         self.value          = newValue
         self.creationDate   = newCreationDate
