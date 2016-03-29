@@ -300,7 +300,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/allforms', methods = ['GET'])
+@app.route('/forms/allforms', methods = ['GET'])
 def quick_getAllForms():
     forms = []
 
@@ -312,7 +312,7 @@ def quick_getAllForms():
     results = query.all()
 
     for form in results:
-        f = {"id":form.pk_Form,"name":form.name}
+        f = {"id":form.pk_Form,"name":form.name, "context":form.context}
         current_form_index += 1
         forms.append(f)
         forms_added.append(form.pk_Form)
