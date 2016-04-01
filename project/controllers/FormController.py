@@ -87,15 +87,8 @@ def createForm():
     if request.json:
         #   Check if all parameters are present
         IfmissingParameters = True
-
         neededParametersList = Form.getColumnList()
-
-        for a in request.json:
-            print (">>>>>>>>>>>>>", a)
-
         for a in neededParametersList:
-            print ("<<<<<<<<<<<<<", a)
-            print (a in request.json)
             IfmissingParameters = IfmissingParameters and (a in request.json)
 
         if IfmissingParameters == False:
@@ -271,6 +264,18 @@ def updateForm(id):
 
 @app.route('/forms/<int:id>', methods=['DELETE'])
 def removeForm(id):
+    form = session.query(Form).filter_by(pk_Form = id).first()
+
+    try:
+        session.delete(form)
+        session.commit()
+        return jsonify({"deleted" : True})
+    except:
+        session.rollback()
+        abort(make_response('Error during delete', 500))
+
+@app.route('/forms/<string:context>/<int:id>', methods=['DELETE'])
+def removeFormInContext(context, id):
     form = session.query(Form).filter_by(pk_Form = id).first()
 
     try:

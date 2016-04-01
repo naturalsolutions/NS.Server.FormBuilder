@@ -111,7 +111,7 @@ class Input(Base):
         }
 
         for prop in self.Properties :
-            JSONObject[prop.name] = prop.value
+            JSONObject[prop.name] = prop.getvalue()
 
         return JSONObject
 
