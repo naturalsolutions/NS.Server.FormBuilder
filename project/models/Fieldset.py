@@ -18,28 +18,32 @@ class Fieldset(Base):
     multiple = Column(Boolean, nullable=True)
     curStatus = Column(Integer, nullable=False)
     refid = Column(String(255, 'French_CI_AS'), nullable=False)
+    order = Column(SmallInteger, nullable=False)
 
     Form = relationship('Form')
 
-    def __init__(self, legend, fields, multiple, refid):
+    def __init__(self, legend, fields, multiple, refid, order):
         self.legend = legend
         self.fields = fields
         self.multiple = multiple
         self.curStatus = 0
         self.refid = refid
+        self.order = order
 
-    def update(self, legend, fields, multiple, refid):
+    def update(self, legend, fields, multiple, refid, order):
         self.legend = legend
         self.fields = fields
         self.multiple = multiple
         self.refid = refid
+        self.order = order
 
     def toJSON(self):
         return {
             "legend"    : self.legend,
             "fields"    : self.fields.split(',') if len(self.fields)> 0 else [],
-            "multiple"    : self.multiple,
-            "refid"    : self.refid
+            "multiple"  : self.multiple,
+            "refid"     : self.refid,
+            "order"     : self.order
         }
 
     @classmethod
@@ -48,5 +52,6 @@ class Fieldset(Base):
             "legend",
             "fields",
             "multiple",
-            "refid"
+            "refid",
+            "order"
         ]

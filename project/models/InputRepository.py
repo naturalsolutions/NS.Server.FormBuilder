@@ -26,6 +26,8 @@ class InputRepository:
         inputPropertiesList     = Utility._pickNot(kwargs, Input.getColumnsList())
         # Update each property value
         for each in inputPropertiesList:
+            if inputPropertiesList[each] == None:
+                inputPropertiesList[each] = ""
             session.query(InputProperty).filter_by(fk_Input = self.input.pk_Input, name = each).update({"value" : inputPropertiesList[each]})
 
     # create a new input

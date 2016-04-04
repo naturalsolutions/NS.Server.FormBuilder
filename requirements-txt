@@ -7,3 +7,4 @@ SQLAlchemy==0.9.8
 sqlautocode==0.7
 Werkzeug==0.9.6
 wheel==0.24.0
+jwt==1.4.0

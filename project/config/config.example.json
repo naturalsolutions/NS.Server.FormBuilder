@@ -5,6 +5,7 @@
 	],
     "sql" : {
       "url" : "databaseConnectionString",
-	  "_comment" : "mssql+pyodbc://user:userpsw@dbpath"
+      "urlTrack" : "TrackDatabaseConnectionString",
+	  "_comment" : "DRIVER={SQL Server};Server=.;Database=TRACK_DEV;UID=FormBuilderUser;PWD=fbuser42;"
     }
 }

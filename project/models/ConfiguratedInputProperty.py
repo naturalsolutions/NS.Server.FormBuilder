@@ -15,7 +15,7 @@ class ConfiguratedInputProperty(Base):
     fk_ConfiguratedInput         = Column(ForeignKey('ConfiguratedInput.pk_ConfiguratedInput'), nullable=False)
 
     name                         = Column(String(255, ''), nullable=False)
-    value                        = Column(String(255, 'French_CI_AS'), nullable=False)
+    value                        = Column(String(5000, 'French_CI_AS'), nullable=False)
     creationDate                 = Column(DateTime, nullable=False)
     valueType                    = Column(String(10, 'French_CI_AS'), nullable=False)
 

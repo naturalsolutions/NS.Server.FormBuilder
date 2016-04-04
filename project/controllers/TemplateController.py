@@ -5,6 +5,7 @@ from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
 from ..models import session
 from ..models.Form import Form
+from ..models.InputProperty import InputProperty
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
