@@ -3,7 +3,7 @@
 from project import app
 from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
-from ..models import session, engine
+from ..models import session, engine,dbConfig,Session
 from ..models.Form import Form
 from ..models.FormProperty import FormProperty
 from ..models.KeyWord_Form import KeyWord_Form
@@ -16,6 +16,8 @@ import json
 import sys
 import datetime
 import pprint
+from traceback import print_exc
+import transaction
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
@@ -251,6 +253,11 @@ def updateForm(id):
                 try:
                     session.add (form)
                     session.commit ()
+                    try: 
+                        exec_exportFormBuilder()
+                    except Exception as e: 
+                        print_exc()
+                        pass
                     return jsonify({"form" : form.recuriseToJSON() })
                 except:
                     session.rollback()
@@ -347,3 +354,18 @@ def get_childforms(formid):
                 forms_added.append(childForm.pk_Form)
 
     return json.dumps(forms, ensure_ascii=False)
+
+
+def exec_exportFormBuilder():
+    print(""" 
+        EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder] :date ;
+        """)
+    stmt = text(""" 
+        EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
+        """)
+    # print(Session())
+    curSession = Session()
+    curSession.execute(stmt.execution_options(autocommit=True))
+    transaction.commit()
+    curSession.commit()
+    return
