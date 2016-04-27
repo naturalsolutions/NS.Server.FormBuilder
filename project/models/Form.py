@@ -138,10 +138,18 @@ class Form(Base):
     def recuriseToJSON(self):
         json = self.toJSON()
         inputs = {}
-        loops = 1
+        
+        loops = 0
+        allInputs = self.inputs
 
-        for each in self.inputs:
-            inputs[each.name] = each.toJSON()
+        while len(allInputs) > 0:
+            for each in allInputs:
+                if each.order == loops:
+                    inputs[loops] = each.toJSON()
+                    break
+            loops += 1
+            if loops > len(self.inputs):
+                break
             
         json['schema'] = inputs
 
