@@ -138,7 +138,13 @@ def createForm():
 
                 # Add new input to the form
                 form.addInput(newInput)
+                foundInputs = session.query(Input).filter_by(name = newInput.name).all()
 
+                for foundInput in foundInputs:
+                    foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
+                    if foundForm.context == form.context and foundInput.type != newInput.type:
+                        abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+            
             form.addKeywords( request.json['keywordsFr'], 'FR' )
             form.addKeywords( request.json['keywordsEn'], 'EN' )
 
@@ -227,6 +233,14 @@ def updateForm(id):
 
                         form.addInput( inputRepository.createInput(**inputsList) )
 
+                        foundInputs = session.query(Input).filter_by(name = inputsList['name']).all()
+
+                        for foundInput in foundInputs:
+                            foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
+                            if foundForm.context == form.context and foundInput.type != inputsList['type']:
+                                abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+                    
+
                 if len(presentInputs) > 0:
                     # We need to remove some input
                     inputRepository   = InputRepository(None)
@@ -245,8 +259,6 @@ def updateForm(id):
                 form.modificationDate = datetime.datetime.now()
 
                 neededParametersList = Form.getColumnList()
-
-                
 
                 try:
                     session.add (form)
