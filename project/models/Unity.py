@@ -13,6 +13,7 @@ class Unity(Base):
     name          = Column(String(100, 'French_CI_AS'), nullable=False)
     labelFr       = Column(String(300, 'French_CI_AS'))
     labelEn       = Column(String(300, 'French_CI_AS'))
+    context       = Column(String(50, 'French_CI_AS'), nullable=False)
 
     def toJSON(self):
         return {
