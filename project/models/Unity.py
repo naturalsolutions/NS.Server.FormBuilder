@@ -14,11 +14,15 @@ class Unity(Base):
     labelFr       = Column(String(300, 'French_CI_AS'))
     labelEn       = Column(String(300, 'French_CI_AS'))
     context       = Column(String(50, 'French_CI_AS'), nullable=False)
+    ordre         = Column(Integer, nullable=False)
+    
 
     def toJSON(self):
         return {
             "ID"        : self.pk_Unity,
             "name"      : self.name,
             "labelFr"   : self.labelFr,
-            "labelEn"   : self.labelEn
+            "labelEn"   : self.labelEn,
+            "context"   : self.context,
+            "ordre"     : self.ordre
         }
