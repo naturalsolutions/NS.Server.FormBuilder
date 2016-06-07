@@ -131,7 +131,7 @@ def createForm():
                 # Add properties to the new configurated field
                 for prop in newPropertiesValues:
                     # TODO FIND BETTER WORKAROUND
-                    if newPropertiesValues[prop] == None :
+                    if newPropertiesValues[prop] == None or newPropertiesValues[prop] == []:
                         newPropertiesValues[prop] = ''
                     property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
                     newInput.addProperty(property)
