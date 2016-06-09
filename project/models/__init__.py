@@ -2,7 +2,7 @@
 
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 import json
 import urllib.parse
 
@@ -12,6 +12,7 @@ from . import FormProperty
 from . import Input
 from . import InputProperty
 from . import Unity
+from . import Propagation
 from . import KeyWord
 from . import KeyWord_Form
 from . import ConfiguratedInput
@@ -29,5 +30,5 @@ sqlConnexion = "mssql+pyodbc:///?odbc_connect=%s" % sqlConnexion
 
 engine = create_engine(sqlConnexion)
 Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-session = Session()
+session = scoped_session(sessionmaker(bind=engine))
+

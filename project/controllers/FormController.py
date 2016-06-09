@@ -20,7 +20,7 @@ import pprint
 # Return all forms
 @app.route('/forms', methods = ['GET'])
 def get_forms():
-
+    print(session())
     # Forms list who will be returned at the end
     forms = []
 

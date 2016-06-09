@@ -25,8 +25,8 @@ class Propagation(Base):
             "Source_ID"     : self.Source_ID,
             "Instance"      : self.Instance,
             "TypeObject"    : self.TypeObject,
-            "Priority"      : self.Priority
-            "Propagation"   : self.Propagation
-            "Date_Modif"    : self.Date_Modif
+            "Priority"      : self.Priority,
+            "Propagation"   : self.Propagation,
+            "Date_Modif"    : self.Date_Modif,
             "Comment"       : self.Comment
         }

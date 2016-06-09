@@ -24,7 +24,6 @@ def getConfiguration():
 # GET, returns one configurated field
 @app.route('/configurations/<string:fieldName>', methods=['GET'])
 def getOneConfiguration(fieldName):
-    print (fieldName)
     configuratedInputsList = session.query(ConfiguratedInput).filter_by(name = fieldName).all()
     configuratedInputs        = {}
     items = 0
@@ -58,7 +57,7 @@ def createConfiguratedField():
         newConfiguratedField        = ConfiguratedInput( **newConfiguratedInputValues )
 
         # Add properties to the new configurated field
-        for prop in newPropertiesValues:
+        for prop in newPropertiesValues :
             if newPropertiesValues[prop] == None :
                 newPropertiesValues[prop] = ''
             property = ConfiguratedInputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
