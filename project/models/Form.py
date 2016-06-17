@@ -30,7 +30,7 @@ class Form(Base):
     context                 = Column(String(50, 'French_CI_AS'), nullable=False)
 
     # Relationship
-    keywords         = relationship("KeyWord_Form", cascade="delete")
+    keywords         = relationship("KeyWord_Form", cascade="all")
     fieldsets        = relationship("Fieldset", cascade="all")
     inputs           = relationship("Input", cascade="all")
     Properties       = relationship("FormProperty", cascade="all")
@@ -111,20 +111,19 @@ class Form(Base):
         keywordsFr = []
         keywordsEn = []
         tmpKeyword = None
-        parentForms = {}
-        loops = 1
 
         for each in self.keywords :
             tmpKeyword = each.toJSON()
+            print("TMPKEYWORD bbbbbbbbbbbbbbitch !!!!")
+            print(tmpKeyword)
             if tmpKeyword['lng'] == 'FR':
                 del tmpKeyword['lng']
-                keywordsFr.append (tmpKeyword)
+                keywordsFr.append (tmpKeyword['name'])
             else:
                 del tmpKeyword['lng']
-                keywordsEn.append (tmpKeyword)
-        
-        if (loops > 1):
-            json["parentForms"] = parentForms
+                keywordsEn.append (tmpKeyword['name'])
+        print(keywordsFr)
+        print(keywordsEn)   
         json['keywordsFr'] = keywordsFr
         json['keywordsEn'] = keywordsEn
 
@@ -151,20 +150,38 @@ class Form(Base):
             if loops > len(self.inputs):
                 break
             
+        for each in json :
+            print("ppppppppppppppppppppppppppppppppppppp")
+            print(each)
+
         json['schema'] = inputs
 
         json['fieldsets'] = self.get_fieldsets()
 
         json = self.addFormProperties(json);
+
+        print("ooooooooooooooooooooooooo")
+        for each in self.keywords : print(each.toJSON())
+        for each in json :
+            print("xxxxxxxxxxxxxxxxxxxxxxxxxxx")
+            print(each)
         return json
 
     # Add keyword to the form
     def addKeywords(self, KeyWordList, Language):
         for each in KeyWordList:
+            print("****** KEYWORD " + Language)
+            print(each)
             a = KeyWord_Form()
-            a.KeyWord = KeyWord(each, Language)
-            #a.Form = self
+            if ('key' in each):
+                print("with key !")
+                a.KeyWord = KeyWord(each["key"], Language)
+            else:
+                print("NOOOOOOOOO key !")
+                a.KeyWord = KeyWord(each, Language)
+            a.Form = self
             self.keywords.append(a)
+        for each in self.keywords: print(each.toJSON())
 
     # Add Input to the form
     def addInput(self, newInput):
