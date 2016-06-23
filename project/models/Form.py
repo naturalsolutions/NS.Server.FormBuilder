@@ -114,16 +114,12 @@ class Form(Base):
 
         for each in self.keywords :
             tmpKeyword = each.toJSON()
-            print("TMPKEYWORD bbbbbbbbbbbbbbitch !!!!")
-            print(tmpKeyword)
             if tmpKeyword['lng'] == 'FR':
                 del tmpKeyword['lng']
                 keywordsFr.append (tmpKeyword['name'])
             else:
                 del tmpKeyword['lng']
                 keywordsEn.append (tmpKeyword['name'])
-        print(keywordsFr)
-        print(keywordsEn)   
         json['keywordsFr'] = keywordsFr
         json['keywordsEn'] = keywordsEn
 
@@ -149,10 +145,6 @@ class Form(Base):
             loops += 1
             if loops > len(self.inputs):
                 break
-            
-        for each in json :
-            print("ppppppppppppppppppppppppppppppppppppp")
-            print(each)
 
         json['schema'] = inputs
 
@@ -160,28 +152,19 @@ class Form(Base):
 
         json = self.addFormProperties(json);
 
-        print("ooooooooooooooooooooooooo")
-        for each in self.keywords : print(each.toJSON())
-        for each in json :
-            print("xxxxxxxxxxxxxxxxxxxxxxxxxxx")
-            print(each)
         return json
 
     # Add keyword to the form
     def addKeywords(self, KeyWordList, Language):
         for each in KeyWordList:
-            print("****** KEYWORD " + Language)
-            print(each)
-            a = KeyWord_Form()
-            if ('key' in each):
-                print("with key !")
-                a.KeyWord = KeyWord(each["key"], Language)
-            else:
-                print("NOOOOOOOOO key !")
-                a.KeyWord = KeyWord(each, Language)
-            a.Form = self
-            self.keywords.append(a)
-        for each in self.keywords: print(each.toJSON())
+            if (each != {}):
+                a = KeyWord_Form()
+                if ('key' in each):
+                    a.KeyWord = KeyWord(each["key"], Language)
+                else:
+                    a.KeyWord = KeyWord(each, Language)
+                a.Form = self
+                self.keywords.append(a)
 
     # Add Input to the form
     def addInput(self, newInput):

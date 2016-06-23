@@ -3,7 +3,6 @@ from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..utilities import Utility
 
-
 # InputRepository contains some method to lighten controllers
 class InputRepository:
     
