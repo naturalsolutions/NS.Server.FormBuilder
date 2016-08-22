@@ -119,6 +119,12 @@ class Input(Base):
     def addProperty(self, prop):
         self.Properties.append(prop)
 
+    def getProperty(self, propname):
+        for InputProp in self.Properties:
+            if InputProp.name == propname:
+                return InputProp.value
+        return ""
+
     # get Column list except primary key and managed field like curStatus and startDate
     @classmethod
     def getColumnsList(cls):

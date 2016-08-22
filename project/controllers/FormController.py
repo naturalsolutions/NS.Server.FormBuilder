@@ -73,10 +73,10 @@ def getFormByID(formID):
                 forms.append(f)
                 forms_added.append(form.pk_Form)
 
-            if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
-                k = keyword.toJSON()
-                forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
-                keywords_added.append(keyword.pk_KeyWord_Form)
+                if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
+                    k = keyword.toJSON()
+                    forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
+                    keywords_added.append(keyword.pk_KeyWord_Form)
         return json.dumps(forms, ensure_ascii=False)
 
 # Create form
@@ -84,6 +84,12 @@ def getFormByID(formID):
 def createForm():
 
     if request.json:
+
+        checkform = session.query(Form).filter_by(name = request.json["name"]).first()
+
+        if (checkform):
+            abort(make_response('A protocol with this name already exist !', 418))
+
         #   Check if all parameters are present
         IfmissingParameters = True
         neededParametersList = Form.getColumnList()
@@ -144,19 +150,27 @@ def createForm():
                     if foundForm.context == form.context and foundInput.type != newInput.type:
                         abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
             
-            form.addKeywords( request.json['keywordsFr'], 'FR' )
-            form.addKeywords( request.json['keywordsEn'], 'EN' )
-
             for fieldset in request.json['fieldsets']:
                 # TODO FIX
                 newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['legend'] + " " + fieldset['cid'], fieldset['order'])#fieldset['LOL']
                 form.addFieldset(newfieldset)
 
+            if (form.hasCircularDependencies([], session)):
+                abort(make_response('Circular dependencies appeared with child form !', 508))
+
             try:
-                session.add (form)
-                session.commit ()
+                for each in form.keywords :
+                    session.delete(each.KeyWord)
+                    session.delete(each)
+                session.commit()
+
+                form.setKeywords( request.json['keywordsFr'], 'FR' )
+                form.setKeywords( request.json['keywordsEn'], 'EN' )
+                session.add(form)
+                session.commit()
+
                 return jsonify({"form" : form.recuriseToJSON() })
-            except Exception as e:
+            except:
                 print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
                 abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
@@ -168,6 +182,11 @@ def createForm():
 @app.route('/forms/<int:id>', methods=['PUT'])
 def updateForm(id):
     if request.json:
+
+        checkform = session.query(Form).filter_by(name = request.json["name"]).first()
+
+        if (checkform and checkform.pk_Form != id):
+            abort(make_response('A protocol with this name already exist !', 418))
 
         IfmissingParameters = True
 
@@ -252,26 +271,38 @@ def updateForm(id):
                     # TODO FIX
                     form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['legend'] + " " + each['cid'], each['order']))
 
-                form.addKeywords( request.json['keywordsFr'], 'FR' )
-                form.addKeywords( request.json['keywordsEn'], 'EN' )
+                if (form.hasCircularDependencies([], session)):
+                    abort(make_response('Circular dependencies appeared with child form !', 508))
 
                 form.modificationDate = datetime.datetime.now()
 
                 neededParametersList = Form.getColumnList()
 
                 try:
-                    session.add (form)
-                    session.commit ()
+                    for each in form.keywords :
+                        session.delete(each.KeyWord)
+                        session.delete(each)
+                    session.commit()
+
+                    form.setKeywords( request.json['keywordsFr'], 'FR' )
+                    form.setKeywords( request.json['keywordsEn'], 'EN' )
+                    session.add(form)
+                    session.commit()
+
                     return jsonify({"form" : form.recuriseToJSON() })
                 except:
+                    print (str(e).encode(sys.stdout.encoding, errors='replace'))
                     session.rollback()
-                    abort(make_response('Error', 500))
+                    abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
+
+
+                return jsonify({"form" : form.recuriseToJSON() })
 
             else:
                 abort(make_response('No form found with this ID', 404))
 
     else:
-        abort(make_response('Data seems not be in ' + format + ' format', 400))
+        abort(make_response('Data seems to not be in ' + format + ' format', 400))
 
 @app.route('/forms/<int:id>', methods=['DELETE'])
 def removeForm(id):

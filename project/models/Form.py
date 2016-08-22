@@ -154,6 +154,20 @@ class Form(Base):
 
         return json
 
+    def hasCircularDependencies(self, allParents, session):
+        toret = true
+        for FormInput in self.inputs:
+            if FormInput.type == 'ChildForm':
+                childFormName = FormInput.getProperty('childFormName')
+                if childFormName in allParents:
+                    return true
+                else:
+                    tempAllParents = allParents
+                    tempAllParents.append(self.name)
+                    SubForm = session.query(Form).filter_by(name = childFormName).first()
+                    toret = toret and not SubForm.hasCircularDependencies(tempAllParents, session)
+        return (not toret)
+
     # Add keyword to the form
     def addKeywords(self, KeyWordList, Language):
         for each in KeyWordList:
@@ -163,8 +177,23 @@ class Form(Base):
                     a.KeyWord = KeyWord(each["key"], Language)
                 else:
                     a.KeyWord = KeyWord(each, Language)
-                a.Form = self
+                a.setForm(self)
                 self.keywords.append(a)
+
+    # Set form keywords
+    def setKeywords(self, KeyWordList, Language):
+        keywordsList = []
+        for each in KeyWordList:
+            if (each != {}):
+                a = KeyWord_Form()
+                if ('key' in each):
+                    a.KeyWord = KeyWord(each["key"], Language)
+                else:
+                    a.KeyWord = KeyWord(each, Language)
+                a.setForm(self)
+                keywordsList.append(a)
+
+        self.keywords = keywordsList
 
     # Add Input to the form
     def addInput(self, newInput):
