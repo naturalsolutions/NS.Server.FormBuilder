@@ -357,15 +357,13 @@ def get_childforms(formid):
 
 
 def exec_exportFormBuilder():
-    print(""" 
-        EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder] :date ;
-        """)
     stmt = text(""" 
         EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
         """)
-    # print(Session())
+
     curSession = Session()
     curSession.execute(stmt.execution_options(autocommit=True))
-    transaction.commit()
+
     curSession.commit()
+    curSession.close()
     return
