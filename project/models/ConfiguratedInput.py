@@ -12,15 +12,13 @@ class ConfiguratedInput(Base):
 
     __tablename__ = "ConfiguratedInput"
 
-
     pk_ConfiguratedInput      = Column(BigInteger, primary_key=True)
 
     name          = Column(String(100, 'French_CI_AS'), nullable=False)
     labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
     labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode      = Column(Integer, nullable=False)
-    fieldSizeEdit     = Column(String(100, 'French_CI_AS'), nullable=False)
-    fieldSizeDisplay     = Column(String(100, 'French_CI_AS'), nullable=False)
+    fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
     endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
@@ -38,13 +36,12 @@ class ConfiguratedInput(Base):
     Properties  = relationship("ConfiguratedInputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSizeEdit, fieldSizeDisplay, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset):
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn
         self.editMode       = editMode
-        self.fieldSizeEdit      = fieldSizeEdit
-        self.fieldSizeDisplay      = fieldSizeDisplay
+        self.fieldSize      = fieldSize
         self.endOfLine      = endOfLine
         self.type           = type
         self.editorClass    = editorClass
@@ -69,8 +66,7 @@ class ConfiguratedInput(Base):
             "labelEn"           : self.labelEn,
             "endOfLine"         : self.endOfLine,
             "editMode"          : self.editMode,
-            "fieldSizeEdit"         : self.fieldSizeEdit,
-            "fieldSizeDisplay"         : self.fieldSizeDisplay,
+            "fieldSize"         : self.fieldSize,
             "editorClass"       : self.editorClass,
             "fieldClassEdit"        : self.fieldClassEdit,
             "fieldClassDisplay"        : self.fieldClassDisplay,
@@ -102,8 +98,7 @@ class ConfiguratedInput(Base):
             'labelFr',
             'labelEn',
             'editMode',
-            'fieldSizeEdit',
-            'fieldSizeDisplay',
+            'fieldSize',
             'endOfLine',
             'type',
             'editorClass',

@@ -19,8 +19,7 @@ class Input(Base):
     labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
     labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode      = Column(Integer, nullable=False)
-    fieldSizeEdit     = Column(String(100, 'French_CI_AS'), nullable=False)
-    fieldSizeDisplay     = Column(String(100, 'French_CI_AS'), nullable=False)
+    fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
     endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
@@ -40,13 +39,12 @@ class Input(Base):
     Properties  = relationship("InputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSizeEdit, fieldSizeDisplay, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, order):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, order):
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn
         self.editMode       = editMode
-        self.fieldSizeEdit      = fieldSizeEdit
-        self.fieldSizeDisplay      = fieldSizeDisplay
+        self.fieldSize      = fieldSize
         self.endOfLine      = endOfLine
         self.type           = type
         self.editorClass    = editorClass
@@ -70,8 +68,7 @@ class Input(Base):
         self.labelFr     = kwargs['labelFr']
         self.labelEn     = kwargs['labelEn']
         self.editMode    = kwargs['editMode']
-        self.fieldSizeEdit   = kwargs['fieldSizeEdit']
-        self.fieldSizeDisplay   = kwargs['fieldSizeDisplay']
+        self.fieldSize   = kwargs['fieldSize']
         self.endOfLine   = kwargs['endOfLine']
         self.editorClass = kwargs['editorClass']
         self.fieldClassEdit  = kwargs['fieldClassEdit']
@@ -93,8 +90,7 @@ class Input(Base):
             "labelEn"           : self.labelEn,
             "endOfLine"         : self.endOfLine,
             "editMode"          : self.editMode,
-            "fieldSizeEdit"         : self.fieldSizeEdit,
-            "fieldSizeDisplay"         : self.fieldSizeDisplay,
+            "fieldSize"         : self.fieldSize,
             "editorClass"       : self.editorClass,
             "fieldClassEdit"        : self.fieldClassEdit,
             "fieldClassDisplay"        : self.fieldClassDisplay,
@@ -113,11 +109,21 @@ class Input(Base):
         for prop in self.Properties :
             JSONObject[prop.name] = prop.getvalue()
 
+        #TODO Find out why this exists ?
+        #if (self.type == 'ChildForm') :
+        #    JSONObject[realChildFormName] = 
+
         return JSONObject
 
     # add property to the configurated input
     def addProperty(self, prop):
         self.Properties.append(prop)
+
+    def getProperty(self, propname):
+        for InputProp in self.Properties:
+            if InputProp.name == propname:
+                return InputProp.value
+        return ""
 
     # get Column list except primary key and managed field like curStatus and startDate
     @classmethod
@@ -127,8 +133,7 @@ class Input(Base):
             'labelFr',
             'labelEn',
             'editMode',
-            'fieldSizeEdit',
-            'fieldSizeDisplay',
+            'fieldSize',
             'endOfLine',
             'type',
             'editorClass',

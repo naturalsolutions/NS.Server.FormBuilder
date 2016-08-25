@@ -30,7 +30,7 @@ class Form(Base):
     context                 = Column(String(50, 'French_CI_AS'), nullable=False)
 
     # Relationship
-    keywords         = relationship("KeyWord_Form", cascade="delete")
+    keywords         = relationship("KeyWord_Form", cascade="all")
     fieldsets        = relationship("Fieldset", cascade="all")
     inputs           = relationship("Input", cascade="all")
     Properties       = relationship("FormProperty", cascade="all")
@@ -111,20 +111,15 @@ class Form(Base):
         keywordsFr = []
         keywordsEn = []
         tmpKeyword = None
-        parentForms = {}
-        loops = 1
 
         for each in self.keywords :
             tmpKeyword = each.toJSON()
             if tmpKeyword['lng'] == 'FR':
                 del tmpKeyword['lng']
-                keywordsFr.append (tmpKeyword)
+                keywordsFr.append (tmpKeyword['name'])
             else:
                 del tmpKeyword['lng']
-                keywordsEn.append (tmpKeyword)
-        
-        if (loops > 1):
-            json["parentForms"] = parentForms
+                keywordsEn.append (tmpKeyword['name'])
         json['keywordsFr'] = keywordsFr
         json['keywordsEn'] = keywordsEn
 
@@ -138,25 +133,67 @@ class Form(Base):
     def recuriseToJSON(self):
         json = self.toJSON()
         inputs = {}
-        loops = 1
+        
+        loops = 0
+        allInputs = self.inputs
 
-        for each in self.inputs:
-            inputs[each.name] = each.toJSON()
-            
+        while len(allInputs) > 0:
+            for each in allInputs:
+                if each.order == loops:
+                    inputs[loops] = each.toJSON()
+                    break
+            loops += 1
+            if loops > len(self.inputs):
+                break
+
         json['schema'] = inputs
 
         json['fieldsets'] = self.get_fieldsets()
 
         json = self.addFormProperties(json);
+
         return json
+
+    def hasCircularDependencies(self, allParents, session):
+        toret = true
+        for FormInput in self.inputs:
+            if FormInput.type == 'ChildForm':
+                childFormName = FormInput.getProperty('childFormName')
+                if childFormName in allParents:
+                    return true
+                else:
+                    tempAllParents = allParents
+                    tempAllParents.append(self.name)
+                    SubForm = session.query(Form).filter_by(name = childFormName).first()
+                    toret = toret and not SubForm.hasCircularDependencies(tempAllParents, session)
+        return (not toret)
 
     # Add keyword to the form
     def addKeywords(self, KeyWordList, Language):
         for each in KeyWordList:
-            a = KeyWord_Form()
-            a.KeyWord = KeyWord(each, Language)
-            #a.Form = self
-            self.keywords.append(a)
+            if (each != {}):
+                a = KeyWord_Form()
+                if ('key' in each):
+                    a.KeyWord = KeyWord(each["key"], Language)
+                else:
+                    a.KeyWord = KeyWord(each, Language)
+                a.setForm(self)
+                self.keywords.append(a)
+
+    # Set form keywords
+    def setKeywords(self, KeyWordList, Language):
+        keywordsList = []
+        for each in KeyWordList:
+            if (each != {}):
+                a = KeyWord_Form()
+                if ('key' in each):
+                    a.KeyWord = KeyWord(each["key"], Language)
+                else:
+                    a.KeyWord = KeyWord(each, Language)
+                a.setForm(self)
+                keywordsList.append(a)
+
+        self.keywords = keywordsList
 
     # Add Input to the form
     def addInput(self, newInput):

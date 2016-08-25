@@ -12,3 +12,13 @@ def getUnities():
     for each in unities:
         un.append( each.toJSON() )
     return jsonify ({ "options" : un })
+
+#   Return all unit values
+@app.route('/unities/<string:context>', methods = ['GET'])
+def getUnitiesWithContext(context):
+    unities = session.query(Unity).all()
+    un   = []
+    for each in unities:
+    	if each.context == context:
+        	un.append(each.toJSON())
+    return jsonify ({ "unities" : un })

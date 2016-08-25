@@ -22,7 +22,7 @@ import transaction
 # Return all forms
 @app.route('/forms', methods = ['GET'])
 def get_forms():
-
+    print(session())
     # Forms list who will be returned at the end
     forms = []
 
@@ -75,11 +75,10 @@ def getFormByID(formID):
                 forms.append(f)
                 forms_added.append(form.pk_Form)
 
-            if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
-                k = keyword.toJSON()
-                forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
-                keywords_added.append(keyword.pk_KeyWord_Form)
-
+                if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
+                    k = keyword.toJSON()
+                    forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
+                    keywords_added.append(keyword.pk_KeyWord_Form)
         return json.dumps(forms, ensure_ascii=False)
 
 # Create form
@@ -87,6 +86,12 @@ def getFormByID(formID):
 def createForm():
 
     if request.json:
+
+        checkform = session.query(Form).filter_by(name = request.json["name"]).first()
+
+        if (checkform):
+            abort(make_response('A protocol with this name already exist !', 418))
+
         #   Check if all parameters are present
         IfmissingParameters = True
         neededParametersList = Form.getColumnList()
@@ -133,27 +138,41 @@ def createForm():
                 # Add properties to the new configurated field
                 for prop in newPropertiesValues:
                     # TODO FIND BETTER WORKAROUND
-                    if newPropertiesValues[prop] == None :
+                    if newPropertiesValues[prop] == None or newPropertiesValues[prop] == []:
                         newPropertiesValues[prop] = ''
                     property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
                     newInput.addProperty(property)
 
                 # Add new input to the form
                 form.addInput(newInput)
+                foundInputs = session.query(Input).filter_by(name = newInput.name).all()
 
-            form.addKeywords( request.json['keywordsFr'], 'FR' )
-            form.addKeywords( request.json['keywordsEn'], 'EN' )
-
+                for foundInput in foundInputs:
+                    foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
+                    if foundForm.context == form.context and foundInput.type != newInput.type:
+                        abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+            
             for fieldset in request.json['fieldsets']:
                 # TODO FIX
                 newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['legend'] + " " + fieldset['cid'], fieldset['order'])#fieldset['LOL']
                 form.addFieldset(newfieldset)
 
+            if (form.hasCircularDependencies([], session)):
+                abort(make_response('Circular dependencies appeared with child form !', 508))
+
             try:
-                session.add (form)
-                session.commit ()
+                for each in form.keywords :
+                    session.delete(each.KeyWord)
+                    session.delete(each)
+                session.commit()
+
+                form.setKeywords( request.json['keywordsFr'], 'FR' )
+                form.setKeywords( request.json['keywordsEn'], 'EN' )
+                session.add(form)
+                session.commit()
+
                 return jsonify({"form" : form.recuriseToJSON() })
-            except Exception as e:
+            except:
                 print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
                 abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
@@ -165,6 +184,11 @@ def createForm():
 @app.route('/forms/<int:id>', methods=['PUT'])
 def updateForm(id):
     if request.json:
+
+        checkform = session.query(Form).filter_by(name = request.json["name"]).first()
+
+        if (checkform and checkform.pk_Form != id):
+            abort(make_response('A protocol with this name already exist !', 418))
 
         IfmissingParameters = True
 
@@ -229,6 +253,14 @@ def updateForm(id):
 
                         form.addInput( inputRepository.createInput(**inputsList) )
 
+                        foundInputs = session.query(Input).filter_by(name = inputsList['name']).all()
+
+                        for foundInput in foundInputs:
+                            foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
+                            if foundForm.context == form.context and foundInput.type != inputsList['type']:
+                                abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+                    
+
                 if len(presentInputs) > 0:
                     # We need to remove some input
                     inputRepository   = InputRepository(None)
@@ -241,18 +273,25 @@ def updateForm(id):
                     # TODO FIX
                     form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['legend'] + " " + each['cid'], each['order']))
 
-                form.addKeywords( request.json['keywordsFr'], 'FR' )
-                form.addKeywords( request.json['keywordsEn'], 'EN' )
+                if (form.hasCircularDependencies([], session)):
+                    abort(make_response('Circular dependencies appeared with child form !', 508))
 
                 form.modificationDate = datetime.datetime.now()
 
                 neededParametersList = Form.getColumnList()
 
-                
-
                 try:
-                    session.add (form)
-                    session.commit ()
+
+                    for each in form.keywords :
+                        session.delete(each.KeyWord)
+                        session.delete(each)
+                    session.commit()
+
+                    form.setKeywords( request.json['keywordsFr'], 'FR' )
+                    form.setKeywords( request.json['keywordsEn'], 'EN' )
+                    session.add(form)
+                    session.commit()
+
                     try: 
                         exec_exportFormBuilder()
                     except Exception as e: 
@@ -260,14 +299,18 @@ def updateForm(id):
                         pass
                     return jsonify({"form" : form.recuriseToJSON() })
                 except:
+                    print (str(e).encode(sys.stdout.encoding, errors='replace'))
                     session.rollback()
-                    abort(make_response('Error', 500))
+                    abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
+
+
+                return jsonify({"form" : form.recuriseToJSON() })
 
             else:
                 abort(make_response('No form found with this ID', 404))
 
     else:
-        abort(make_response('Data seems not be in ' + format + ' format', 400))
+        abort(make_response('Data seems to not be in ' + format + ' format', 400))
 
 @app.route('/forms/<int:id>', methods=['DELETE'])
 def removeForm(id):
