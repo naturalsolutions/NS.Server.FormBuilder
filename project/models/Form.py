@@ -28,6 +28,7 @@ class Form(Base):
     obsolete                = Column(Boolean)
     isTemplate              = Column(Boolean, nullable=False)
     context                 = Column(String(50, 'French_CI_AS'), nullable=False)
+    originalID              = Column(BigInteger, nullable=True)
 
     # Relationship
     keywords         = relationship("KeyWord_Form", cascade="all")
@@ -102,7 +103,8 @@ class Form(Base):
             "descriptionEn"            : self.descriptionEn,
             "obsolete"                 : self.obsolete,
             "isTemplate"               : self.isTemplate,
-            "context"                  : self.context
+            "context"                  : self.context,
+            "originalID"               : self.originalID
         }
 
     # Serialize a form in JSON object
@@ -239,5 +241,5 @@ class Form(Base):
             'fieldsets'    ,
             'obsolete'     ,
             'isTemplate'   ,
-            'context'
+            'context'      
         ]

@@ -170,7 +170,7 @@ def createForm():
                 session.commit()
 
                 return jsonify({"form" : form.recuriseToJSON() })
-            except:
+            except Exception as e:
                 print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
                 abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))

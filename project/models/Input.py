@@ -28,6 +28,7 @@ class Input(Base):
     editorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClassEdit    = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClassDisplay    = Column(String(100, 'French_CI_AS'), nullable=True)
+    originalID              = Column(BigInteger, nullable=True)
     
     # linked field section
     linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
@@ -94,6 +95,7 @@ class Input(Base):
             "editorClass"       : self.editorClass,
             "fieldClassEdit"        : self.fieldClassEdit,
             "fieldClassDisplay"        : self.fieldClassDisplay,
+            "originalID"        : self.originalID,
             "type"              : self.type,
             "order"             : self.order,
             "name"              : self.name,
