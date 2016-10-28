@@ -85,10 +85,16 @@ def createForm():
 
     if request.json:
 
-        checkform = session.query(Form).filter_by(name = request.json["name"]).first()
+        checkformname = session.query(Form).filter_by(name = request.json["name"]).first()
+        checkformnamefr = session.query(Form).filter_by(labelFr = request.json["labelFr"]).first()
+        checkformnameen = session.query(Form).filter_by(labelEn = request.json["labelEn"]).first()
 
-        if (checkform):
-            abort(make_response('A protocol with this name already exist !', 418))
+        if (checkformname and checkformname.pk_Form != id):
+            abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
+        if (checkformnamefr and checkformnamefr.pk_Form != id):
+            abort(make_response('A protocol with this french name already exist ! [ERR:FRNAME]', 418))
+        if (checkformnameen and checkformnameen.pk_Form != id):
+            abort(make_response('A protocol with this english name already exist ! [ERR:ENNAME]', 418))
 
         #   Check if all parameters are present
         IfmissingParameters = True
@@ -183,10 +189,16 @@ def createForm():
 def updateForm(id):
     if request.json:
 
-        checkform = session.query(Form).filter_by(name = request.json["name"]).first()
+        checkformname = session.query(Form).filter_by(name = request.json["name"]).first()
+        checkformnamefr = session.query(Form).filter_by(labelFr = request.json["labelFr"]).first()
+        checkformnameen = session.query(Form).filter_by(labelEn = request.json["labelEn"]).first()
 
-        if (checkform and checkform.pk_Form != id):
-            abort(make_response('A protocol with this name already exist !', 418))
+        if (checkformname and checkformname.pk_Form != id):
+            abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
+        if (checkformnamefr and checkformnamefr.pk_Form != id):
+            abort(make_response('A protocol with this french name already exist ! [ERR:FRNAME]', 418))
+        if (checkformnameen and checkformnameen.pk_Form != id):
+            abort(make_response('A protocol with this english name already exist ! [ERR:ENNAME]', 418))
 
         IfmissingParameters = True
 

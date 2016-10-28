@@ -139,14 +139,9 @@ class Form(Base):
         loops = 0
         allInputs = self.inputs
 
-        while len(allInputs) > 0:
-            for each in allInputs:
-                if each.order == loops:
-                    inputs[loops] = each.toJSON()
-                    break
+        for each in allInputs:
+            inputs[loops] = each.toJSON()
             loops += 1
-            if loops > len(self.inputs):
-                break
 
         json['schema'] = inputs
 
@@ -167,7 +162,7 @@ class Form(Base):
                     tempAllParents = allParents
                     tempAllParents.append(self.name)
                     SubForm = session.query(Form).filter_by(name = childFormName).first()
-                    toret = toret and not SubForm.hasCircularDependencies(tempAllParents, session)
+                    toret = toret and (SubForm is None or not SubForm.hasCircularDependencies(tempAllParents, session))
         return (not toret)
 
     # Add keyword to the form
