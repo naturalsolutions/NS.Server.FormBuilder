@@ -28,6 +28,7 @@ class Form(Base):
     obsolete                = Column(Boolean)
     isTemplate              = Column(Boolean, nullable=False)
     context                 = Column(String(50, 'French_CI_AS'), nullable=False)
+    originalID              = Column(BigInteger, nullable=True)
 
     # Relationship
     keywords         = relationship("KeyWord_Form", cascade="all")
@@ -102,7 +103,8 @@ class Form(Base):
             "descriptionEn"            : self.descriptionEn,
             "obsolete"                 : self.obsolete,
             "isTemplate"               : self.isTemplate,
-            "context"                  : self.context
+            "context"                  : self.context,
+            "originalID"               : self.originalID
         }
 
     # Serialize a form in JSON object
@@ -137,14 +139,9 @@ class Form(Base):
         loops = 0
         allInputs = self.inputs
 
-        while len(allInputs) > 0:
-            for each in allInputs:
-                if each.order == loops:
-                    inputs[loops] = each.toJSON()
-                    break
+        for each in allInputs:
+            inputs[loops] = each.toJSON()
             loops += 1
-            if loops > len(self.inputs):
-                break
 
         json['schema'] = inputs
 
@@ -165,7 +162,7 @@ class Form(Base):
                     tempAllParents = allParents
                     tempAllParents.append(self.name)
                     SubForm = session.query(Form).filter_by(name = childFormName).first()
-                    toret = toret and not SubForm.hasCircularDependencies(tempAllParents, session)
+                    toret = toret and (SubForm is None or not SubForm.hasCircularDependencies(tempAllParents, session))
         return (not toret)
 
     # Add keyword to the form
@@ -239,5 +236,5 @@ class Form(Base):
             'fieldsets'    ,
             'obsolete'     ,
             'isTemplate'   ,
-            'context'
+            'context'      
         ]

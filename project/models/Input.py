@@ -20,6 +20,7 @@ class Input(Base):
     labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode      = Column(Integer, nullable=False)
     fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
+    atBeginingOfLine = Column(Boolean, nullable=False)
     endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
@@ -28,6 +29,7 @@ class Input(Base):
     editorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClassEdit    = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClassDisplay    = Column(String(100, 'French_CI_AS'), nullable=True)
+    originalID              = Column(BigInteger, nullable=True)
     
     # linked field section
     linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
@@ -39,12 +41,13 @@ class Input(Base):
     Properties  = relationship("InputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, order):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, order):
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn
         self.editMode       = editMode
         self.fieldSize      = fieldSize
+        self.atBeginingOfLine = atBeginingOfLine
         self.endOfLine      = endOfLine
         self.type           = type
         self.editorClass    = editorClass
@@ -70,6 +73,7 @@ class Input(Base):
         self.editMode    = kwargs['editMode']
         self.fieldSize   = kwargs['fieldSize']
         self.endOfLine   = kwargs['endOfLine']
+        self.atBeginingOfLine   = kwargs['atBeginingOfLine']
         self.editorClass = kwargs['editorClass']
         self.fieldClassEdit  = kwargs['fieldClassEdit']
         self.fieldClassDisplay  = kwargs['fieldClassDisplay']
@@ -89,11 +93,13 @@ class Input(Base):
             "labelFr"           : self.labelFr,
             "labelEn"           : self.labelEn,
             "endOfLine"         : self.endOfLine,
+            "atBeginingOfLine"  : self.atBeginingOfLine,
             "editMode"          : self.editMode,
             "fieldSize"         : self.fieldSize,
             "editorClass"       : self.editorClass,
             "fieldClassEdit"        : self.fieldClassEdit,
             "fieldClassDisplay"        : self.fieldClassDisplay,
+            "originalID"        : self.originalID,
             "type"              : self.type,
             "order"             : self.order,
             "name"              : self.name,
@@ -134,6 +140,7 @@ class Input(Base):
             'labelEn',
             'editMode',
             'fieldSize',
+            'atBeginingOfLine',
             'endOfLine',
             'type',
             'editorClass',
