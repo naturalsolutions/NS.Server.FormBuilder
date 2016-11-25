@@ -3,7 +3,7 @@
 from project import app
 from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
-from ..models import session, engine,dbConfig,Session
+from ..models import session, engine,dbConfig
 from ..models.Form import Form
 from ..models.FormProperty import FormProperty
 from ..models.KeyWord_Form import KeyWord_Form
@@ -302,19 +302,24 @@ def updateForm(id):
                     form.setKeywords( request.json['keywordsFr'], 'FR' )
                     form.setKeywords( request.json['keywordsEn'], 'EN' )
                     session.add(form)
-                    session.commit()
 
                     try: 
-                        exec_exportFormBuilder()
+                        if form.context == 'ecoreleve':
+                            exec_exportFormBuilder(form.pk_Form)
+                        # print('exec sp')
+                        # print(form.pk_Form)
                     except Exception as e: 
                         print_exc()
                         pass
                     return jsonify({"form" : form.recuriseToJSON() })
                 except:
-                    print (str(e).encode(sys.stdout.encoding, errors='replace'))
-                    session.rollback()
-                    abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
+                    # print (str(e).encode(sys.stdout.encoding, errors='replace'))
+                    print_exc()
 
+                    session.rollback()
+                    # abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
+                finally:
+                    session.commit()
 
                 return jsonify({"form" : form.recuriseToJSON() })
 
@@ -411,14 +416,13 @@ def get_childforms(formid):
     return json.dumps(forms, ensure_ascii=False)
 
 
-def exec_exportFormBuilder():
-    stmt = text(""" 
-        EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
-        """)
+def exec_exportFormBuilder(formid):
+    stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
+        EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
+        """).bindparams(bindparam('formid', formid))
 
-    curSession = Session()
+    curSession = session()
     curSession.execute(stmt.execution_options(autocommit=True))
 
     curSession.commit()
-    curSession.close()
     return
