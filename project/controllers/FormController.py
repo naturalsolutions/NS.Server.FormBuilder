@@ -175,14 +175,21 @@ def createForm():
                 form.setKeywords( request.json['keywordsFr'], 'FR' )
                 form.setKeywords( request.json['keywordsEn'], 'EN' )
                 session.add(form)
-                session.commit()
-
+                try: 
+                    if form.context == 'ecoreleve':
+                        exec_exportFormBuilder(form.pk_Form)
+                except Exception as e: 
+                    print_exc()
+                    pass
                 return jsonify({"form" : form.recuriseToJSON() })
+
             except Exception as e:
                 print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
                 abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
 
+            finally:
+                session.commit()
     else:
         abort(make_response('Data seems not be in JSON format', 400))
 
@@ -306,8 +313,6 @@ def updateForm(id):
                     try: 
                         if form.context == 'ecoreleve':
                             exec_exportFormBuilder(form.pk_Form)
-                        # print('exec sp')
-                        # print(form.pk_Form)
                     except Exception as e: 
                         print_exc()
                         pass
