@@ -175,6 +175,7 @@ def createForm():
                 form.setKeywords( request.json['keywordsFr'], 'FR' )
                 form.setKeywords( request.json['keywordsEn'], 'EN' )
                 session.add(form)
+                session.flush()
                 try: 
                     if form.context == 'ecoreleve':
                         exec_exportFormBuilder(form.pk_Form)
