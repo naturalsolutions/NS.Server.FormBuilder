@@ -3,7 +3,7 @@
 from project import app
 from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
-from ..models import session, engine
+from ..models import session, engine,dbConfig
 from ..models.Form import Form
 from ..models.FormProperty import FormProperty
 from ..models.KeyWord_Form import KeyWord_Form
@@ -16,6 +16,8 @@ import json
 import sys
 import datetime
 import pprint
+from traceback import print_exc
+import transaction
 
 # Return all forms
 @app.route('/forms', methods = ['GET'])
@@ -173,14 +175,22 @@ def createForm():
                 form.setKeywords( request.json['keywordsFr'], 'FR' )
                 form.setKeywords( request.json['keywordsEn'], 'EN' )
                 session.add(form)
-                session.commit()
-
+                session.flush()
+                try: 
+                    if form.context == 'ecoreleve':
+                        exec_exportFormBuilder(form.pk_Form)
+                except Exception as e: 
+                    print_exc()
+                    pass
                 return jsonify({"form" : form.recuriseToJSON() })
+
             except Exception as e:
                 print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
                 abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
 
+            finally:
+                session.commit()
     else:
         abort(make_response('Data seems not be in JSON format', 400))
 
@@ -291,6 +301,7 @@ def updateForm(id):
                 neededParametersList = Form.getColumnList()
 
                 try:
+
                     for each in form.keywords :
                         session.delete(each.KeyWord)
                         session.delete(each)
@@ -299,14 +310,22 @@ def updateForm(id):
                     form.setKeywords( request.json['keywordsFr'], 'FR' )
                     form.setKeywords( request.json['keywordsEn'], 'EN' )
                     session.add(form)
-                    session.commit()
 
+                    try: 
+                        if form.context == 'ecoreleve':
+                            exec_exportFormBuilder(form.pk_Form)
+                    except Exception as e: 
+                        print_exc()
+                        pass
                     return jsonify({"form" : form.recuriseToJSON() })
                 except:
-                    print (str(e).encode(sys.stdout.encoding, errors='replace'))
-                    session.rollback()
-                    abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
+                    # print (str(e).encode(sys.stdout.encoding, errors='replace'))
+                    print_exc()
 
+                    session.rollback()
+                    # abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
+                finally:
+                    session.commit()
 
                 return jsonify({"form" : form.recuriseToJSON() })
 
@@ -401,3 +420,15 @@ def get_childforms(formid):
                 forms_added.append(childForm.pk_Form)
 
     return json.dumps(forms, ensure_ascii=False)
+
+
+def exec_exportFormBuilder(formid):
+    stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
+        EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
+        """).bindparams(bindparam('formid', formid))
+
+    curSession = session()
+    curSession.execute(stmt.execution_options(autocommit=True))
+
+    curSession.commit()
+    return
