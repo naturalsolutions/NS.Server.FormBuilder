@@ -178,7 +178,7 @@ def createForm():
                 session.flush()
                 try: 
                     if form.context == 'ecoreleve':
-                        exec_exportFormBuilder(form.pk_Form)
+                        exec_exportFormBuilderEcoreleve(form.pk_Form)
                 except Exception as e: 
                     print_exc()
                     pass
@@ -313,7 +313,7 @@ def updateForm(id):
 
                     try: 
                         if form.context == 'ecoreleve':
-                            exec_exportFormBuilder(form.pk_Form)
+                            exec_exportFormBuilderEcoreleve(form.pk_Form)
                     except Exception as e: 
                         print_exc()
                         pass
@@ -422,10 +422,19 @@ def get_childforms(formid):
     return json.dumps(forms, ensure_ascii=False)
 
 
-def exec_exportFormBuilder(formid):
+def exec_exportFormBuilderEcoreleve(formid):
     stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
         EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
         """).bindparams(bindparam('formid', formid))
+
+    curSession = session()
+    curSession.execute(stmt.execution_options(autocommit=True))
+
+    curSession.commit()
+    return
+
+def exec_exportFormBuilderTrack(formid):
+    stmt = text(""" EXEC """+dbConfig['track']+ """.[SendDataToTrackReferential]; """).bindparams(bindparam('formToUpdate', formid))
 
     curSession = session()
     curSession.execute(stmt.execution_options(autocommit=True))

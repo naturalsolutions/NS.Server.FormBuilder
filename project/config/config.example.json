@@ -6,5 +6,9 @@
 	  
 	  "_Comment" : "Use the following connection string for the previous properties, properly set your credentials"
 	  "_ConnectionStringExample" : "DRIVER={SQL Server};Server=.;Database=TRACK_DEV;UID=FormBuilderUser;PWD=fbuser42;"
+    },
+    "dbConfig" : {
+    	"ecoreleve":"Referentiel_EcoReleve.dbo",
+    	"track":"Referentiel_Track.dbo"
     }
 }

@@ -21,7 +21,6 @@ class Input(Base):
     editMode      = Column(Integer, nullable=False)
     fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
     atBeginingOfLine = Column(Boolean, nullable=False)
-    endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
     order         = Column(SmallInteger, nullable=True)
@@ -33,7 +32,6 @@ class Input(Base):
     
     # linked field section
     linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
-    linkedFieldIdentifyingColumn = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedField                  = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedFieldset               = Column(String(100, 'French_CI_AS'), nullable=True)
 
@@ -41,14 +39,13 @@ class Input(Base):
     Properties  = relationship("InputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset, order):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn
         self.editMode       = editMode
         self.fieldSize      = fieldSize
         self.atBeginingOfLine = atBeginingOfLine
-        self.endOfLine      = endOfLine
         self.type           = type
         self.editorClass    = editorClass
         self.fieldClassEdit     = fieldClassEdit
@@ -59,7 +56,6 @@ class Input(Base):
 
         # linked field
         self.linkedFieldTable             = linkedFieldTable
-        self.linkedFieldIdentifyingColumn = linkedFieldIdentifyingColumn
         self.linkedField                  = linkedField
         self.linkedFieldset               = linkedFieldset
 
@@ -72,7 +68,6 @@ class Input(Base):
         self.labelEn     = kwargs['labelEn']
         self.editMode    = kwargs['editMode']
         self.fieldSize   = kwargs['fieldSize']
-        self.endOfLine   = kwargs['endOfLine']
         self.atBeginingOfLine   = kwargs['atBeginingOfLine']
         self.editorClass = kwargs['editorClass']
         self.fieldClassEdit  = kwargs['fieldClassEdit']
@@ -81,10 +76,8 @@ class Input(Base):
 
         # linked field
         self.linkedFieldTable             = kwargs['linkedFieldTable']
-        self.linkedFieldIdentifyingColumn = kwargs['linkedFieldIdentifyingColumn']
         self.linkedField                  = kwargs['linkedField']
         self.linkedFieldset               = kwargs['linkedFieldset']
-
 
     # Return convert object to JSON object
     def toJSON(self):
@@ -92,7 +85,6 @@ class Input(Base):
             "id"                : self.pk_Input,
             "labelFr"           : self.labelFr,
             "labelEn"           : self.labelEn,
-            "endOfLine"         : self.endOfLine,
             "atBeginingOfLine"  : self.atBeginingOfLine,
             "editMode"          : self.editMode,
             "fieldSize"         : self.fieldSize,
@@ -108,7 +100,6 @@ class Input(Base):
             # linked field 
 
             "linkedFieldTable"             : self.linkedFieldTable,
-            "linkedFieldIdentifyingColumn" : self.linkedFieldIdentifyingColumn,
             "linkedField"                  : self.linkedField
         }
 
@@ -141,13 +132,11 @@ class Input(Base):
             'editMode',
             'fieldSize',
             'atBeginingOfLine',
-            'endOfLine',
             'type',
             'editorClass',
             'fieldClassEdit',
             'fieldClassDisplay',
             'linkedFieldTable',
-            'linkedFieldIdentifyingColumn',
             'linkedField',
             'linkedFieldset',
             'order'
