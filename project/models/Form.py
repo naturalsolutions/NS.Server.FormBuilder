@@ -29,6 +29,7 @@ class Form(Base):
     isTemplate              = Column(Boolean, nullable=False)
     context                 = Column(String(50, 'French_CI_AS'), nullable=False)
     originalID              = Column(BigInteger, nullable=True)
+    propagate               = Column(Boolean)
 
     # Relationship
     keywords         = relationship("KeyWord_Form", cascade="all")
@@ -55,6 +56,7 @@ class Form(Base):
         self.obsolete               = kwargs['obsolete']
         self.isTemplate             = kwargs['isTemplate']
         self.context                = kwargs['context']
+        self.propagate              = kwargs['propagate']
 
     # Update form values
     def update(self, **kwargs):
@@ -72,6 +74,7 @@ class Form(Base):
         self.modificationDate       = datetime.datetime.now()
         self.isTemplate             = kwargs['isTemplate']
         self.context                = kwargs['context']
+        self.propagate              = kwargs['propagate']
 
     def get_fieldsets(self):
         """
@@ -104,6 +107,7 @@ class Form(Base):
             "obsolete"                 : self.obsolete,
             "isTemplate"               : self.isTemplate,
             "context"                  : self.context,
+            "propagate"                : self.propagate,
             "originalID"               : self.originalID
         }
 
@@ -236,5 +240,6 @@ class Form(Base):
             'fieldsets'    ,
             'obsolete'     ,
             'isTemplate'   ,
-            'context'      
+            'context'      ,
+            'propagate'
         ]
