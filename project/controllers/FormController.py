@@ -421,6 +421,23 @@ def get_childforms(formid):
 
     return json.dumps(forms, ensure_ascii=False)
 
+@app.route('/forms/getAllInputNames/<string:context>', methods = ['GET'])
+def getAllInputNames(context):
+    toret = []
+
+    if (context == None or context == ""):
+        context = "all"
+
+    forms = session.query(Form).filter_by(context = context).all()
+    if (context == "all"):
+        forms = session.query(Form).filter_by(context != "all").all()
+
+    for form in forms:
+        for forminput in form.inputs:
+            if forminput.name not in toret:
+                toret.append(forminput.name)
+    toret.sort()
+    return json.dumps(toret, ensure_ascii=False)
 
 def exec_exportFormBuilderEcoreleve(formid):
     stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];

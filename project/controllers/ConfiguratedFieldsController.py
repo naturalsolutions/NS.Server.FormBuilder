@@ -70,3 +70,4 @@ def createConfiguratedField():
         except:                
             session.rollback()
             return jsonify({ "result" : False})
+            

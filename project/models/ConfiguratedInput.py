@@ -19,7 +19,6 @@ class ConfiguratedInput(Base):
     labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode      = Column(Integer, nullable=False)
     fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
-    endOfLine     = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
     type          = Column(String(100, 'French_CI_AS'), nullable=False)
@@ -29,20 +28,18 @@ class ConfiguratedInput(Base):
     
     # linked field section
     linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
-    linkedFieldIdentifyingColumn = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedField                  = Column(String(100, 'French_CI_AS'), nullable=True)
     linkedFieldset               = Column(String(100, 'French_CI_AS'), nullable=True)
 
     Properties  = relationship("ConfiguratedInputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, endOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedFieldIdentifyingColumn, linkedField, linkedFieldset):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset):
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn
         self.editMode       = editMode
         self.fieldSize      = fieldSize
-        self.endOfLine      = endOfLine
         self.type           = type
         self.editorClass    = editorClass
         self.fieldClassEdit     = fieldClassEdit
@@ -52,7 +49,6 @@ class ConfiguratedInput(Base):
 
         # linked field
         self.linkedFieldTable             = linkedFieldTable
-        self.linkedFieldIdentifyingColumn = linkedFieldIdentifyingColumn
         self.linkedField                  = linkedField
         self.linkedFieldset               = linkedFieldset
 
@@ -64,7 +60,6 @@ class ConfiguratedInput(Base):
             "id"                : self.pk_ConfiguratedInput,
             "labelFr"           : self.labelFr,
             "labelEn"           : self.labelEn,
-            "endOfLine"         : self.endOfLine,
             "editMode"          : self.editMode,
             "fieldSize"         : self.fieldSize,
             "editorClass"       : self.editorClass,
@@ -77,7 +72,6 @@ class ConfiguratedInput(Base):
             # linked field 
 
             "linkedFieldTable"             : self.linkedFieldTable,
-            "linkedFieldIdentifyingColumn" : self.linkedFieldIdentifyingColumn,
             "linkedField"                  : self.linkedField
         }
 
@@ -99,13 +93,12 @@ class ConfiguratedInput(Base):
             'labelEn',
             'editMode',
             'fieldSize',
-            'endOfLine',
             'type',
             'editorClass',
             'fieldClassEdit',
             'fieldClassDisplay',
             'linkedFieldTable',
-            'linkedFieldIdentifyingColumn',
             'linkedField',
             'linkedFieldset'
         ]
+        

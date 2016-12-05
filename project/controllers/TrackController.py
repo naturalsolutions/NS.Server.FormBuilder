@@ -47,7 +47,7 @@ def getData():
 	else:
 		abort(make_response('No datas given !', 400))
 
-@app.route('/Track/getTrackUnities/<string:lang>', methods = ['GET'])
+@app.route('/getTrackUnities/<string:lang>', methods = ['GET'])
 def getTrackUnities(lang):
 	toret = {}
 	trackEngine = getTrackSqlConnection()
@@ -59,3 +59,17 @@ def getTrackUnities(lang):
 			print(row)
 			toret["unities"].append(row[0])
 		return json.dumps(toret, ensure_ascii=False)
+
+@app.route('/TrackTypes/<string:lang>', methods = ['GET'])
+def getTrackTypes(lang):
+	toret = {}
+	trackEngine = getTrackSqlConnection()
+
+	if (trackEngine != None):
+		toret["types"] = []
+		result = trackEngine.execute("SELECT DISTINCT [TTyp_Nom_Label"+lang+"] FROM [TType] ORDER BY [TTyp_Nom_Label"+lang+"]")
+		for row in result:
+			print(row)
+			toret["types"].append(row[0])
+		return json.dumps(toret, ensure_ascii=False)
+
