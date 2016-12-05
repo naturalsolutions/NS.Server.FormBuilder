@@ -439,6 +439,7 @@ def getAllInputNames(context):
     toret.sort()
     return json.dumps(toret, ensure_ascii=False)
 
+
 def exec_exportFormBuilderEcoreleve(formid):
     stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
         EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
