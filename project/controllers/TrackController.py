@@ -56,7 +56,6 @@ def getTrackUnities(lang):
 		toret["unities"] = []
 		result = trackEngine.execute("SELECT DISTINCT [TUni_Label"+lang+"] FROM [TUnite] ORDER BY [TUni_Label"+lang+"]")
 		for row in result:
-			print(row)
 			toret["unities"].append(row[0])
 		return json.dumps(toret, ensure_ascii=False)
 
@@ -69,7 +68,6 @@ def getTrackTypes(lang):
 		toret["types"] = []
 		result = trackEngine.execute("SELECT DISTINCT [TTyp_Nom_Label"+lang+"] FROM [TType] ORDER BY [TTyp_Nom_Label"+lang+"]")
 		for row in result:
-			print(row)
 			toret["types"].append(row[0])
 		return json.dumps(toret, ensure_ascii=False)
 

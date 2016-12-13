@@ -3,7 +3,7 @@
 from sqlalchemy import *
 from sqlalchemy.orm import relationship
 from .base import Base
-from .KeyWord_Form import  KeyWord_Form
+from .KeyWord_Form import KeyWord_Form
 from .KeyWord import KeyWord
 from ..utilities import Utility
 from ..models.FormProperty import FormProperty
@@ -25,17 +25,18 @@ class Form(Base):
     curStatus               = Column(Integer, nullable=False)
     descriptionFr           = Column(String(300, 'French_CI_AS'), nullable=False)
     descriptionEn           = Column(String(300, 'French_CI_AS'), nullable=False)
-    obsolete                = Column(Boolean)
+    obsolete                = Column(Boolean, nullable=False)
     isTemplate              = Column(Boolean, nullable=False)
     context                 = Column(String(50, 'French_CI_AS'), nullable=False)
     originalID              = Column(BigInteger, nullable=True)
-    propagate               = Column(Boolean)
+    propagate               = Column(Boolean, nullable=False)
 
     # Relationship
     keywords         = relationship("KeyWord_Form", cascade="all")
     fieldsets        = relationship("Fieldset", cascade="all")
     inputs           = relationship("Input", cascade="all")
     Properties       = relationship("FormProperty", cascade="all")
+    FormFile         = relationship("FormFile", cascade="all")
 
     # Constructor
     def __init__(self, **kwargs):
@@ -75,6 +76,7 @@ class Form(Base):
         self.isTemplate             = kwargs['isTemplate']
         self.context                = kwargs['context']
         self.propagate              = kwargs['propagate']
+        self.obsolete               = kwargs['obsolete']
 
     def get_fieldsets(self):
         """
@@ -134,6 +136,9 @@ class Form(Base):
     def addFormProperties(self, jsonobject):
         for prop in self.Properties:
             jsonobject[prop.name] = prop.value
+        jsonobject['fileList'] = []
+        for fileAssoc in self.FormFile:
+            jsonobject['fileList'].append(fileAssoc.toJSON())
         return jsonobject
 
     def recuriseToJSON(self):
@@ -203,6 +208,10 @@ class Form(Base):
     # Add fieldset to the form
     def addFieldset(self, fieldset):
         self.fieldsets.append(fieldset)
+
+    # Add FormFile to the form
+    def addFile(self, newFile):
+        self.FormFile.append(newFile)
 
     # return a list of all form's inputs id
     def getInputsIdList(self):

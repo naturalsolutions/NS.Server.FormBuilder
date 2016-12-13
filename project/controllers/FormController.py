@@ -6,6 +6,7 @@ from ..utilities import Utility
 from ..models import session, engine,dbConfig
 from ..models.Form import Form
 from ..models.FormProperty import FormProperty
+from ..models.FormFile import FormFile
 from ..models.KeyWord_Form import KeyWord_Form
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
@@ -111,6 +112,8 @@ def createForm():
             newFormPropVals = Utility._pickNot(request.json, neededParametersList)
             form            = Form( **newFormValues )              # new form Object
 
+            del newFormPropVals['fileList']
+
             for prop in newFormPropVals:
                 if newFormPropVals[prop] == None :
                     newFormPropVals[prop] = ''
@@ -166,6 +169,15 @@ def createForm():
             if (form.hasCircularDependencies([], session)):
                 abort(make_response('Circular dependencies appeared with child form !', 508))
 
+            for fileAssoc in request.json['fileList']:
+                fileAssoc['filedata'] = fileAssoc['filedata'].encode('utf-8')
+                newFormFileValues   = Utility._pick(fileAssoc, FormFile.getColumnList())
+                formfile            = FormFile( **newFormFileValues )   
+                form.addFile(formfile)
+
+            print (form.obsolete)
+            print (form.propagate)
+
             try:
                 for each in form.keywords :
                     session.delete(each.KeyWord)
@@ -197,143 +209,155 @@ def createForm():
 # PUT routes, update protocol
 @app.route('/forms/<int:id>', methods=['PUT'])
 def updateForm(id):
-    if request.json:
+    with session.no_autoflush:
+        if request.json:
 
-        checkformname = session.query(Form).filter_by(name = request.json["name"]).first()
-        checkformnamefr = session.query(Form).filter_by(labelFr = request.json["labelFr"]).first()
-        checkformnameen = session.query(Form).filter_by(labelEn = request.json["labelEn"]).first()
+            checkformname = session.query(Form).filter_by(name = request.json["name"]).first()
+            checkformnamefr = session.query(Form).filter_by(labelFr = request.json["labelFr"]).first()
+            checkformnameen = session.query(Form).filter_by(labelEn = request.json["labelEn"]).first()
 
-        if (checkformname and checkformname.pk_Form != id):
-            abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
-        if (checkformnamefr and checkformnamefr.pk_Form != id):
-            abort(make_response('A protocol with this french name already exist ! [ERR:FRNAME]', 418))
-        if (checkformnameen and checkformnameen.pk_Form != id):
-            abort(make_response('A protocol with this english name already exist ! [ERR:ENNAME]', 418))
+            if (checkformname and checkformname.pk_Form != id):
+                abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
+            if (checkformnamefr and checkformnamefr.pk_Form != id):
+                abort(make_response('A protocol with this french name already exist ! [ERR:FRNAME]', 418))
+            if (checkformnameen and checkformnameen.pk_Form != id):
+                abort(make_response('A protocol with this english name already exist ! [ERR:ENNAME]', 418))
 
-        IfmissingParameters = True
+            IfmissingParameters = True
 
-        neededParametersList = Form.getColumnList()
+            neededParametersList = Form.getColumnList()
 
-        for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
+            for a in neededParametersList : IfmissingParameters = IfmissingParameters and (a in request.json)
 
-        if IfmissingParameters is False:
-            abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
-        else:
-            form = session.query(Form).filter_by(pk_Form = id).first()
+            if IfmissingParameters is False:
+                abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
+            else:
+                form = session.query(Form).filter_by(pk_Form = id).first()
 
-            newFormValues   = Utility._pick(request.json, neededParametersList)
-            newFormPropVals = Utility._pickNot(request.json, neededParametersList)
-            form.update(**newFormValues)              # new form Object
-            form.updateProperties(newFormPropVals)
+                newFormValues   = Utility._pick(request.json, neededParametersList)
+                newFormPropVals = Utility._pickNot(request.json, neededParametersList)
+                del newFormPropVals['fileList']
 
-            if form != None:
+                form.update(**newFormValues)              # new form Object
+                form.updateProperties(newFormPropVals)
 
-                # Get form input ID list
-                presentInputs = form.getInputsIdList()
+                if form != None:
 
-                # We check if input in JSON data are yet present in the form
-                # Yes : we update input
-                # No : we add an input to the form
-                for eachInput in request.json['schema']:
-                    inputsList = request.json['schema'][eachInput]
+                    # Get form input ID list
+                    presentInputs = form.getInputsIdList()
 
-                    try:
-                        request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
-                    except:
-                        request.json['schema'][eachInput]['required'] = False
-                        pass
-
-                    try:
-                        request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
-                    except:
-                        request.json['schema'][eachInput]['readonly'] = False
-                        pass
-
-                    del request.json['schema'][eachInput]['validators']
-
-                    if request.json['schema'][eachInput]['id'] in presentInputs:
-
-                        # the field is present we update it
-                        foundInput        = session.query(Input).filter_by(pk_Input = request.json['schema'][eachInput]['id']).first()
-                        inputRepository   = InputRepository(foundInput)
-
-                        inputNewValues    = request.json['schema'][eachInput]
-
-                        # foundInputUpdated = inputRepository.updateInput(**inputNewValues)
-                        inputRepository.updateInput(**inputNewValues)
-
-                        presentInputs.remove(foundInput.pk_Input)
-
-                    else:
-                        del request.json['schema'][eachInput]['id']
-                        inputRepository   = InputRepository(None)
-                        # Add a new input to the form
-
+                    # We check if input in JSON data are yet present in the form
+                    # Yes : we update input
+                    # No : we add an input to the form
+                    for eachInput in request.json['schema']:
                         inputsList = request.json['schema'][eachInput]
 
-                        form.addInput( inputRepository.createInput(**inputsList) )
+                        try:
+                            request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
+                        except:
+                            request.json['schema'][eachInput]['required'] = False
+                            pass
 
-                        foundInputs = session.query(Input).filter_by(name = inputsList['name']).all()
+                        try:
+                            request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
+                        except:
+                            request.json['schema'][eachInput]['readonly'] = False
+                            pass
 
-                        for foundInput in foundInputs:
-                            foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
-                            if foundForm.context == form.context and foundInput.type != inputsList['type']:
-                                abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
-                    
+                        del request.json['schema'][eachInput]['validators']
 
-                if len(presentInputs) > 0:
-                    # We need to remove some input
-                    inputRepository   = InputRepository(None)
-                    inputRepository.removeInputs(presentInputs)
+                        if request.json['schema'][eachInput]['id'] in presentInputs:
 
-                for each in form.fieldsets:
-                    each.curStatus = 4
+                            # the field is present we update it
+                            foundInput        = session.query(Input).filter_by(pk_Input = request.json['schema'][eachInput]['id']).first()
+                            inputRepository   = InputRepository(foundInput)
 
-                for each in request.json['fieldsets']:
-                    # TODO FIX
-                    form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['legend'] + " " + each['cid'], each['order']))
+                            inputNewValues    = request.json['schema'][eachInput]
 
-                if (form.hasCircularDependencies([], session)):
-                    abort(make_response('Circular dependencies appeared with child form !', 508))
+                            # foundInputUpdated = inputRepository.updateInput(**inputNewValues)
+                            inputRepository.updateInput(**inputNewValues)
 
-                form.modificationDate = datetime.datetime.now()
+                            presentInputs.remove(foundInput.pk_Input)
 
-                neededParametersList = Form.getColumnList()
+                        else:
+                            del request.json['schema'][eachInput]['id']
+                            inputRepository   = InputRepository(None)
+                            # Add a new input to the form
 
-                try:
+                            inputsList = request.json['schema'][eachInput]
 
-                    for each in form.keywords :
-                        session.delete(each.KeyWord)
-                        session.delete(each)
-                    session.commit()
+                            form.addInput( inputRepository.createInput(**inputsList) )
 
-                    form.setKeywords( request.json['keywordsFr'], 'FR' )
-                    form.setKeywords( request.json['keywordsEn'], 'EN' )
-                    session.add(form)
+                            foundInputs = session.query(Input).filter_by(name = inputsList['name']).all()
 
-                    try: 
-                        if form.context == 'ecoreleve':
-                            exec_exportFormBuilderEcoreleve(form.pk_Form)
-                    except Exception as e: 
+                            for foundInput in foundInputs:
+                                foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
+                                if foundForm.context == form.context and foundInput.type != inputsList['type']:
+                                    abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+                        
+
+                    if len(presentInputs) > 0:
+                        # We need to remove some input
+                        inputRepository   = InputRepository(None)
+                        inputRepository.removeInputs(presentInputs)
+
+                    for each in form.fieldsets:
+                        each.curStatus = 4
+
+                    for each in request.json['fieldsets']:
+                        # TODO FIX
+                        form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['legend'] + " " + each['cid'], each['order']))
+
+                    for fileAssoc in request.json['fileList']:
+                        fileAssoc['filedata'] = fileAssoc['filedata'].encode('utf-8')
+                        newFormFileValues   = Utility._pick(fileAssoc, FormFile.getColumnList())
+                        formfile            = FormFile( **newFormFileValues )   
+                        form.addFile(formfile)
+
+                    if (form.hasCircularDependencies([], session)):
+                        abort(make_response('Circular dependencies appeared with child form !', 508))
+
+                    form.modificationDate = datetime.datetime.now()
+
+                    neededParametersList = Form.getColumnList()
+
+                    print (form.obsolete)
+                    print (form.propagate)
+
+                    try:
+
+                        for each in form.keywords :
+                            session.delete(each.KeyWord)
+                            session.delete(each)
+                        session.commit()
+
+                        form.setKeywords( request.json['keywordsFr'], 'FR' )
+                        form.setKeywords( request.json['keywordsEn'], 'EN' )
+                        session.add(form)
+
+                        try: 
+                            if form.context == 'ecoreleve':
+                                exec_exportFormBuilderEcoreleve(form.pk_Form)
+                        except Exception as e: 
+                            print_exc()
+                            pass
+                        return jsonify({"form" : form.recuriseToJSON() })
+                    except:
+                        # print (str(e).encode(sys.stdout.encoding, errors='replace'))
                         print_exc()
-                        pass
+
+                        session.rollback()
+                        # abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
+                    finally:
+                        session.commit()
+
                     return jsonify({"form" : form.recuriseToJSON() })
-                except:
-                    # print (str(e).encode(sys.stdout.encoding, errors='replace'))
-                    print_exc()
 
-                    session.rollback()
-                    # abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
-                finally:
-                    session.commit()
+                else:
+                    abort(make_response('No form found with this ID', 404))
 
-                return jsonify({"form" : form.recuriseToJSON() })
-
-            else:
-                abort(make_response('No form found with this ID', 404))
-
-    else:
-        abort(make_response('Data seems to not be in ' + format + ' format', 400))
+        else:
+            abort(make_response('Data seems to not be in ' + format + ' format', 400))
 
 @app.route('/forms/<int:id>', methods=['DELETE'])
 def removeForm(id):
@@ -364,13 +388,14 @@ def deleteInputFromForm(formid, inputid):
     form = session.query(Form).filter_by(pk_Form = formid).first()
     inputfield = session.query(Input).filter_by(pk_Input = inputid, fk_form = formid).first()
 
-    try:
-        session.delete(inputfield)
-        session.commit()
-        return jsonify({"deleted" : True})
-    except:
-        session.rollback()
-        abort(make_response('Error during inputfield delete', 500))
+    if (inputfield != None):
+        try:
+            session.delete(inputfield)
+            session.commit()
+            return jsonify({"deleted" : True})
+        except:
+            session.rollback()
+            abort(make_response('Error during inputfield delete', 500))
 
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
@@ -380,6 +405,13 @@ def index():
 
 @app.route('/forms/allforms', methods = ['GET'])
 def quick_getAllForms():
+    return self.fetAllFormsInContext("")
+
+
+@app.route('/forms/allforms/<string:context>', methods = ['GET'])
+def getAllFormsInContext(context):
+    if (context == None):
+        context = ""
     forms = []
 
     forms_added        = []
@@ -390,13 +422,13 @@ def quick_getAllForms():
     results = query.all()
 
     for form in results:
-        f = {"id":form.pk_Form,"name":form.name, "context":form.context}
-        current_form_index += 1
-        forms.append(f)
-        forms_added.append(form.pk_Form)
+        if (context == "" or form.context == context):
+            f = {"id":form.pk_Form,"name":form.name, "context":form.context, "obsolete":form.obsolete}
+            current_form_index += 1
+            forms.append(f)
+            forms_added.append(form.pk_Form)
 
     return json.dumps(forms, ensure_ascii=False)
-
 
 
 @app.route('/childforms/<int:formid>', methods = ['GET'])
