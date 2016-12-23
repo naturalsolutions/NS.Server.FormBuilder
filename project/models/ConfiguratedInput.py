@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship
 from .base import Base
 import datetime
 
-
 # Configurated input
 # A configurated input cans have one or more property
 class ConfiguratedInput(Base):
@@ -19,12 +18,14 @@ class ConfiguratedInput(Base):
     labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode      = Column(Integer, nullable=False)
     fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
+    atBeginingOfLine = Column(Boolean, nullable=False)
     startDate     = Column(DateTime, nullable=False)
     curStatus     = Column(Integer, nullable=False)
     type          = Column(String(100, 'French_CI_AS'), nullable=False)
     editorClass   = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClassEdit    = Column(String(100, 'French_CI_AS'), nullable=True)
     fieldClassDisplay    = Column(String(100, 'French_CI_AS'), nullable=True)
+    originalID              = Column(BigInteger, nullable=True)
     
     # linked field section
     linkedFieldTable             = Column(String(100, 'French_CI_AS'), nullable=True)
@@ -34,12 +35,13 @@ class ConfiguratedInput(Base):
     Properties  = relationship("ConfiguratedInputProperty", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset):
+    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset):
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn
         self.editMode       = editMode
         self.fieldSize      = fieldSize
+        self.atBeginingOfLine = atBeginingOfLine
         self.type           = type
         self.editorClass    = editorClass
         self.fieldClassEdit     = fieldClassEdit
@@ -60,11 +62,13 @@ class ConfiguratedInput(Base):
             "id"                : self.pk_ConfiguratedInput,
             "labelFr"           : self.labelFr,
             "labelEn"           : self.labelEn,
+            "atBeginingOfLine"  : self.atBeginingOfLine,
             "editMode"          : self.editMode,
             "fieldSize"         : self.fieldSize,
             "editorClass"       : self.editorClass,
             "fieldClassEdit"        : self.fieldClassEdit,
             "fieldClassDisplay"        : self.fieldClassDisplay,
+            "originalID"        : self.originalID,
             "type"              : self.type,
             "name"              : self.name,
             "linkedFieldset"    : self.linkedFieldset,
@@ -93,6 +97,7 @@ class ConfiguratedInput(Base):
             'labelEn',
             'editMode',
             'fieldSize',
+            'atBeginingOfLine',
             'type',
             'editorClass',
             'fieldClassEdit',
