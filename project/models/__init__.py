@@ -29,7 +29,7 @@ sqlConnexion = data["sql"]["url"] if 'sql' in data and 'url' in data['sql'] else
 sqlConnexion = urllib.parse.quote_plus(sqlConnexion)
 sqlConnexion = "mssql+pyodbc:///?odbc_connect=%s" % sqlConnexion
 
-dbConfig = None
+dbConfig = data['dbConfig']
 engine = create_engine(sqlConnexion)
 Base.metadata.create_all(engine)
 session = scoped_session(sessionmaker(bind=engine))
