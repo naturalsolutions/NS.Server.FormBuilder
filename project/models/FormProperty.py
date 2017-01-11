@@ -33,7 +33,8 @@ class FormProperty(Base):
     def getvalue(self):
         try:
             if self.valueType == "Boolean":
-                return bool(self.value)
+                print ('form ' + self.value in ['true', 'yes', '1', 'True'])
+                return self.value in ['true', 'yes', '1', 'True']
             elif self.valueType == "Number":
                 return int(self.value)
             elif self.valueType == "Double":

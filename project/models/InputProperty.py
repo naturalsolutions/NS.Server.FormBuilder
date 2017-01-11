@@ -33,7 +33,7 @@ class InputProperty(Base):
     def getvalue(self):
         try:
             if self.valueType == "Boolean":
-                return bool(self.value)
+                return self.value in ['true', 'yes', '1', 'True']
             elif self.valueType == "Number":
                 return int(self.value)
             elif self.valueType == "Double":

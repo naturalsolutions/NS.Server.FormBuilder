@@ -40,6 +40,7 @@ class Input(Base):
 
     # constructor
     def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
+        print ("new name is " + name)
         self.name           = name
         self.labelFr        = labelFr
         self.labelEn        = labelEn

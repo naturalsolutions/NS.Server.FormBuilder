@@ -135,7 +135,7 @@ class Form(Base):
 
     def addFormProperties(self, jsonobject):
         for prop in self.Properties:
-            jsonobject[prop.name] = prop.value
+            jsonobject[prop.name] = prop.getvalue()
         jsonobject['fileList'] = []
         for fileAssoc in self.FormFile:
             jsonobject['fileList'].append(fileAssoc.toJSON())
@@ -225,6 +225,8 @@ class Form(Base):
 
     def updateProperties(self, properties):
         for prop in properties:
+            if properties[prop] == None :
+                properties[prop] = ''
             formProperty = FormProperty(prop, properties[prop], Utility._getType(properties[prop]))
             self.updateProperty(formProperty)
 

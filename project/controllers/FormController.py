@@ -23,7 +23,6 @@ import transaction
 # Return all forms
 @app.route('/forms', methods = ['GET'])
 def get_forms():
-    print(session())
     # Forms list who will be returned at the end
     forms = []
 
@@ -175,9 +174,6 @@ def createForm():
                 formfile            = FormFile( **newFormFileValues )   
                 form.addFile(formfile)
 
-            print (form.obsolete)
-            print (form.propagate)
-
             try:
                 for each in form.keywords :
                     session.delete(each.KeyWord)
@@ -188,14 +184,6 @@ def createForm():
                 form.setKeywords( request.json['keywordsEn'], 'EN' )
                 session.add(form)
                 session.flush()
-                try: 
-                    if form.context == 'ecoreleve':
-                        exec_exportFormBuilderEcoreleve(form.pk_Form)
-                except Exception as e: 
-                    print_exc()
-                    pass
-                return jsonify({"form" : form.recuriseToJSON() })
-
             except Exception as e:
                 print (str(e).encode(sys.stdout.encoding, errors='replace'))
                 session.rollback()
@@ -203,6 +191,17 @@ def createForm():
 
             finally:
                 session.commit()
+                try: 
+                    if form.context == 'ecoreleve':
+                        exec_exportFormBuilderEcoreleve(form.pk_Form)
+                    if form.context == 'track':
+                        exec_exportFormBuilderTrack(form.pk_Form)
+                except Exception as e: 
+                    print("exception 1!")
+                    print_exc()
+                    pass
+                session.commit()
+                return jsonify({"form" : form.recuriseToJSON() })
     else:
         abort(make_response('Data seems not be in JSON format', 400))
 
@@ -321,9 +320,6 @@ def updateForm(id):
 
                     neededParametersList = Form.getColumnList()
 
-                    print (form.obsolete)
-                    print (form.propagate)
-
                     try:
 
                         for each in form.keywords :
@@ -333,25 +329,28 @@ def updateForm(id):
 
                         form.setKeywords( request.json['keywordsFr'], 'FR' )
                         form.setKeywords( request.json['keywordsEn'], 'EN' )
-                        session.add(form)
 
-                        try: 
-                            if form.context == 'ecoreleve':
-                                exec_exportFormBuilderEcoreleve(form.pk_Form)
-                        except Exception as e: 
-                            print_exc()
-                            pass
-                        return jsonify({"form" : form.recuriseToJSON() })
+                        session.add(form)
                     except:
                         # print (str(e).encode(sys.stdout.encoding, errors='replace'))
+                        print("exception 2!")
                         print_exc()
 
                         session.rollback()
                         # abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
                     finally:
                         session.commit()
-
-                    return jsonify({"form" : form.recuriseToJSON() })
+                        try: 
+                            if form.context == 'ecoreleve':
+                                exec_exportFormBuilderEcoreleve(form.pk_Form)
+                            if form.context == 'track':
+                                exec_exportFormBuilderTrack(form.pk_Form)
+                        except Exception as e: 
+                            print("exception 3!")
+                            print_exc()
+                            pass
+                        session.commit()
+                        return jsonify({"form" : form.recuriseToJSON() })
 
                 else:
                     abort(make_response('No form found with this ID', 404))
@@ -396,6 +395,17 @@ def deleteInputFromForm(formid, inputid):
         except:
             session.rollback()
             abort(make_response('Error during inputfield delete', 500))
+
+@app.route('/forms/<int:formid>/deletefields', methods=['DELETE'])
+def deleteInputsFromForm(formid):
+    if request.json:
+        if request.json["fieldstodelete"]:
+            print(request.json["fieldstodelete"])
+            for inputID in request.json["fieldstodelete"]:
+                print(inputID)
+                print(deleteInputFromForm(formid, inputID))
+
+        return jsonify({"deleted" : True})
 
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
@@ -484,7 +494,9 @@ def exec_exportFormBuilderEcoreleve(formid):
     return
 
 def exec_exportFormBuilderTrack(formid):
-    stmt = text(""" EXEC """+dbConfig['track']+ """.[SendDataToTrackReferential]; """).bindparams(bindparam('formToUpdate', formid))
+
+    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[SendDataToTrackReferential] :formToUpdate;
+        """).bindparams(bindparam('formToUpdate', formid))
 
     curSession = session()
     curSession.execute(stmt.execution_options(autocommit=True))
