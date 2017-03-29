@@ -26,6 +26,8 @@ class InputProperty(Base):
     def __init__(self, name, value, valueType):
         self.name         = name
         self.value        = value
+        if (self.value == "None"):
+            self.value = ""
         self.valueType    = valueType
         self.creationDate = datetime.datetime.now()
 

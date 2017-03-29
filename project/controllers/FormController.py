@@ -400,10 +400,8 @@ def deleteInputFromForm(formid, inputid):
 def deleteInputsFromForm(formid):
     if request.json:
         if request.json["fieldstodelete"]:
-            print(request.json["fieldstodelete"])
             for inputID in request.json["fieldstodelete"]:
-                print(inputID)
-                print(deleteInputFromForm(formid, inputID))
+                deleteInputFromForm(formid, inputID)
 
         return jsonify({"deleted" : True})
 
