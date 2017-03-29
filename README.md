@@ -45,7 +45,7 @@ For that, you have an example visible in this file at the "_comment" option
 
 	"_comment" : "DRIVER={SQL Server};Server=.;Database=TRACK_DEV;UID=FormBuilderUser;PWD=fbuser42;"
 
-*If you do not know what the "urlTrack" option means, just ignore it, otherwise, set a connection string to your track database in this option1*
+*Ignore the options you know nothing about*
 
 --------------------------------------------------
 
