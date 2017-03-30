@@ -122,14 +122,23 @@ def getTrackInputWeight(originalID):
 
 		if (trackEngine != None):
 			try:
-				resultChar = trackEngine.execute("SELECT count(*) from [TDChar] where TDCh_FK_TObs_ID = " + str(originalID))
-				resultDate = trackEngine.execute("SELECT count(*) from [TDDate] where TDDa_FK_TObs_ID = " + str(originalID))
-				resultEntier = trackEngine.execute("SELECT count(*) from [TDEntier] where TDEn_FK_TObs_ID = " + str(originalID))
-				resultReel = trackEngine.execute("SELECT count(*) from [TDReel] where TDRe_FK_TObs_ID = " + str(originalID))
+				totresult = 0
+
+				totresult = trackEngine.execute("SELECT count(*) from [TDChar] where TDCh_FK_TObs_ID = " + str(originalID)).fetchone()[0]
+				
+				if (totresult == 0):
+					totresult = trackEngine.execute("SELECT count(*) from [TDEntier] where TDEn_FK_TObs_ID = " + str(originalID)).fetchone()[0]
+
+				if (totresult == 0):
+					totresult = trackEngine.execute("SELECT count(*) from [TDDate] where TDDa_FK_TObs_ID = " + str(originalID)).fetchone()[0]
+				
+				if (totresult == 0):
+					totresult = trackEngine.execute("SELECT count(*) from [TDReel] where TDRe_FK_TObs_ID = " + str(originalID)).fetchone()[0]
+			
 			except ProgrammingError:
 				abort(make_response('Could not open database ' + itemDB + ' ! You might not have the proper rights ? Or the Database is missreferenced ?', 400))
 
-			toret["InputWeight"][itemDB] = resultChar.fetchone()[0] + resultDate.fetchone()[0] + resultEntier.fetchone()[0] + resultReel.fetchone()[0]
+			toret["InputWeight"][itemDB] = totresult
 
 	return json.dumps(toret, ensure_ascii=False)
 
