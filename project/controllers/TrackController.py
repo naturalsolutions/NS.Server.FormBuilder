@@ -5,24 +5,28 @@ from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
 from ..models import session, engine
 from sqlalchemy import *
+from sqlalchemy.exc import ProgrammingError
 import urllib.parse
 import json
 import sys
 import datetime
 import pprint
 
-def getTrackSqlConnection():
-	with open ("project/config/config.json", "r") as myfile:
-		data = json.loads(myfile.read())
+def getTrackSqlConnection(forcedSqlConn = None):
+	if forcedSqlConn != None:
+		trackSqlConnexion = forcedSqlConn
+	else:
+		with open ("project/config/config.json", "r") as myfile:
+			data = json.loads(myfile.read())
 
-	trackSqlConnexion = data["sql"]["urlTrack"] if 'sql' in data and 'urlTrack' in data['sql'] else abort(make_response('config.json file has no url referencing Track Database !', 400))
-	trackSqlConnexion = urllib.parse.quote_plus(trackSqlConnexion)
-	trackSqlConnexion = "mssql+pyodbc:///?odbc_connect=%s" % trackSqlConnexion
+		trackSqlConnexion = data["sql"]["urlTrack"] if 'sql' in data and 'urlTrack' in data['sql'] else abort(make_response('config.json file has no url referencing a Referential Track Database !', 400))
+		trackSqlConnexion = urllib.parse.quote_plus(trackSqlConnexion)
+		trackSqlConnexion = "mssql+pyodbc:///?odbc_connect=%s" % trackSqlConnexion
 
 	print("trackSqlConnexion = " + trackSqlConnexion)
 	try:
 		trackEngine = create_engine(trackSqlConnexion)
-	except e as Exception:
+	except ProgrammingError:
 		abort(make_response('Could not open database !', 400))
 	else:
 		return trackEngine
@@ -70,4 +74,62 @@ def getTrackTypes(lang):
 		for row in result:
 			toret["types"].append(row[0])
 		return json.dumps(toret, ensure_ascii=False)
+
+@app.route('/Track/FormWeight/<int:originalID>', methods = ['GET'])
+def getTrackFormWeight(originalID):
+	toret = {}
+
+	with open ("project/config/config.json", "r") as myfile:
+		data = json.loads(myfile.read())
+
+	trackDatabases = data["refsDB"]["track"] if 'refsDB' in data and 'track' in data['refsDB'] else abort(make_response('config.json file is incomplete and not referencing any Track Databases !', 400))
+
+	toret["FormWeight"] = {}
+	for itemDB in trackDatabases:
+		trackSqlConnexion = "DRIVER={SQL Server};Server=CASIMIR;Database=" + itemDB + ";UID=FormBuilderUser;PWD=fbuser42;"
+		trackSqlConnexion = urllib.parse.quote_plus(trackSqlConnexion)
+		trackSqlConnexion = "mssql+pyodbc:///?odbc_connect=%s" % trackSqlConnexion
+
+		trackEngine = getTrackSqlConnection(trackSqlConnexion)
+
+		if (trackEngine != None):
+			try:
+				result = trackEngine.execute("SELECT count(*) FROM [TSaisie] WHERE TSai_FK_TPro_ID = " + str(originalID))
+			except ProgrammingError:
+				abort(make_response('Could not open database ' + itemDB + ' ! You might not have the proper rights ? Or the Database is missreferenced ?', 400))
+
+			toret["FormWeight"][itemDB] = result.fetchone()[0]
+
+	return json.dumps(toret, ensure_ascii=False)
+
+
+@app.route('/Track/InputWeight/<int:originalID>', methods = ['GET'])
+def getTrackInputWeight(originalID):
+	toret = {}
+
+	with open ("project/config/config.json", "r") as myfile:
+		data = json.loads(myfile.read())
+
+	trackDatabases = data["refsDB"]["track"] if 'refsDB' in data and 'track' in data['refsDB'] else abort(make_response('config.json file is incomplete and not referencing any Track Databases !', 400))
+
+	toret["InputWeight"] = {}
+	for itemDB in trackDatabases:
+		trackSqlConnexion = "DRIVER={SQL Server};Server=CASIMIR;Database=" + itemDB + ";UID=FormBuilderUser;PWD=fbuser42;"
+		trackSqlConnexion = urllib.parse.quote_plus(trackSqlConnexion)
+		trackSqlConnexion = "mssql+pyodbc:///?odbc_connect=%s" % trackSqlConnexion
+
+		trackEngine = getTrackSqlConnection(trackSqlConnexion)
+
+		if (trackEngine != None):
+			try:
+				resultChar = trackEngine.execute("SELECT count(*) from [TDChar] where TDCh_FK_TObs_ID = " + str(originalID))
+				resultDate = trackEngine.execute("SELECT count(*) from [TDDate] where TDDa_FK_TObs_ID = " + str(originalID))
+				resultEntier = trackEngine.execute("SELECT count(*) from [TDEntier] where TDEn_FK_TObs_ID = " + str(originalID))
+				resultReel = trackEngine.execute("SELECT count(*) from [TDReel] where TDRe_FK_TObs_ID = " + str(originalID))
+			except ProgrammingError:
+				abort(make_response('Could not open database ' + itemDB + ' ! You might not have the proper rights ? Or the Database is missreferenced ?', 400))
+
+			toret["InputWeight"][itemDB] = resultChar.fetchone()[0] + resultDate.fetchone()[0] + resultEntier.fetchone()[0] + resultReel.fetchone()[0]
+
+	return json.dumps(toret, ensure_ascii=False)
 

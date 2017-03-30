@@ -10,5 +10,19 @@
     "dbConfig" : {
     	"ecoreleve":"Referentiel_EcoReleve.dbo",
     	"track":"Referentiel_Track.dbo"
-    }
+    },
+	"refsDB" : {
+		"track": {
+			
+		},
+		"ecoreleve": {
+		
+		},
+		"ecollection": {
+		
+		},
+		"position": {
+		
+		}
+	}
 }
