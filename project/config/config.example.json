@@ -12,17 +12,9 @@
     	"track":"Referentiel_Track.dbo"
     },
 	"refsDB" : {
-		"track": {
-			
-		},
-		"ecoreleve": {
-		
-		},
-		"ecollection": {
-		
-		},
-		"position": {
-		
-		}
+		"track": [],
+		"ecoreleve": [],
+		"ecollection": [],
+		"position": []
 	}
 }
