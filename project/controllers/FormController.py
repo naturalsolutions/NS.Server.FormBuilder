@@ -55,6 +55,7 @@ def get_forms():
 def getFormByID(formID):
     if (formID.isdigit()):
         findForm = session.query(Form).get(formID)
+        print ("returning recuriseToJSON ==========>", str(findForm.recuriseToJSON()))
         return jsonify({ "form" : findForm.recuriseToJSON() })
     else:
         forms = []
@@ -79,6 +80,7 @@ def getFormByID(formID):
                     k = keyword.toJSON()
                     forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
                     keywords_added.append(keyword.pk_KeyWord_Form)
+        print ("returning ==========>", str(forms))
         return json.dumps(forms, ensure_ascii=False)
 
 # Create form
@@ -362,25 +364,56 @@ def updateForm(id):
 def removeForm(id):
     form = session.query(Form).filter_by(pk_Form = id).first()
 
+    print("I have been asked to remove " + str(id))
+
+    if form.context != 'track':
+        return jsonify({})
+
     try:
-        session.delete(form)
+        print("I should not be here !!")
+        #session.delete(form)
+    except:
+        session.rollback()
+        abort(make_response('Error during delete', 500))
+    finally:
         session.commit()
+        try: 
+            if form.context == 'track':
+                exec_removeFormBuilderTrack(form.pk_Form)
+        except Exception as e: 
+            print("exception 2!")
+            print_exc()
+            pass
+        session.commit()
+    return jsonify({"deleted" : True})
+
+@app.route('/forms/<string:zecontext>/<int:id>', methods=['DELETE'])
+def removeFormInContext(zecontext, id):
+    form = session.query(Form).filter_by(pk_Form = id, context = zecontext).first()
+
+    print("I have been asked to remove " + str(id) + " in context " + context)
+
+    if form.context != 'track':
+        return jsonify({})
+
+    try:
+        print("I should not be here !!")
+        #session.delete(form)
         return jsonify({"deleted" : True})
     except:
         session.rollback()
         abort(make_response('Error during delete', 500))
-
-@app.route('/forms/<string:context>/<int:id>', methods=['DELETE'])
-def removeFormInContext(context, id):
-    form = session.query(Form).filter_by(pk_Form = id).first()
-
-    try:
-        session.delete(form)
+    finally:
         session.commit()
-        return jsonify({"deleted" : True})
-    except:
-        session.rollback()
-        abort(make_response('Error during delete', 500))
+        try: 
+            if form.context == 'track':
+                exec_removeFormBuilderTrack(form.pk_Form)
+        except Exception as e: 
+            print("exception 2!")
+            print_exc()
+            pass
+        session.commit()
+    return jsonify({"deleted" : True})
 
 @app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
 def deleteInputFromForm(formid, inputid):
@@ -495,6 +528,17 @@ def exec_exportFormBuilderTrack(formid):
 
     stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[SendDataToTrackReferential] :formToUpdate;
         """).bindparams(bindparam('formToUpdate', formid))
+
+    curSession = session()
+    curSession.execute(stmt.execution_options(autocommit=True))
+
+    curSession.commit()
+    return
+
+def exec_removeFormBuilderTrack(formid):
+
+    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[RemoveFormOnTrackReferential] :formToDelete;
+        """).bindparams(bindparam('formToDelete', formid))
 
     curSession = session()
     curSession.execute(stmt.execution_options(autocommit=True))
