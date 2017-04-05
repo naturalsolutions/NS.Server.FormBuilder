@@ -95,8 +95,7 @@ class Form(Base):
         Return form as json without relationship
         :return: form as json without relationship
         """
-        print("**************")
-        print("original ID is === " + str(self.originalID))
+        
         return {
             "id"                       : self.pk_Form,
             "name"                     : self.name,

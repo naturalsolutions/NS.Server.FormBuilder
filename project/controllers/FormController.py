@@ -364,14 +364,12 @@ def updateForm(id):
 def removeForm(id):
     form = session.query(Form).filter_by(pk_Form = id).first()
 
-    print("I have been asked to remove " + str(id))
-
     if form.context != 'track':
         return jsonify({})
 
     try:
-        print("I should not be here !!")
         #session.delete(form)
+        print("yo")
     except:
         session.rollback()
         abort(make_response('Error during delete', 500))
@@ -381,7 +379,6 @@ def removeForm(id):
             if form.context == 'track':
                 exec_removeFormBuilderTrack(form.pk_Form)
         except Exception as e: 
-            print("exception 2!")
             print_exc()
             pass
         session.commit()
@@ -391,15 +388,12 @@ def removeForm(id):
 def removeFormInContext(zecontext, id):
     form = session.query(Form).filter_by(pk_Form = id, context = zecontext).first()
 
-    print("I have been asked to remove " + str(id) + " in context " + context)
-
     if form.context != 'track':
         return jsonify({})
 
     try:
-        print("I should not be here !!")
         #session.delete(form)
-        return jsonify({"deleted" : True})
+        print("yo")
     except:
         session.rollback()
         abort(make_response('Error during delete', 500))
@@ -409,7 +403,6 @@ def removeFormInContext(zecontext, id):
             if form.context == 'track':
                 exec_removeFormBuilderTrack(form.pk_Form)
         except Exception as e: 
-            print("exception 2!")
             print_exc()
             pass
         session.commit()
@@ -513,6 +506,22 @@ def getAllInputNames(context):
     return json.dumps(toret, ensure_ascii=False)
 
 
+@app.route('/makeObsolete/<int:formID>', methods = ['PUT'])
+def makeFormObsolete(formID):
+    
+    myForm = session.query(Form).filter_by(pk_Form = formID).first()
+    myForm.obsolete = True
+
+    try:
+        session.add(myForm)
+    except:
+        session.rollback()
+        abort(make_response('Error during delete', 500))
+    finally:
+        session.commit()
+
+    return json.dumps({"success":True}, ensure_ascii=False)
+
 def exec_exportFormBuilderEcoreleve(formid):
     stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
         EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
@@ -537,8 +546,10 @@ def exec_exportFormBuilderTrack(formid):
 
 def exec_removeFormBuilderTrack(formid):
 
+    myForm = session.query(Form).filter_by(pk_Form = formid).first()
+
     stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[RemoveFormOnTrackReferential] :formToDelete;
-        """).bindparams(bindparam('formToDelete', formid))
+        """).bindparams(bindparam('formToDelete', myForm.originalID))
 
     curSession = session()
     curSession.execute(stmt.execution_options(autocommit=True))

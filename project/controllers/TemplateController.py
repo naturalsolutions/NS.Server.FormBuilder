@@ -62,8 +62,6 @@ def templateById(id):
     query   = session.query(Form, Input, InputProperty).join(Input).join(InputProperty).filter(Form.pk_Form == id).filter(Form.isTemplate == True)
     results = query.all()
 
-    print (len(results))
-
     for each in results:
         if each[0].pk_Form not in formsAdded:
             # Add form to the list and update current index

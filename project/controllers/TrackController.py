@@ -4,6 +4,8 @@ from project import app
 from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
 from ..models import session, engine
+from ..models.Form import Form
+from ..models.Input import Input
 from sqlalchemy import *
 from sqlalchemy.exc import ProgrammingError
 import urllib.parse
@@ -75,6 +77,15 @@ def getTrackTypes(lang):
 			toret["types"].append(row[0])
 		return json.dumps(toret, ensure_ascii=False)
 
+
+@app.route('/Track/FormWeightWFBID/<int:formbuilderID>', methods = ['GET'])
+def getTrackFormWeightWFBID(formbuilderID):
+	myForm = session.query(Form).filter_by(pk_Form = formbuilderID).first()
+	if myForm != None:
+		return (getTrackFormWeight(myForm.originalID))
+	else:
+		abort(make_response('The form with ID ' + formbuilderID + ' could not be found !', 400))
+
 @app.route('/Track/FormWeight/<int:originalID>', methods = ['GET'])
 def getTrackFormWeight(originalID):
 	toret = {}
@@ -102,6 +113,14 @@ def getTrackFormWeight(originalID):
 
 	return json.dumps(toret, ensure_ascii=False)
 
+
+@app.route('/Track/InputWeightWFBID/<int:formbuilderID>', methods = ['GET'])
+def getTrackInputWeightWFBID(formbuilderID):
+	myInput = session.query(Input).filter_by(pk_Input = formbuilderID).first()
+	if myInput != None:
+		return (getTrackInputWeight(myInput.originalID))
+	else:
+		abort(make_response('The input with ID ' + formbuilderID + ' could not be found !', 400))
 
 @app.route('/Track/InputWeight/<int:originalID>', methods = ['GET'])
 def getTrackInputWeight(originalID):
