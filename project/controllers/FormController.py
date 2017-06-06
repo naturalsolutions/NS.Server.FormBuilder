@@ -287,6 +287,10 @@ def updateForm(id):
 
                             inputsList = request.json['schema'][eachInput]
 
+                            savedConverted = request.json['schema'][eachInput]['converted']
+                            if request.json['schema'][eachInput]['converted'] != None:
+                                del request.json['schema'][eachInput]['converted']
+
                             form.addInput( inputRepository.createInput(**inputsList) )
 
                             foundInputs = session.query(Input).filter_by(name = inputsList['name']).all()
@@ -294,9 +298,9 @@ def updateForm(id):
                             for foundInput in foundInputs:
                                 foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
                                 if foundForm.context == form.context and foundInput.type != inputsList['type']:
-                                    abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
-                        
-
+                                    if savedConverted == None or foundInput.pk_Input != savedConverted:#TODO REACTIVATE or len(foundInputs) > 1:
+                                        abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+                                    
                     if len(presentInputs) > 0:
                         # We need to remove some input
                         inputRepository   = InputRepository(None)
@@ -535,13 +539,14 @@ def exec_exportFormBuilderEcoreleve(formid):
 
 def exec_exportFormBuilderTrack(formid):
 
-    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[SendDataToTrackReferential] :formToUpdate;
-        """).bindparams(bindparam('formToUpdate', formid))
+    #stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[SendDataToTrackReferential] :formToUpdate;
+    #    """).bindparams(bindparam('formToUpdate', formid))
 
-    curSession = session()
-    curSession.execute(stmt.execution_options(autocommit=True))
+    #curSession = session()
+    #curSession.execute(stmt.execution_options(autocommit=True))
 
-    curSession.commit()
+    #curSession.commit()
+
     return
 
 def exec_removeFormBuilderTrack(formid):
