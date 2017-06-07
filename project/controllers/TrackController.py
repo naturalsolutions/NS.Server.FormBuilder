@@ -113,7 +113,6 @@ def getTrackFormWeight(originalID):
 
 	return json.dumps(toret, ensure_ascii=False)
 
-
 @app.route('/Track/InputWeightWFBID/<int:formbuilderID>', methods = ['GET'])
 def getTrackInputWeightWFBID(formbuilderID):
 	myInput = session.query(Input).filter_by(pk_Input = formbuilderID).first()
