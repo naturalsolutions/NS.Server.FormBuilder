@@ -31,12 +31,11 @@ class InputRepository:
 
     # create a new input
     def createInput(self, **kwargs):
-        print ("****************" + str(kwargs))
         newInput                 = Input( **Utility._pick(kwargs, Input.getColumnsList()) )
 
         if 'originalID' in kwargs:
             newInput.originalID = kwargs['originalID']
-        del kwargs['originalID']
+            del kwargs['originalID']
         
         newInputPropertiesValues = Utility._pickNot(kwargs, Input.getColumnsList())
 

@@ -55,7 +55,6 @@ def get_forms():
 def getFormByID(formID):
     if (formID.isdigit()):
         findForm = session.query(Form).get(formID)
-        print ("returning recuriseToJSON ==========>", str(findForm.recuriseToJSON()))
         return jsonify({ "form" : findForm.recuriseToJSON() })
     else:
         forms = []
@@ -287,8 +286,9 @@ def updateForm(id):
 
                             inputsList = request.json['schema'][eachInput]
 
-                            savedConverted = request.json['schema'][eachInput]['converted']
-                            if request.json['schema'][eachInput]['converted'] != None:
+                            savedConverted = None
+                            if 'converted' in request.json['schema'][eachInput]:
+                                savedConverted = request.json['schema'][eachInput]['converted']
                                 del request.json['schema'][eachInput]['converted']
 
                             form.addInput( inputRepository.createInput(**inputsList) )
