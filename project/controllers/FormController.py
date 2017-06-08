@@ -79,7 +79,6 @@ def getFormByID(formID):
                     k = keyword.toJSON()
                     forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
                     keywords_added.append(keyword.pk_KeyWord_Form)
-        print ("returning ==========>", str(forms))
         return json.dumps(forms, ensure_ascii=False)
 
 # Create form
@@ -539,13 +538,13 @@ def exec_exportFormBuilderEcoreleve(formid):
 
 def exec_exportFormBuilderTrack(formid):
 
-    #stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[SendDataToTrackReferential] :formToUpdate;
-    #    """).bindparams(bindparam('formToUpdate', formid))
+    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[SendDataToTrackReferential] :formToUpdate;
+        """).bindparams(bindparam('formToUpdate', formid))
 
-    #curSession = session()
-    #curSession.execute(stmt.execution_options(autocommit=True))
+    curSession = session()
+    curSession.execute(stmt.execution_options(autocommit=True))
 
-    #curSession.commit()
+    curSession.commit()
 
     return
 
