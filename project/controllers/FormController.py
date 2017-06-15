@@ -50,6 +50,10 @@ def get_forms():
 
     return json.dumps(forms, ensure_ascii=False)
 
+@app.route('/forms/<string:context>/<formID>', methods = ['GET'])
+def getFormByIDWithContext(context, formID):
+    return(getFormByID(formID))
+
 # Get protocol by ID
 @app.route('/forms/<formID>', methods = ['GET'])
 def getFormByID(formID):
@@ -205,6 +209,10 @@ def createForm():
                 return jsonify({"form" : form.recuriseToJSON() })
     else:
         abort(make_response('Data seems not be in JSON format', 400))
+
+@app.route('/forms/<string:context>/<int:id>', methods=['PUT'])
+def updateFormWithContext(context, id):
+    return (updateForm(id))
 
 # PUT routes, update protocol
 @app.route('/forms/<int:id>', methods=['PUT'])
@@ -364,6 +372,10 @@ def updateForm(id):
         else:
             abort(make_response('Data seems to not be in ' + format + ' format', 400))
 
+@app.route('/forms/<string:context>/<int:id>', methods=['DELETE'])
+def removeFormWithContext(context, id):
+    removeForm(id)
+
 @app.route('/forms/<int:id>', methods=['DELETE'])
 def removeForm(id):
     form = session.query(Form).filter_by(pk_Form = id).first()
@@ -425,6 +437,10 @@ def deleteInputFromForm(formid, inputid):
         except:
             session.rollback()
             abort(make_response('Error during inputfield delete', 500))
+
+@app.route('/forms/<string:context>/<int:formid>/deletefields', methods=['DELETE'])
+def deleteInputsFromFormWithContext(context, formid):
+    return deleteInputsFromForm(formid)
 
 @app.route('/forms/<int:formid>/deletefields', methods=['DELETE'])
 def deleteInputsFromForm(formid):
