@@ -382,32 +382,23 @@ def removeFormWithContext(context, id):
 
 @app.route('/forms/<int:id>', methods=['DELETE'])
 def removeForm(id):
-    print("tamaman ************************************")
     form = session.query(Form).filter_by(pk_Form = id).first()
 
-    print("zoubi")
     try:
         session.delete(form)
-        print("yo")
     except:
         session.rollback()
-        print("chouba !")
         abort(make_response('Error during delete', 500))
     finally:
         session.commit()
-        print("chouba 2!")
         try: 
             if form.context == 'track':
                 exec_removeFormBuilderTrack(form.pk_Form)
 
-                print("chouba 3!")
         except Exception as e: 
             print_exc()
-            print("chouba 4!")
             pass
         session.commit()
-        print("chouba 5!")
-    print("chouba 6!")
     return jsonify({"deleted" : True})
 
 @app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
