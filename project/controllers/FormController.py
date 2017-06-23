@@ -85,6 +85,11 @@ def getFormByID(formID):
                     keywords_added.append(keyword.pk_KeyWord_Form)
         return json.dumps(forms, ensure_ascii=False)
 
+
+@app.route('/forms/<string:context>', methods = ['POST'])
+def createFormWithContext(context):
+    return(createForm())
+
 # Create form
 @app.route('/forms', methods = ['POST'])
 def createForm():
@@ -373,54 +378,36 @@ def updateForm(id):
 
 @app.route('/forms/<string:context>/<int:id>', methods=['DELETE'])
 def removeFormWithContext(context, id):
-    removeForm(id)
+    return (removeForm(id))
 
 @app.route('/forms/<int:id>', methods=['DELETE'])
 def removeForm(id):
+    print("tamaman ************************************")
     form = session.query(Form).filter_by(pk_Form = id).first()
 
-    if form.context != 'track':
-        return jsonify({})
-
+    print("zoubi")
     try:
-        #session.delete(form)
+        session.delete(form)
         print("yo")
     except:
         session.rollback()
+        print("chouba !")
         abort(make_response('Error during delete', 500))
     finally:
         session.commit()
+        print("chouba 2!")
         try: 
             if form.context == 'track':
                 exec_removeFormBuilderTrack(form.pk_Form)
+
+                print("chouba 3!")
         except Exception as e: 
             print_exc()
+            print("chouba 4!")
             pass
         session.commit()
-    return jsonify({"deleted" : True})
-
-@app.route('/forms/<string:zecontext>/<int:id>', methods=['DELETE'])
-def removeFormInContext(zecontext, id):
-    form = session.query(Form).filter_by(pk_Form = id, context = zecontext).first()
-
-    if form.context != 'track':
-        return jsonify({})
-
-    try:
-        #session.delete(form)
-        print("yo")
-    except:
-        session.rollback()
-        abort(make_response('Error during delete', 500))
-    finally:
-        session.commit()
-        try: 
-            if form.context == 'track':
-                exec_removeFormBuilderTrack(form.pk_Form)
-        except Exception as e: 
-            print_exc()
-            pass
-        session.commit()
+        print("chouba 5!")
+    print("chouba 6!")
     return jsonify({"deleted" : True})
 
 @app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
