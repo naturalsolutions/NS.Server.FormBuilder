@@ -201,10 +201,10 @@ def createForm():
             finally:
                 session.commit()
                 try: 
-                    if form.context == 'ecoreleve':
-                        exec_exportFormBuilderEcoreleve(form.pk_Form)
-                    if form.context == 'track':
-                        exec_exportFormBuilderTrack(form.pk_Form)
+                    # if form.context == 'ecoreleve':
+                    #     exec_exportFormBuilderEcoreleve(form.pk_Form)
+                    # if form.context == 'track':
+                    exec_exportFormBuilder(form)
                 except Exception as e: 
                     print("exception 1!")
                     print_exc()
@@ -359,10 +359,10 @@ def updateForm(id):
                     finally:
                         session.commit()
                         try: 
-                            if form.context == 'ecoreleve':
-                                exec_exportFormBuilderEcoreleve(form.pk_Form)
-                            if form.context == 'track':
-                                exec_exportFormBuilderTrack(form.pk_Form)
+                            # if form.context == 'ecoreleve':
+                            #     exec_exportFormBuilderEcoreleve(form.pk_Form)
+                            # if form.context == 'track':
+                            exec_exportFormBuilder(form)
                         except Exception as e: 
                             print("exception 3!")
                             print_exc()
@@ -392,8 +392,8 @@ def removeForm(id):
     finally:
         session.commit()
         try: 
-            if form.context == 'track':
-                exec_removeFormBuilderTrack(form.pk_Form)
+            # if form.context == 'track':
+            exec_removeFormBuilderToReferential(form)
 
         except Exception as e: 
             print_exc()
@@ -519,20 +519,22 @@ def makeFormObsolete(formID):
 
     return json.dumps({"success":True}, ensure_ascii=False)
 
-def exec_exportFormBuilderEcoreleve(formid):
-    stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
-        EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
-        """).bindparams(bindparam('formid', formid))
+# def exec_exportFormBuilderEcoreleve(formid):
+#     stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
+#         EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
+#         """).bindparams(bindparam('formid', formid))
 
-    curSession = session()
-    curSession.execute(stmt.execution_options(autocommit=True))
+#     curSession = session()
+#     curSession.execute(stmt.execution_options(autocommit=True))
 
-    curSession.commit()
-    return
+#     curSession.commit()
+#     return
 
-def exec_exportFormBuilderTrack(formid):
+def exec_exportFormBuilder(form):
+    context = form.context
+    formid = form.pk_Form
 
-    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[SendDataToTrackReferential] :formToUpdate;
+    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig[context]+""".[SendDataToReferential] :formToUpdate;
         """).bindparams(bindparam('formToUpdate', formid))
 
     curSession = session()
@@ -542,12 +544,12 @@ def exec_exportFormBuilderTrack(formid):
 
     return
 
-def exec_removeFormBuilderTrack(formid):
+def exec_removeFormBuilderToReferential(form):
 
-    myForm = session.query(Form).filter_by(pk_Form = formid).first()
+    # myForm = session.query(Form).filter_by(pk_Form = formid).first()
 
-    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig['track']+""".[RemoveFormOnTrackReferential] :formToDelete;
-        """).bindparams(bindparam('formToDelete', myForm.originalID))
+    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig[form.context]+""".[RemoveFormOnReferential] :formToDelete;
+        """).bindparams(bindparam('formToDelete', form.originalID))
 
     curSession = session()
     curSession.execute(stmt.execution_options(autocommit=True))
