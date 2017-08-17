@@ -519,16 +519,16 @@ def makeFormObsolete(formID):
 
     return json.dumps({"success":True}, ensure_ascii=False)
 
-def exec_exportFormBuilderEcoreleve(formid):
-    stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
-        EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
-        """).bindparams(bindparam('formid', formid))
+# def exec_exportFormBuilderEcoreleve(formid):
+#     stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
+#         EXEC  """+dbConfig['ecoreleve']+ """.[pr_ImportFormBuilderOneProtocol] :formid ;
+#         """).bindparams(bindparam('formid', formid))
 
-    curSession = session()
-    curSession.execute(stmt.execution_options(autocommit=True))
+#     curSession = session()
+#     curSession.execute(stmt.execution_options(autocommit=True))
 
-    curSession.commit()
-    return
+#     curSession.commit()
+#     return
 
 def exec_exportFormBuilder(form):
     context = form.context
