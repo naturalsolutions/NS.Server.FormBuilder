@@ -2,9 +2,10 @@ Flask==0.10.1
 itsdangerous==0.24
 Jinja2==2.7.3
 MarkupSafe==0.23
-pyodbc==3.0.7
+pyodbc==4.0.17
 SQLAlchemy==0.9.8
 sqlautocode==0.7
-Werkzeug==0.9.6
+Werkzeug==0.12.2
 wheel==0.24.0
-jwt==1.4.0
+PyJWT==1.4.0
+transaction==2.1.2
