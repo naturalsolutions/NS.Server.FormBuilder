@@ -7,5 +7,5 @@ SQLAlchemy==0.9.8
 sqlautocode==0.7
 Werkzeug==0.12.2
 wheel==0.24.0
-PyJWT==1.4.0
+PyJWT==1.5.3
 transaction==2.1.2
