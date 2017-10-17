@@ -142,7 +142,7 @@ class Form(Base):
             jsonobject['fileList'].append(fileAssoc.toJSON())
         return jsonobject
 
-    def recuriseToJSON(self):
+    def recuriseToJSON(self, withschema = True):
         json = self.toJSON()
         inputs = {}
         
@@ -153,7 +153,8 @@ class Form(Base):
             inputs[loops] = each.toJSON()
             loops += 1
 
-        json['schema'] = inputs
+        if withschema:
+            json['schema'] = inputs
 
         json['fieldsets'] = self.get_fieldsets()
 
