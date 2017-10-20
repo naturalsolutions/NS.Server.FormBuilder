@@ -19,6 +19,8 @@ from . import KeyWord_Form
 from . import ConfiguratedInput
 from . import ConfiguratedInputProperty
 from . import Fieldset
+from . import Language
+from . import FormTrad
 
 
 # Database connexion
