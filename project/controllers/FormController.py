@@ -7,6 +7,7 @@ from ..models import session, engine,dbConfig
 from ..models.Form import Form
 from ..models.FormProperty import FormProperty
 from ..models.FormFile import FormFile
+from ..models.FormTrad import FormTrad
 from ..models.KeyWord_Form import KeyWord_Form
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
@@ -47,7 +48,6 @@ def get_forms():
             k = keyword.toJSON()
             forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
             keywords_added.append(keyword.pk_KeyWord_Form)
-
     return json.dumps(forms, ensure_ascii=False)
 
 @app.route('/forms/<string:context>/<formID>', methods = ['GET'])
@@ -83,6 +83,7 @@ def getFormByID(formID):
                     k = keyword.toJSON()
                     forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
                     keywords_added.append(keyword.pk_KeyWord_Form)
+        print(forms)
         return json.dumps(forms, ensure_ascii=False)
 
 
@@ -97,15 +98,19 @@ def createForm():
     if request.json:
 
         checkformname = session.query(Form).filter_by(name = request.json["name"]).first()
-        checkformnamefr = session.query(Form).filter_by(labelFr = request.json["labelFr"]).first()
-        checkformnameen = session.query(Form).filter_by(labelEn = request.json["labelEn"]).first()
+        #TODO : the check for name will depend on what the client send
+        #And on What controller it will be send
+        #deactivated for the database column cleaning (labelFr, labelEn...)
 
-        if (checkformname and checkformname.pk_Form != id):
-            abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
-        if (checkformnamefr and checkformnamefr.pk_Form != id):
-            abort(make_response('A protocol with this french name already exist ! [ERR:FRNAME]', 418))
-        if (checkformnameen and checkformnameen.pk_Form != id):
-            abort(make_response('A protocol with this english name already exist ! [ERR:ENNAME]', 418))
+        # checkformnamefr = session.query(FormTrad).filter_by(labelFr = request.json["labelFr"]).first()
+        # checkformnameen = session.query(Form).filter_by(labelEn = request.json["labelEn"]).first()
+
+        # if (checkformname and checkformname.pk_Form != id):
+        #     abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
+        # if (checkformnamefr and checkformnamefr.pk_Form != id):
+        #     abort(make_response('A protocol with this french name already exist ! [ERR:FRNAME]', 418))
+        # if (checkformnameen and checkformnameen.pk_Form != id):
+        #     abort(make_response('A protocol with this english name already exist ! [ERR:ENNAME]', 418))
 
         #   Check if all parameters are present
         IfmissingParameters = True
