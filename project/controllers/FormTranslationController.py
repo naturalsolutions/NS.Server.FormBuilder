@@ -25,7 +25,7 @@ def ifexists():
 def updateAll(formid):
     """update a list of translation
     For an existing Form it will update delete and add languages
-    You'll need to send all the tranqlations at once in order to proceed"""
+    You'll need to send all the translations at once in order to proceed"""
     json = request.get_json(silent=True)
     transtoupdate = json['translations']
     query = session.query(FormTrad).filter_by(fk_Form = formid).all()
@@ -54,3 +54,24 @@ def updateAll(formid):
         session.rollback()
         abort(make_response('Error during save: %s' % str(exeception).encode(sys.stdout.encoding, errors='replace'), 500))
     session.commit()
+
+# POST routes, create translations
+@app.route('/formtranslation/<int:formid>', methods=['POST'])
+def create(formid):
+    json = request.get_json(silent=True)
+    transtoupdate = json['translations']
+    query = session.query(FormTrad).filter_by(fk_Form = formid).all()
+    if query:
+        abort(make_response('Translations already exist for this form', 418))
+    try:
+        for each in transtoupdate:
+            newtrans = FormTrad(each['Name'], each['Description'])
+            newtrans.fk_Form = formid
+            newtrans.fk_Language = each['fk_Language']
+            session.add(newtrans)
+        session.commit()
+        return jsonify({"created":"True"})
+    except Exception as exeception:
+        print (str(exeception).encode(sys.stdout.encoding, errors='replace'))
+        session.rollback()
+        abort(make_response('Error during save: %s' % str(exeception).encode(sys.stdout.encoding, errors='replace'), 500))
