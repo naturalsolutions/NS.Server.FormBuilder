@@ -58,6 +58,8 @@ def updateAll(formid):
 # POST routes, create translations
 @app.route('/formtranslation/<int:formid>', methods=['POST'])
 def create(formid):
+    """With a list of translation create the new entries for a Form
+    Take a form id in url parameters"""
     json = request.get_json(silent=True)
     transtoupdate = json['translations']
     query = session.query(FormTrad).filter_by(fk_Form = formid).all()
@@ -74,4 +76,23 @@ def create(formid):
     except Exception as exeception:
         print (str(exeception).encode(sys.stdout.encoding, errors='replace'))
         session.rollback()
-        abort(make_response('Error during save: %s' % str(exeception).encode(sys.stdout.encoding, errors='replace'), 500))
+        abort(make_response('Error during create: %s' % str(exeception).encode(sys.stdout.encoding, errors='replace'), 500))
+
+# DELET routes, delete a translations
+@app.route('/formtranslation/<int:transid>', methods=['DELETE'])
+def delete(transid):
+    """delete one FormTrad with a given ID"""
+    try:    
+        todelete = session.query(FormTrad).filter_by(pk_FormTrad = transid).first()
+        if(todelete is None):
+            abort(make_response('No FormTrad for this ID', 418))
+        
+        session.delete(todelete)
+        session.commit()
+
+        return jsonify(todelete.toJSON())
+    except Exception as exeception:
+        print (str(exeception).encode(sys.stdout.encoding, errors='replace'))
+        session.rollback()
+        abort(make_response('Error during delete: %s' % str(exeception).encode(sys.stdout.encoding, errors='replace'), 500))
+
