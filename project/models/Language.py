@@ -24,6 +24,7 @@ class Language(Base):
 
     def toJSON(self):
         return {
+            "Name"  : self.pk_Name,
             "Label"    : self.Label,
             "Description"    : self.Description
         }
@@ -31,6 +32,7 @@ class Language(Base):
     @classmethod
     def getColumnsList(cls):
         return [
+            "Name",
             "Label",
             "Description",
         ]
