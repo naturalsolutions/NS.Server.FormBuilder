@@ -3,6 +3,8 @@
 from sqlalchemy import *
 from sqlalchemy.orm import relationship
 from .base import Base
+from ..models.InputTrad import InputTrad
+
 import datetime
 
 
@@ -16,8 +18,8 @@ class Input(Base):
     fk_form       = Column(ForeignKey('Form.pk_Form'), nullable=False)
 
     name          = Column(String(100, 'French_CI_AS'), nullable=False)
-    labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
-    labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
+    # labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
+    # labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode      = Column(Integer, nullable=False)
     fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
     atBeginingOfLine = Column(Boolean, nullable=False)
@@ -37,13 +39,14 @@ class Input(Base):
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty", cascade="all")
+    InputTrad   = relationship("InputTrad", cascade="all")
 
     # constructor
     def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
         print ("new name is " + name)
         self.name           = name
-        self.labelFr        = labelFr
-        self.labelEn        = labelEn
+        # self.labelFr        = labelFr
+        # self.labelEn        = labelEn
         self.editMode       = editMode
         self.fieldSize      = fieldSize
         self.atBeginingOfLine = atBeginingOfLine
@@ -65,8 +68,8 @@ class Input(Base):
     # Update form values
     def update(self, **kwargs):
         self.name        = kwargs['name']
-        self.labelFr     = kwargs['labelFr']
-        self.labelEn     = kwargs['labelEn']
+        # self.labelFr     = kwargs['labelFr']
+        # self.labelEn     = kwargs['labelEn']
         self.editMode    = kwargs['editMode']
         self.fieldSize   = kwargs['fieldSize']
         self.atBeginingOfLine   = kwargs['atBeginingOfLine']
@@ -84,8 +87,8 @@ class Input(Base):
     def toJSON(self):
         JSONObject = {
             "id"                : self.pk_Input,
-            "labelFr"           : self.labelFr,
-            "labelEn"           : self.labelEn,
+            # "labelFr"           : self.labelFr,
+            # "labelEn"           : self.labelEn,
             "atBeginingOfLine"  : self.atBeginingOfLine,
             "editMode"          : self.editMode,
             "fieldSize"         : self.fieldSize,
@@ -101,7 +104,9 @@ class Input(Base):
             # linked field 
 
             "linkedFieldTable"             : self.linkedFieldTable,
-            "linkedField"                  : self.linkedField
+            "linkedField"                  : self.linkedField,
+
+            "translations"  : self.getTranslation()
         }
 
         for prop in self.Properties :
@@ -128,8 +133,8 @@ class Input(Base):
     def getColumnsList(cls):
         return [
             'name',
-            'labelFr',
-            'labelEn',
+            # 'labelFr',
+            # 'labelEn',
             'editMode',
             'fieldSize',
             'atBeginingOfLine',
@@ -142,3 +147,10 @@ class Input(Base):
             'linkedFieldset',
             'order'
         ]
+
+    def getTranslation(self):
+        translations = []
+        allTrad = self.InputTrad
+        for each in allTrad:
+            translations.append(each.toJSON())
+        return translations
