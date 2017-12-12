@@ -147,7 +147,7 @@ class Form(Base):
         inputs = {}
         
         loops = 0
-        allInputs = self.inputs
+        allInputs = sorted(self.inputs, key=lambda x: x.order, reverse=False)
 
         for each in allInputs:
             inputs[loops] = each.toJSON()
