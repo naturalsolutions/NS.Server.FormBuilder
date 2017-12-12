@@ -72,7 +72,7 @@ def getFormByID(formID):
 
         for form, keyword in results:
             if form.pk_Form not in forms_added and (form.context == formID or formID.lower() == "all"):
-                f = form.to_json()
+                f = form.recuriseToJSON(False)
                 current_form_index += 1
                 f['keywordsFr'] = []
                 f['keywordsEn'] = []
