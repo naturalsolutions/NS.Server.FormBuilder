@@ -126,7 +126,7 @@ class Form(Base):
                 keywordsEn.append(tmpKeyword['name'])
         json['keywordsFr'] = keywordsFr
         json['keywordsEn'] = keywordsEn
-        json['translation'] = self.getTranslations()
+        json['translations'] = self.getTranslations()
         return json
 
     def addFormProperties(self, jsonobject):
@@ -152,7 +152,7 @@ class Form(Base):
             json['schema'] = inputs
 
         json['fieldsets'] = self.get_fieldsets()
-        json['translation'] = self.getTranslations()
+        json['translations'] = self.getTranslations()
 
         json = self.addFormProperties(json)
 

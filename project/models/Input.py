@@ -106,7 +106,7 @@ class Input(Base):
             "linkedFieldTable"             : self.linkedFieldTable,
             "linkedField"                  : self.linkedField,
 
-            "translations"  : self.getTranslation()
+            "translations"  : self.getTranslations()
         }
 
         for prop in self.Properties :
@@ -148,7 +148,7 @@ class Input(Base):
             'order'
         ]
 
-    def getTranslation(self):
+    def getTranslations(self):
         translations = []
         allTrad = self.InputTrad
         for each in allTrad:
