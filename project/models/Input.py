@@ -149,8 +149,8 @@ class Input(Base):
         ]
 
     def getTranslations(self):
-        translations = []
+        translations = dict()
         allTrad = self.InputTrad
         for each in allTrad:
-            translations.append(each.toJSON())
+            translations[each.fk_Language] = each.toJSON()
         return translations
