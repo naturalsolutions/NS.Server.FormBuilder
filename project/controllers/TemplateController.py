@@ -132,9 +132,6 @@ def create_template():
                 # Add new input to the form
                 form.addInput(newInput)
 
-            form.addKeywords( request.json['keywordsFr'], 'FR' )
-            form.addKeywords( request.json['keywordsEn'], 'EN' )
-
             for fieldset in request.json['fieldsets']:
                 newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False)
                 form.addFieldset(newfieldset)

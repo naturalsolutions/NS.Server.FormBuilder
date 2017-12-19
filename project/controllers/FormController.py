@@ -8,7 +8,6 @@ from ..models.Form import Form
 from ..models.FormProperty import FormProperty
 from ..models.FormFile import FormFile
 from ..models.FormTrad import FormTrad
-from ..models.KeyWord_Form import KeyWord_Form
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
@@ -28,26 +27,14 @@ def get_forms():
     forms = []
 
     forms_added        = []
-    keywords_added     = []
     current_form_index = -1
 
-    query   = session.query(Form, KeyWord_Form).outerjoin(KeyWord_Form).order_by(Form.name)
-    results = query.all()
-
-    for form, keyword in results:
-
+    for form in session.query(Form).order_by(Form.name).all():
         if form.pk_Form not in forms_added:
             f = form.recuriseToJSON(False)
             current_form_index += 1
-            f['keywordsFr'] = []
-            f['keywordsEn'] = []
             forms.append(f)
             forms_added.append(form.pk_Form)
-
-        if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
-            k = keyword.toJSON()
-            forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
-            keywords_added.append(keyword.pk_KeyWord_Form)
     return json.dumps(forms, ensure_ascii=False)
 
 @app.route('/forms/<string:context>/<formID>', methods = ['GET'])
@@ -64,25 +51,15 @@ def getFormByID(formID):
         forms = []
 
         forms_added        = []
-        keywords_added     = []
         current_form_index = -1
 
-        query   = session.query(Form, KeyWord_Form).outerjoin(KeyWord_Form).order_by(Form.name)
-        results = query.all()
-
-        for form, keyword in results:
+        for form in session.query(Form).all():
             if form.pk_Form not in forms_added and (form.context == formID or formID.lower() == "all"):
                 f = form.recuriseToJSON(False)
                 current_form_index += 1
-                f['keywordsFr'] = []
-                f['keywordsEn'] = []
                 forms.append(f)
                 forms_added.append(form.pk_Form)
 
-                if keyword is not None and keyword.curStatus != 4 and keyword.pk_KeyWord_Form not in keywords_added:
-                    k = keyword.toJSON()
-                    forms[current_form_index]['keywordsFr' if k['lng'] == 'FR' else 'keywordsEn'].append(k)
-                    keywords_added.append(keyword.pk_KeyWord_Form)
         print(forms)
         return json.dumps(forms, ensure_ascii=False)
 
@@ -189,13 +166,7 @@ def createForm():
                 form.addFile(formfile)
 
             try:
-                for each in form.keywords :
-                    session.delete(each.KeyWord)
-                    session.delete(each)
                 session.commit()
-
-                form.setKeywords( request.json['keywordsFr'], 'FR' )
-                form.setKeywords( request.json['keywordsEn'], 'EN' )
                 session.add(form)
                 session.flush()
             except Exception as e:
@@ -344,15 +315,6 @@ def updateForm(id):
                     neededParametersList = Form.getColumnList()
 
                     try:
-
-                        for each in form.keywords :
-                            session.delete(each.KeyWord)
-                            session.delete(each)
-                        session.commit()
-
-                        form.setKeywords( request.json['keywordsFr'], 'FR' )
-                        form.setKeywords( request.json['keywordsEn'], 'EN' )
-
                         session.add(form)
                     except:
                         # print (str(e).encode(sys.stdout.encoding, errors='replace'))
@@ -451,13 +413,9 @@ def getAllFormsInContext(context):
     forms = []
 
     forms_added        = []
-    keywords_added     = []
     current_form_index = -1
 
-    query   = session.query(Form).order_by(Form.name)
-    results = query.all()
-
-    for form in results:
+    for form in session.query(Form).order_by(Form.name).all():
         if (context == "" or form.context == context):
             f = {"id":form.pk_Form,"name":form.name, "context":form.context, "obsolete":form.obsolete}
             current_form_index += 1
@@ -472,7 +430,6 @@ def get_childforms(formid):
     forms = []
 
     forms_added        = []
-    keywords_added     = []
     current_form_index = -1
 
     if (formid > 0):

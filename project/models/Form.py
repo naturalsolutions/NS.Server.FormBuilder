@@ -3,8 +3,6 @@
 from sqlalchemy import *
 from sqlalchemy.orm import relationship
 from .base import Base
-from .KeyWord_Form import KeyWord_Form
-from .KeyWord import KeyWord
 from ..utilities import Utility
 from ..models.FormProperty import FormProperty
 import datetime
@@ -29,7 +27,6 @@ class Form(Base):
     propagate = Column(Boolean, nullable=False)
 
     # Relationship
-    keywords = relationship("KeyWord_Form", cascade="all")
     fieldsets = relationship("Fieldset", cascade="all")
     inputs = relationship("Input", cascade="all")
     Properties = relationship("FormProperty", cascade="all")
@@ -112,20 +109,6 @@ class Form(Base):
     # Serialize a form in JSON object
     def toJSON(self):
         json = self.to_json()
-        keywordsFr = []
-        keywordsEn = []
-        tmpKeyword = None
-
-        for each in self.keywords:
-            tmpKeyword = each.toJSON()
-            if tmpKeyword['lng'] == 'FR':
-                del tmpKeyword['lng']
-                keywordsFr.append(tmpKeyword['name'])
-            else:
-                del tmpKeyword['lng']
-                keywordsEn.append(tmpKeyword['name'])
-        json['keywordsFr'] = keywordsFr
-        json['keywordsEn'] = keywordsEn
         json['translations'] = self.getTranslations()
         return json
 
@@ -182,33 +165,6 @@ class Form(Base):
             translations[each.fk_Language] = each.toJSON()
         return translations 
     
-    # Add keyword to the form
-    def addKeywords(self, KeyWordList, Language):
-        for each in KeyWordList:
-            if (each != {}):
-                a = KeyWord_Form()
-                if ('key' in each):
-                    a.KeyWord = KeyWord(each["key"], Language)
-                else:
-                    a.KeyWord = KeyWord(each, Language)
-                a.setForm(self)
-                self.keywords.append(a)
-
-    # Set form keywords
-    def setKeywords(self, KeyWordList, Language):
-        keywordsList = []
-        for each in KeyWordList:
-            if (each != {}):
-                a = KeyWord_Form()
-                if ('key' in each):
-                    a.KeyWord = KeyWord(each["key"], Language)
-                else:
-                    a.KeyWord = KeyWord(each, Language)
-                a.setForm(self)
-                keywordsList.append(a)
-
-        self.keywords = keywordsList
-
     # Add Input to the form
     def addInput(self, newInput):
         self.inputs.append(newInput)
