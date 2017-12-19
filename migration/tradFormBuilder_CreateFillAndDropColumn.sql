@@ -91,3 +91,5 @@ insert into InputTrad ([FK_Input], FK_Language, Name) select pk_Input, 'en', Lab
 
 Alter Table [Input] Drop column LabelFr
 Alter Table [Input] Drop column LabelEn
+
+-- @rk todo: merge keywords tables into FormTrad if any. I have the feeling no db has any relevant keywords, so maybe just drop the tables & forget.
