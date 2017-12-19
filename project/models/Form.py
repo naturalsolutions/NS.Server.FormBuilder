@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 from ..utilities import Utility
 from ..models.FormProperty import FormProperty
+from ..models.FormTrad import FormTrad
 import datetime
 
 import pprint
@@ -41,6 +42,7 @@ class Form(Base):
         :return:
         """
         self.name = kwargs['name']
+        self.addTranslations(kwargs['translations'])
         self.tag = kwargs['tag']
         self.creationDate = datetime.datetime.now()
         self.modificationDate = datetime.datetime.now()
@@ -64,6 +66,7 @@ class Form(Base):
         self.context = kwargs['context']
         self.propagate = kwargs['propagate']
         self.obsolete = kwargs['obsolete']
+        self.addTranslations(kwargs['translations'])
 
     def get_fieldsets(self):
         """
@@ -183,6 +186,10 @@ class Form(Base):
         for i in self.inputs:
             inputsIdList.append(i.pk_Input)
         return inputsIdList
+
+    def addTranslations(self, translations):
+        for lang in translations:
+            self.FormTrad.append(FormTrad(**translations[lang]))
 
     def addProperty(self, prop):
         self.Properties.append(prop)

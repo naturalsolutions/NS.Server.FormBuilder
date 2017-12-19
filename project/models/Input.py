@@ -42,9 +42,10 @@ class Input(Base):
     InputTrad   = relationship("InputTrad", cascade="all")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
+    def __init__(self, name, translations, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
         print ("new name is " + name)
         self.name           = name
+        self.addTranslations(translations)
         self.editMode       = editMode
         self.fieldSize      = fieldSize
         self.atBeginingOfLine = atBeginingOfLine
@@ -73,6 +74,7 @@ class Input(Base):
         self.fieldClassEdit  = kwargs['fieldClassEdit']
         self.fieldClassDisplay  = kwargs['fieldClassDisplay']
         self.order       = kwargs['order']
+        self.addTranslations(kwargs['translations'])
 
         # linked field
         self.linkedFieldTable             = kwargs['linkedFieldTable']
@@ -111,6 +113,10 @@ class Input(Base):
         #    JSONObject[realChildFormName] = 
 
         return JSONObject
+
+    def addTranslations(self, translations):
+        for lang in translations:
+            self.InputTrad.append(InputTrad(**translations[lang]))
 
     # add property to the configurated input
     def addProperty(self, prop):
