@@ -45,8 +45,6 @@ class Input(Base):
     def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
         print ("new name is " + name)
         self.name           = name
-        # self.labelFr        = labelFr
-        # self.labelEn        = labelEn
         self.editMode       = editMode
         self.fieldSize      = fieldSize
         self.atBeginingOfLine = atBeginingOfLine
@@ -68,8 +66,6 @@ class Input(Base):
     # Update form values
     def update(self, **kwargs):
         self.name        = kwargs['name']
-        # self.labelFr     = kwargs['labelFr']
-        # self.labelEn     = kwargs['labelEn']
         self.editMode    = kwargs['editMode']
         self.fieldSize   = kwargs['fieldSize']
         self.atBeginingOfLine   = kwargs['atBeginingOfLine']
@@ -87,8 +83,6 @@ class Input(Base):
     def toJSON(self):
         JSONObject = {
             "id"                : self.pk_Input,
-            # "labelFr"           : self.labelFr,
-            # "labelEn"           : self.labelEn,
             "atBeginingOfLine"  : self.atBeginingOfLine,
             "editMode"          : self.editMode,
             "fieldSize"         : self.fieldSize,
