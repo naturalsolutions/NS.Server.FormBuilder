@@ -14,24 +14,31 @@ class InputTrad(Base):
     fk_Language = Column(ForeignKey('Language.pk_Name'), nullable=False)
 
     Name = Column(String(255, 'French_CI_AS'), nullable=False)
+    Help = Column(String(255, 'French_CI_AS'))
 
     Input = relationship('Input')
 
-    def __init__(self, name):
-        self.Name = name
+    def __init__(self, Language, Name='', Help=''):
+        self.fk_Language = Language
+        self.Name = Name
+        self.Help = Help
 
-    def update(self, name):
-        self.Name = name
+    def update(self, Language, Name='', Help=''):
+        self.fk_Language = Language
+        self.Name = Name
+        self.Help = Help
 
     def toJSON(self):
         return {
             "Language": self.fk_Language,
-            "Name": self.Name
+            "Name": self.Name,
+            "Help": self.Help
         }
 
     @classmethod
     def getColumnsList(cls):
         return [
             "Language",
-            "Name"
+            "Name",
+            "Help"
         ]
