@@ -133,8 +133,7 @@ class Input(Base):
     def getColumnsList(cls):
         return [
             'name',
-            # 'labelFr',
-            # 'labelEn',
+            'translations',
             'editMode',
             'fieldSize',
             'atBeginingOfLine',

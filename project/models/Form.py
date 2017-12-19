@@ -207,12 +207,7 @@ class Form(Base):
         return [
             'name',
             'tag',
-            'descriptionFr',
-            'descriptionEn',
-            'keywordsFr',
-            'keywordsEn',
-            'labelFr',
-            'labelEn',
+            'translations',
             'schema',
             'fieldsets',
             'obsolete',
