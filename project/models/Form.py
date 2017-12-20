@@ -32,7 +32,7 @@ class Form(Base):
     inputs = relationship("Input", cascade="all")
     Properties = relationship("FormProperty", cascade="all")
     FormFile = relationship("FormFile", cascade="all")
-    FormTrad = relationship("FormTrad", cascade="all")
+    FormTrad = relationship("FormTrad", cascade="all", lazy='dynamic')
 
     # Constructor
     def __init__(self, **kwargs):
@@ -189,7 +189,11 @@ class Form(Base):
 
     def addTranslations(self, translations):
         for lang in translations:
-            self.FormTrad.append(FormTrad(**translations[lang]))
+            trad = self.FormTrad.filter_by(fk_Language = lang).first()
+            if trad:
+                trad.update(**translations[lang])
+            else:
+                self.FormTrad.append(FormTrad(**translations[lang]))
 
     def addProperty(self, prop):
         self.Properties.append(prop)

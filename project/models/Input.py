@@ -39,7 +39,7 @@ class Input(Base):
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty", cascade="all")
-    InputTrad   = relationship("InputTrad", cascade="all")
+    InputTrad   = relationship("InputTrad", cascade="all", lazy="dynamic")
 
     # constructor
     def __init__(self, name, translations, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
@@ -116,7 +116,11 @@ class Input(Base):
 
     def addTranslations(self, translations):
         for lang in translations:
-            self.InputTrad.append(InputTrad(**translations[lang]))
+            trad = self.InputTrad.filter_by(fk_Language = lang).first()
+            if trad:
+                trad.update(**translations[lang])
+            else:
+                self.InputTrad.append(InputTrad(**translations[lang]))
 
     # add property to the configurated input
     def addProperty(self, prop):
