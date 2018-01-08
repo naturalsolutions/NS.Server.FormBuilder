@@ -189,11 +189,13 @@ class Form(Base):
 
     def addTranslations(self, translations):
         for lang in translations:
-            trad = self.FormTrad.filter_by(fk_Language = lang).first()
-            if trad:
-                trad.update(**translations[lang])
-            else:
-                self.FormTrad.append(FormTrad(**translations[lang]))
+            if self.pk_Form:
+                trad = self.FormTrad.filter_by(fk_Language = lang).first()
+                if trad:
+                    trad.update(**translations[lang])
+                    continue
+
+            self.FormTrad.append(FormTrad(**translations[lang]))
 
     def addProperty(self, prop):
         self.Properties.append(prop)
