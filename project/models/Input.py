@@ -116,11 +116,13 @@ class Input(Base):
 
     def addTranslations(self, translations):
         for lang in translations:
-            trad = self.InputTrad.filter_by(fk_Language = lang).first()
-            if trad:
-                trad.update(**translations[lang])
-            else:
-                self.InputTrad.append(InputTrad(**translations[lang]))
+            if self.pk_Input:
+                trad = self.InputTrad.filter_by(fk_Language = lang).first()
+                if trad:
+                    trad.update(**translations[lang])
+                    continue
+
+            self.InputTrad.append(InputTrad(**translations[lang]))
 
     # add property to the configurated input
     def addProperty(self, prop):
