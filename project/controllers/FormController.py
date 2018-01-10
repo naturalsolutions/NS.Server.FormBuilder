@@ -164,10 +164,11 @@ def createForm():
                 form.addInput(newInput)
                 foundInputs = session.query(Input).filter_by(name = newInput.name).all()
 
-                for foundInput in foundInputs:
-                    foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
-                    if foundForm.context == form.context and foundInput.type != newInput.type:
-                        abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+                if form.context.lower() != 'track':
+                    for foundInput in foundInputs:
+                        foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
+                        if foundForm.context == form.context and foundInput.type != newInput.type:
+                            abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
             
             for fieldset in request.json['fieldsets']:
                 # TODO FIX
