@@ -124,6 +124,10 @@ def createForm(context = None, previousID = 0):
         # we disallow fields with same name to have different types in a context
         foundInputs = session.query(Input).filter_by(name = input.name).all()
         for foundInput in foundInputs:
+            # disable this check for track context
+            if form.context.lower() != 'track':
+                break
+
             foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
             if foundForm.context == form.context and foundInput.type != input.type:
                 abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
@@ -252,6 +256,10 @@ def updateForm_old(pk):
                             foundInputs = session.query(Input).filter_by(name = inputsList['name']).all()
 
                             for foundInput in foundInputs:
+                                # disable this check for track context
+                                if form.context.lower() != 'track':
+                                    break
+
                                 foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
                                 if foundForm.context == form.context and foundInput.type != inputsList['type']:
                                     if savedConverted == None or foundInput.pk_Input != savedConverted:#TODO REACTIVATE or len(foundInputs) > 1:
