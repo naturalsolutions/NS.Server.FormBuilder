@@ -307,13 +307,13 @@ def updateForm(id):
                             form.addInput( inputRepository.createInput(**inputsList) )
 
                             foundInputs = session.query(Input).filter_by(name = inputsList['name']).all()
-
-                            for foundInput in foundInputs:
-                                foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
-                                if foundForm.context == form.context and foundInput.type != inputsList['type']:
-                                    if savedConverted == None or foundInput.pk_Input != savedConverted:#TODO REACTIVATE or len(foundInputs) > 1:
-                                        abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
-                                    
+                            if form.context.lower() != 'track':
+                                for foundInput in foundInputs:
+                                    foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
+                                    if foundForm.context == form.context and foundInput.type != inputsList['type']:
+                                        if savedConverted == None or foundInput.pk_Input != savedConverted:#TODO REACTIVATE or len(foundInputs) > 1:
+                                            abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+                                        
                     if len(presentInputs) > 0:
                         # We need to remove some input
                         inputRepository   = InputRepository(None)
