@@ -11,7 +11,6 @@ from . import Form
 from . import FormProperty
 from . import Input
 from . import InputProperty
-from . import Unity
 from . import Propagation
 from . import FormFile
 from . import ConfiguratedInput

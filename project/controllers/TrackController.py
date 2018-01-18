@@ -53,8 +53,9 @@ def getData():
 	else:
 		abort(make_response('No datas given !', 400))
 
+@app.route('/unities/<string:context>/<string:lang>', methods = ['GET'])
 @app.route('/getTrackUnities/<string:lang>', methods = ['GET'])
-def getTrackUnities(lang):
+def getTrackUnities(lang, context):
 	toret = {}
 	trackEngine = getTrackSqlConnection()
 
@@ -159,4 +160,3 @@ def getTrackInputWeight(originalID):
 			toret["InputWeight"][itemDB] = totresult
 
 	return json.dumps(toret, ensure_ascii=False)
-
