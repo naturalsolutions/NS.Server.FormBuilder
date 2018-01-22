@@ -11,7 +11,6 @@ from ..models.FormTrad import FormTrad
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
-from ..models.Fieldset import Fieldset
 from sqlalchemy import *
 import json
 import sys
@@ -140,11 +139,6 @@ def createForm():
                     if foundForm.context == form.context and foundInput.type != newInput.type:
                         abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
             
-            for fieldset in request.json['fieldsets']:
-                # TODO FIX
-                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False, fieldset['legend'] + " " + fieldset['cid'], fieldset['order'])#fieldset['LOL']
-                form.addFieldset(newfieldset)
-
             if (form.hasCircularDependencies([], session)):
                 abort(make_response('Circular dependencies appeared with child form !', 508))
 
@@ -276,13 +270,6 @@ def updateForm(id):
                         # We need to remove some input
                         inputRepository   = InputRepository(None)
                         inputRepository.removeInputs(presentInputs)
-
-                    for each in form.fieldsets:
-                        each.curStatus = 4
-
-                    for each in request.json['fieldsets']:
-                        # TODO FIX
-                        form.addFieldset(Fieldset(each['legend'], ",".join(each['fields']), False, each['legend'] + " " + each['cid'], each['order']))
 
                     for fileAssoc in request.json['fileList']:
                         fileAssoc['filedata'] = fileAssoc['filedata'].encode('utf-8')

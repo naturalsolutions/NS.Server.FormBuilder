@@ -28,7 +28,6 @@ class Form(Base):
     propagate = Column(Boolean, nullable=False)
 
     # Relationship
-    fieldsets = relationship("Fieldset", cascade="all")
     inputs = relationship("Input", cascade="all")
     Properties = relationship("FormProperty", cascade="all")
     FormFile = relationship("FormFile", cascade="all")
@@ -68,21 +67,10 @@ class Form(Base):
         self.obsolete = kwargs['obsolete']
         self.addTranslations(kwargs['translations'])
 
-    def get_fieldsets(self):
-        """
-        Return all form fieldsets
-        :return: form fieldsets as json
-        """
-        fieldsets = []
-        for each in self.fieldsets:
-            if each.curStatus != 4:
-                fieldsets.append(each.toJSON())
-        return fieldsets
-
     def get_formtrad(self):
         """
-        Return all form fieldsets
-        :return: form fieldsets as json
+        Return all form trads
+        :return: form trads as json
         """
         trads = []
         for each in self.FormTrad:
@@ -137,7 +125,6 @@ class Form(Base):
         if withschema:
             json['schema'] = inputs
 
-        json['fieldsets'] = self.get_fieldsets()
         json['translations'] = self.getTranslations()
 
         json = self.addFormProperties(json)
@@ -171,10 +158,6 @@ class Form(Base):
     # Add Input to the form
     def addInput(self, newInput):
         self.inputs.append(newInput)
-
-    # Add fieldset to the form
-    def addFieldset(self, fieldset):
-        self.fieldsets.append(fieldset)
 
     # Add FormFile to the form
     def addFile(self, newFile):
@@ -222,7 +205,6 @@ class Form(Base):
             'tag',
             'translations',
             'schema',
-            'fieldsets',
             'obsolete',
             'isTemplate',
             'context',

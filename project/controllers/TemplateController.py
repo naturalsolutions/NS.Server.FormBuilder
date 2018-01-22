@@ -9,7 +9,6 @@ from ..models.InputProperty import InputProperty
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
-from ..models.Fieldset import Fieldset
 import json
 import sys
 import datetime
@@ -131,10 +130,6 @@ def create_template():
 
                 # Add new input to the form
                 form.addInput(newInput)
-
-            for fieldset in request.json['fieldsets']:
-                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False)
-                form.addFieldset(newfieldset)
 
             try:
                 session.add (form)
