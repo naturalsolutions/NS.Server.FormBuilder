@@ -21,7 +21,7 @@ import transaction
 
 @app.route('/forms', methods = ['GET'])
 @app.route('/forms/<string:context>', methods = ['GET'])
-def getForms(context = None):
+def getForms(context = None, short = False):
     forms = []
     query = session.query(Form)
 
@@ -30,10 +30,17 @@ def getForms(context = None):
         query = query.filter_by(context = context)
 
     for form in query:
-        f = form.recuriseToJSON(False)
+        if (short):
+            f = form.shortJSON()
+        else:
+            f = form.recuriseToJSON(False)
         forms.append(f)
 
     return json.dumps(forms, ensure_ascii=False)
+
+@app.route('/forms/allforms/<string:context>', methods = ['GET'])
+def getFormsShort(context):
+    return getForms(context, True)
 
 @app.route('/forms/<int:pk>', methods=['GET'])
 def getForm(pk):
@@ -350,30 +357,6 @@ def deleteInputsFromForm(formid):
 @app.route('/', methods = ['GET'])
 def index():
     return render_template('index.html')
-
-
-@app.route('/forms/allforms', methods = ['GET'])
-def quick_getAllForms():
-    return self.fetAllFormsInContext("")
-
-
-@app.route('/forms/allforms/<string:context>', methods = ['GET'])
-def getAllFormsInContext(context):
-    if (context == None):
-        context = ""
-    forms = []
-
-    forms_added        = []
-    current_form_index = -1
-
-    for form in session.query(Form).order_by(Form.name).all():
-        if (context == "" or form.context == context):
-            f = {"id":form.pk_Form,"name":form.name, "context":form.context, "obsolete":form.obsolete}
-            current_form_index += 1
-            forms.append(f)
-            forms_added.append(form.pk_Form)
-
-    return json.dumps(forms, ensure_ascii=False)
 
 
 @app.route('/childforms/<int:formid>', methods = ['GET'])

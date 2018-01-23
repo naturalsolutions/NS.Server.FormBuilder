@@ -111,6 +111,14 @@ class Form(Base):
             jsonobject['fileList'].append(fileAssoc.toJSON())
         return jsonobject
 
+    def shortJSON(self):
+        return {
+            "id": self.pk_Form,
+            "name": self.name,
+            "context": self.context,
+            "obsolete": self.obsolete
+        }
+
     def recuriseToJSON(self, withschema=True):
         json = self.toJSON()
         inputs = {}
