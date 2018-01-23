@@ -19,48 +19,29 @@ import pprint
 from traceback import print_exc
 import transaction
 
-# Return all forms
 @app.route('/forms', methods = ['GET'])
-def get_forms():
-    # Forms list who will be returned at the end
+@app.route('/forms/<string:context>', methods = ['GET'])
+def getForms(context = None):
     forms = []
+    query = session.query(Form)
 
-    forms_added        = []
-    current_form_index = -1
+    # filter_by context, except for "all"
+    if (context and context.lower() != "all"):
+        query = query.filter_by(context = context)
 
-    for form in session.query(Form).order_by(Form.name).all():
-        if form.pk_Form not in forms_added:
-            f = form.recuriseToJSON(False)
-            current_form_index += 1
-            forms.append(f)
-            forms_added.append(form.pk_Form)
+    for form in query:
+        f = form.recuriseToJSON(False)
+        forms.append(f)
+
     return json.dumps(forms, ensure_ascii=False)
 
-@app.route('/forms/<string:context>/<formID>', methods = ['GET'])
-def getFormByIDWithContext(context, formID):
-    return(getFormByID(formID))
+@app.route('/forms/<int:pk>', methods=['GET'])
+def getForm(pk):
+    form = session.query(Form).get(pk)
+    if form is None:
+        return abort(404)
 
-# Get protocol by ID
-@app.route('/forms/<formID>', methods = ['GET'])
-def getFormByID(formID):
-    if (formID.isdigit()):
-        findForm = session.query(Form).get(formID)
-        return jsonify({ "form" : findForm.recuriseToJSON() })
-    else:
-        forms = []
-
-        forms_added        = []
-        current_form_index = -1
-
-        for form in session.query(Form).all():
-            if form.pk_Form not in forms_added and (form.context == formID or formID.lower() == "all"):
-                f = form.recuriseToJSON(False)
-                current_form_index += 1
-                forms.append(f)
-                forms_added.append(form.pk_Form)
-
-        print(forms)
-        return json.dumps(forms, ensure_ascii=False)
+    return json.dumps(form.recuriseToJSON(True), ensure_ascii=False)
 
 
 @app.route('/forms/<string:context>', methods = ['POST'])
