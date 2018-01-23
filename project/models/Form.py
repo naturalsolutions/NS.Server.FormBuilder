@@ -26,6 +26,8 @@ class Form(Base):
     context = Column(String(50, 'French_CI_AS'), nullable=False)
     originalID = Column(Integer, nullable=True)
     propagate = Column(Boolean, nullable=False)
+    state = Column(Integer, nullable=False)     # 1: current version, 2: old version, 3: current version (deleted)
+    initialID = Column(Integer, nullable=False) # id of root form after first creation
 
     # Relationship
     inputs = relationship("Input", cascade="all")
@@ -94,7 +96,9 @@ class Form(Base):
             "isTemplate": self.isTemplate,
             "context": self.context,
             "propagate": self.propagate,
-            "originalID": self.originalID
+            "originalID": self.originalID,
+            "state": self.state,
+            "initialID": self.initialID
         }
 
     # Serialize a form in JSON object
