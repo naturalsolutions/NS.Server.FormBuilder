@@ -130,7 +130,8 @@ def createForm(context = None):
         session.flush()
         if form.initialID == 0:
             form.initialID = form.pk_Form
-        session.commit()
+            session.commit()
+
     except Exception as e:
         print (str(e).encode(sys.stdout.encoding, errors='replace'))
         abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
