@@ -57,103 +57,87 @@ def createForm(context):
     if not request.json:
         abort(make_response('Data seems not be in JSON format', 400))
 
+    # unique constraint check on form name
     checkformname = session.query(Form).filter_by(name = request.json["name"]).first()
     if (checkformname and checkformname.pk_Form != id):
         abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
 
-    #   Check if all parameters are present
-    IfmissingParameters = True
-    neededParametersList = Form.getColumnList()
-    for a in neededParametersList:
-        IfmissingParameters = IfmissingParameters and (a in request.json)
+    # check for missing properties
+    for prop in Form.getColumnList():
+        if not prop in request.json:
+            abort(make_response('Required parameter is missing: %s' % prop, 400))
 
-    if IfmissingParameters == False:
-        abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
-    else:
-        newFormValues   = Utility._pick(request.json, neededParametersList)
-        newFormPropVals = Utility._pickNot(request.json, neededParametersList)
-        form            = Form( **newFormValues )              # new form Object
+    formProperties = Utility._pick(request.json, Form.getColumnList())
+    formExtraProperties = Utility._pickNot(request.json, Form.getColumnList() + ['fileList'])
+    form = Form(**formProperties)
 
-        del newFormPropVals['fileList']
+    # add form's extra properties
+    for key in formExtraProperties:
+        value = formExtraProperties[key]
+        if value is None:
+            value = ''
+        form.addProperty(FormProperty(key, value, Utility._getType(value)))
 
-        for prop in newFormPropVals:
-            if newFormPropVals[prop] == None :
-                newFormPropVals[prop] = ''
-            formProperty = FormProperty(prop, newFormPropVals[prop], Utility._getType(newFormPropVals[prop]))
-            form.addProperty(formProperty)
+    # create form fields
+    for key in request.json['schema']:
+        inputDict = request.json['schema'][key]
 
-        inputColumnList = Input.getColumnsList()            # common input list like LabelFR, LabelEN see Input class
+        # set custom properties depending on field's validators
+        for i in ['required', 'readonly']:
+            inputDict[i] = inputDict['validators'] and inputDict['validators'].index(i) >= 0
 
-        # for each element in Schema we create an input and its properties
-        for input in request.json['schema']:
-            inputsList              = request.json['schema'][input]
-            try:
-                inputsList['required'] = inputsList['validators'].index('required') >= 0
-            except:
-                inputsList['required'] = False
+        # delete unneeded properties
+        del inputDict['validators']
+        del inputDict['id']
 
-            try:
-                inputsList['readonly'] = inputsList['validators'].index('readonly') >= 0
-            except:
-                inputsList['readonly'] = False
+        inputProperties = Utility._pick(inputDict, Input.getColumnsList())
+        inputExtraProperties = Utility._pickNot(inputDict, Input.getColumnsList())
+        input = Input(**inputProperties)
 
-            del inputsList['validators']
-            del inputsList['id']
+        # add input's extra properties
+        for key in inputExtraProperties:
+            value = inputExtraProperties[key]
+            if value is None or value == []:
+                value = ''
+            input.addProperty(InputProperty(key, value, Utility._getType(value)))
 
-            # abort(make_response('inputsList : %s \nand %s \nand %s \nand %s' % (str(inputsList), str(inputColumnList), str(form), str(request.json)), 400))
+        # add input to form
+        form.addInput(input)
 
-            newInputValues          = Utility._pick(inputsList, inputColumnList)        # new input values
-            newPropertiesValues     = Utility._pickNot(inputsList, inputColumnList)     # properties values
-            newInput                = Input( **newInputValues )                         # new Input object
+        # we disallow fields with same name to have different types in a context
+        foundInputs = session.query(Input).filter_by(name = input.name).all()
+        for foundInput in foundInputs:
+            foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
+            if foundForm.context == form.context and foundInput.type != input.type:
+                abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
 
-            # Add properties to the new configurated field
-            for prop in newPropertiesValues:
-                # TODO FIND BETTER WORKAROUND
-                if newPropertiesValues[prop] == None or newPropertiesValues[prop] == []:
-                    newPropertiesValues[prop] = ''
-                property = InputProperty(prop, newPropertiesValues[prop], Utility._getType(newPropertiesValues[prop]))
-                newInput.addProperty(property)
+    # check for circular dependencies with child forms
+    if (form.hasCircularDependencies([], session)):
+        abort(make_response('Circular dependencies appeared with child form !', 508))
 
-            # Add new input to the form
-            form.addInput(newInput)
-            foundInputs = session.query(Input).filter_by(name = newInput.name).all()
+    # add form files
+    for fileAssoc in request.json['fileList']:
+        fileAssoc['filedata'] = fileAssoc['filedata'].encode('utf-8')
+        newFormFileValues = Utility._pick(fileAssoc, FormFile.getColumnList())
+        formfile = FormFile(**newFormFileValues)
+        form.addFile(formfile)
 
-            for foundInput in foundInputs:
-                foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
-                if foundForm.context == form.context and foundInput.type != newInput.type:
-                    abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
-
-        if (form.hasCircularDependencies([], session)):
-            abort(make_response('Circular dependencies appeared with child form !', 508))
-
-        for fileAssoc in request.json['fileList']:
-            fileAssoc['filedata'] = fileAssoc['filedata'].encode('utf-8')
-            newFormFileValues   = Utility._pick(fileAssoc, FormFile.getColumnList())
-            formfile            = FormFile( **newFormFileValues )
-            form.addFile(formfile)
-
+    try:
+        session.commit()
+        session.add(form)
+        session.flush()
+    except Exception as e:
+        print (str(e).encode(sys.stdout.encoding, errors='replace'))
+        session.rollback()
+        abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
+    finally:
         try:
-            session.commit()
-            session.add(form)
-            session.flush()
+            exec_exportFormBuilder(form)
         except Exception as e:
-            print (str(e).encode(sys.stdout.encoding, errors='replace'))
-            session.rollback()
-            abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
-
-        finally:
-            session.commit()
-            try:
-                # if form.context == 'ecoreleve':
-                #     exec_exportFormBuilderEcoreleve(form.pk_Form)
-                # if form.context == 'track':
-                exec_exportFormBuilder(form)
-            except Exception as e:
-                print("exception 1!")
-                print_exc()
-                pass
-            session.commit()
-            return jsonify({"form" : form.recuriseToJSON() })
+            print("exception 1!")
+            print_exc()
+            pass
+        return jsonify({"form" : form.recuriseToJSON()})
 
 @app.route('/forms/<string:context>/<int:id>', methods=['PUT'])
 def updateFormWithContext(context, id):
