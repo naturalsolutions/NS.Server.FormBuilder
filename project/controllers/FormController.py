@@ -279,30 +279,27 @@ def updateForm(id):
         else:
             abort(make_response('Data seems to not be in ' + format + ' format', 400))
 
-@app.route('/forms/<string:context>/<int:id>', methods=['DELETE'])
-def removeFormWithContext(context, id):
-    return (removeForm(id))
 
-@app.route('/forms/<int:id>', methods=['DELETE'])
-def removeForm(id):
-    form = session.query(Form).filter_by(pk_Form = id).first()
+@app.route('/forms/<string:context>/<int:pk>', methods=['DELETE'])
+@app.route('/forms/<int:pk>', methods=['DELETE'])
+def removeForm(pk, context):
+    form = session.query(Form).filter_by(pk_Form = pk).first()
+    if form is None:
+        abort(404)
 
     try:
         session.delete(form)
+        session.commit()
     except:
         session.rollback()
         abort(make_response('Error during delete', 500))
     finally:
-        session.commit()
-        try: 
-            # if form.context == 'track':
+        try:
             exec_removeFormBuilderToReferential(form)
-
-        except Exception as e: 
+        except Exception as e:
             print_exc()
             pass
-        session.commit()
-    return jsonify({"deleted" : True})
+    return jsonify("Successfully deleted form %d" % pk)
 
 @app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
 def deleteInputFromForm(formid, inputid):
