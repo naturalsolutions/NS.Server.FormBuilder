@@ -336,6 +336,7 @@ def removeForm(pk, context = None):
 
 @app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
 def deleteInputFromForm(formid, inputid):
+    return make_response("deprecated")
     form = session.query(Form).filter_by(pk_Form = formid).first()
     if form is None:
         abort(404)
@@ -355,6 +356,7 @@ def deleteInputFromForm(formid, inputid):
 @app.route('/forms/<string:context>/<int:formid>/deletefields', methods=['DELETE'])
 @app.route('/forms/<int:formid>/deletefields', methods=['DELETE'])
 def deleteInputsFromForm(formid, context):
+    return make_response("deprecated")
     if not request.json or not request.json["fieldstodelete"]:
         abort(400)
 
