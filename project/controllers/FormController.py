@@ -139,19 +139,16 @@ def createForm(context):
             pass
         return jsonify(form.recuriseToJSON())
 
-@app.route('/forms/<string:context>/<int:id>', methods=['PUT'])
-def updateFormWithContext(context, id):
-    return (updateForm(id))
-
 # PUT routes, update protocol
-@app.route('/forms/<int:id>', methods=['PUT'])
-def updateForm(id):
+@app.route('/forms/<string:context>/<int:pk>', methods=['PUT'])
+@app.route('/forms/<int:pk>', methods=['PUT'])
+def updateForm(pk, context):
     with session.no_autoflush:
         if request.json:
 
             checkformname = session.query(Form).filter_by(name = request.json["name"]).first()
 
-            if (checkformname and checkformname.pk_Form != id):
+            if (checkformname and checkformname.pk_Form != pk):
                 abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
 
             IfmissingParameters = True
@@ -163,7 +160,7 @@ def updateForm(id):
             if IfmissingParameters is False:
                 abort(make_response('Some parameters are missing : %s' % str(neededParametersList), 400))
             else:
-                form = session.query(Form).filter_by(pk_Form = id).first()
+                form = session.query(Form).filter_by(pk_Form = pk).first()
 
                 newFormValues   = Utility._pick(request.json, neededParametersList)
                 newFormPropVals = Utility._pickNot(request.json, neededParametersList)
