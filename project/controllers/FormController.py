@@ -23,7 +23,7 @@ import transaction
 @app.route('/forms/<string:context>', methods = ['GET'])
 def getForms(context = None, short = False):
     forms = []
-    query = session.query(Form)
+    query = session.query(Form).filter_by(state = 1)
 
     # filter_by context, except for "all"
     if (context and context.lower() != "all"):
@@ -53,13 +53,13 @@ def getForm(pk):
 
 @app.route('/forms', methods = ['POST'])
 @app.route('/forms/<string:context>', methods = ['POST'])
-def createForm(context = None):
+def createForm(context = None, previousID = 0):
     if not request.json:
         abort(make_response('Data seems not be in JSON format', 400))
 
     # unique constraint check on form name
-    checkformname = session.query(Form).filter_by(name = request.json["name"]).first()
-    if (checkformname and checkformname.pk_Form != id):
+    checkformname = session.query(Form).filter_by(pk_Form = previousID).first()
+    if (checkformname and checkformname.pk_Form != previousID):
         abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
 
     # check for missing properties
@@ -67,11 +67,26 @@ def createForm(context = None):
         if not prop in request.json:
             abort(make_response('Required parameter is missing: %s' % prop, 400))
 
+    previousForm = None
+    if previousID:
+        previousForm = session.query(Form).filter_by(pk_Form = previousID, state = 1).first()
+        if previousForm is None:
+            abort(make_response('There is no active protocol with provided initialID %d' % previousID, 400))
+
     formProperties = Utility._pick(request.json, Form.getColumnList())
     formExtraProperties = Utility._pickNot(request.json, Form.getColumnList() + ['fileList'])
     form = Form(**formProperties)
     form.state = 1
-    form.initialID = 0
+
+    initialID = previousID
+    if previousForm:
+        initialID = previousForm.initialID
+
+        # restore creation date to root form's creation date
+        initialForm = session.query(Form).get(initialID)
+        form.creationDate = initialForm.creationDate
+
+    form.initialID = initialID
 
     # add form's extra properties
     for key in formExtraProperties:
@@ -132,6 +147,10 @@ def createForm(context = None):
             form.initialID = form.pk_Form
             session.commit()
 
+        if previousForm:
+            previousForm.state = 2
+            session.commit()
+
     except Exception as e:
         print (str(e).encode(sys.stdout.encoding, errors='replace'))
         abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
@@ -147,6 +166,11 @@ def createForm(context = None):
 @app.route('/forms/<string:context>/<int:pk>', methods=['PUT'])
 @app.route('/forms/<int:pk>', methods=['PUT'])
 def updateForm(pk, context = None):
+    # createForm actually creates a new form to keep form history
+    return createForm(context, pk)
+
+# really update form, which doesn't happen anymore
+def updateForm_old(pk):
     with session.no_autoflush:
         if request.json:
 
