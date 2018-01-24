@@ -137,7 +137,7 @@ def createForm(context):
             print("exception 1!")
             print_exc()
             pass
-        return jsonify({"form" : form.recuriseToJSON()})
+        return jsonify(form.recuriseToJSON())
 
 @app.route('/forms/<string:context>/<int:id>', methods=['PUT'])
 def updateFormWithContext(context, id):
@@ -271,7 +271,7 @@ def updateForm(id):
                             print_exc()
                             pass
                         session.commit()
-                        return jsonify({"form" : form.recuriseToJSON() })
+                        return jsonify(form.recuriseToJSON())
 
                 else:
                     abort(make_response('No form found with this ID', 404))
