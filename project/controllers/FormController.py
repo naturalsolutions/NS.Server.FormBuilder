@@ -304,29 +304,31 @@ def removeForm(pk, context):
 @app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
 def deleteInputFromForm(formid, inputid):
     form = session.query(Form).filter_by(pk_Form = formid).first()
-    inputfield = session.query(Input).filter_by(pk_Input = inputid, fk_form = formid).first()
+    if form is None:
+        abort(404)
 
-    if (inputfield != None):
-        try:
-            session.delete(inputfield)
-            session.commit()
-            return jsonify({"deleted" : True})
-        except:
-            session.rollback()
-            abort(make_response('Error during inputfield delete', 500))
+    inputfield = session.query(Input).filter_by(pk_Input = inputid, fk_form = formid).first()
+    if inputfield is None:
+        abort(404)
+
+    try:
+        session.delete(inputfield)
+        session.commit()
+        return jsonify("Successfully deleted field %d", inputid)
+    except:
+        session.rollback()
+        abort(make_response('Error during inputfield delete', 500))
 
 @app.route('/forms/<string:context>/<int:formid>/deletefields', methods=['DELETE'])
-def deleteInputsFromFormWithContext(context, formid):
-    return deleteInputsFromForm(formid)
-
 @app.route('/forms/<int:formid>/deletefields', methods=['DELETE'])
-def deleteInputsFromForm(formid):
-    if request.json:
-        if request.json["fieldstodelete"]:
-            for inputID in request.json["fieldstodelete"]:
-                deleteInputFromForm(formid, inputID)
+def deleteInputsFromForm(formid, context):
+    if not request.json or not request.json["fieldstodelete"]:
+        abort(400)
 
-        return jsonify({"deleted" : True})
+    for inputID in request.json["fieldstodelete"]:
+        deleteInputFromForm(formid, inputID)
+
+    return jsonify("Successfully deleted fields %s" % request.json["fieldstodelete"])
 
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
