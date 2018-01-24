@@ -128,16 +128,14 @@ def createForm(context):
         session.flush()
     except Exception as e:
         print (str(e).encode(sys.stdout.encoding, errors='replace'))
-        session.rollback()
         abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
-    finally:
-        try:
-            exec_exportFormBuilder(form)
-        except Exception as e:
-            print("exception 1!")
-            print_exc()
-            pass
-        return jsonify(form.recuriseToJSON())
+
+    try:
+        exec_exportFormBuilder(form)
+    except Exception as e:
+        print_exc()
+        pass
+    return jsonify(form.recuriseToJSON())
 
 # PUT routes, update protocol
 @app.route('/forms/<string:context>/<int:pk>', methods=['PUT'])
@@ -288,6 +286,7 @@ def removeForm(pk, context):
         session.delete(form)
         session.commit()
     except:
+        print_exc()
         abort(make_response('Error during delete', 500))
     finally:
         try:
