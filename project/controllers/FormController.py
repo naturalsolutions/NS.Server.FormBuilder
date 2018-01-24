@@ -53,7 +53,7 @@ def getForm(pk):
 
 @app.route('/forms', methods = ['POST'])
 @app.route('/forms/<string:context>', methods = ['POST'])
-def createForm(context):
+def createForm(context = None):
     if not request.json:
         abort(make_response('Data seems not be in JSON format', 400))
 
@@ -145,7 +145,7 @@ def createForm(context):
 # PUT routes, update protocol
 @app.route('/forms/<string:context>/<int:pk>', methods=['PUT'])
 @app.route('/forms/<int:pk>', methods=['PUT'])
-def updateForm(pk, context):
+def updateForm(pk, context = None):
     with session.no_autoflush:
         if request.json:
 
@@ -282,7 +282,7 @@ def updateForm(pk, context):
 
 @app.route('/forms/<string:context>/<int:pk>', methods=['DELETE'])
 @app.route('/forms/<int:pk>', methods=['DELETE'])
-def removeForm(pk, context):
+def removeForm(pk, context = None):
     form = session.query(Form).filter_by(pk_Form = pk).first()
     if form is None:
         abort(404)
