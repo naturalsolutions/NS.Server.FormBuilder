@@ -291,7 +291,6 @@ def removeForm(pk, context):
         session.delete(form)
         session.commit()
     except:
-        session.rollback()
         abort(make_response('Error during delete', 500))
     finally:
         try:
@@ -299,7 +298,7 @@ def removeForm(pk, context):
         except Exception as e:
             print_exc()
             pass
-    return jsonify("Successfully deleted form %d" % pk)
+    return make_response("Successfully deleted form %d" % pk)
 
 @app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
 def deleteInputFromForm(formid, inputid):
@@ -314,9 +313,9 @@ def deleteInputFromForm(formid, inputid):
     try:
         session.delete(inputfield)
         session.commit()
-        return jsonify("Successfully deleted field %d", inputid)
+        return make_response("Successfully deleted field %d", inputid)
     except:
-        session.rollback()
+        print_exc()
         abort(make_response('Error during inputfield delete', 500))
 
 @app.route('/forms/<string:context>/<int:formid>/deletefields', methods=['DELETE'])
@@ -328,7 +327,7 @@ def deleteInputsFromForm(formid, context):
     for inputID in request.json["fieldstodelete"]:
         deleteInputFromForm(formid, inputID)
 
-    return jsonify("Successfully deleted fields %s" % request.json["fieldstodelete"])
+    return make_response("Successfully deleted fields %s" % request.json["fieldstodelete"])
 
 # Return main page, does nothing for the moment we prefer use web services
 @app.route('/', methods = ['GET'])
