@@ -89,8 +89,8 @@ class Form(Base):
             "id": self.pk_Form,
             "name": self.name,
             "tag": self.tag,
-            "creationDate": "" if self.creationDate == 'NULL' or self.creationDate is None else self.creationDate.strftime("%d/%m/%Y - %H:%M:%S"),
-            "modificationDate": "" if self.modificationDate == 'NULL' or self.modificationDate is None else self.modificationDate.strftime("%d/%m/%Y - %H:%M:%S"),
+            "creationDate": Utility.datetimeToStr(self.creationDate),
+            "modificationDate": Utility.datetimeToStr(self.modificationDate),
             "curStatus": self.curStatus,
             "obsolete": self.obsolete,
             "isTemplate": self.isTemplate,
@@ -121,7 +121,7 @@ class Form(Base):
             "name": self.name,
             "context": self.context,
             "obsolete": self.obsolete,
-            "modificationDate": self.modificationDate,
+            "modificationDate": Utility.datetimeToStr(self.modificationDate),
             "state": self.state,
             "initialID": self.initialID
         }

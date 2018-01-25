@@ -31,3 +31,10 @@ class Utility:
     def _print_r(self, variable):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(variable)
+
+    @classmethod
+    def datetimeToStr(cls, date, format="%d/%m/%Y - %H:%M:%S"):
+        if not date or date == 'NULL':
+            return ""
+
+        return date.strftime(format)
