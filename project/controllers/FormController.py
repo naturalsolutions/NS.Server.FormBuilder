@@ -19,24 +19,26 @@ import pprint
 from traceback import print_exc
 import transaction
 
+def formsToJSON(formsQuery, short = False):
+    forms = []
+    for form in formsQuery:
+        if (short):
+            f = form.shortJSON()
+        else:
+            f = form.recuriseToJSON(False)
+        forms.append(f)
+    return forms
+
 @app.route('/forms', methods = ['GET'])
 @app.route('/forms/<string:context>', methods = ['GET'])
 def getForms(context = None, short = False):
-    forms = []
     query = session.query(Form).filter_by(state = 1)
 
     # filter_by context, except for "all"
     if (context and context.lower() != "all"):
         query = query.filter_by(context = context)
 
-    for form in query:
-        if (short):
-            f = form.shortJSON()
-        else:
-            f = form.recuriseToJSON(False)
-        forms.append(f)
-
-    return json.dumps(forms, ensure_ascii=False)
+    return json.dumps(formsToJSON(query, short), ensure_ascii=False)
 
 @app.route('/forms/allforms/<string:context>', methods = ['GET'])
 def getFormsShort(context):
@@ -50,6 +52,20 @@ def getForm(pk):
 
     return json.dumps(form.recuriseToJSON(True), ensure_ascii=False)
 
+@app.route('/history/short/<int:pk>', methods = ['GET'])
+def getFormShortHistory(pk):
+    return getFormHistory(pk, True)
+
+@app.route('/history/<int:pk>', methods = ['GET'])
+def getFormHistory(pk, short = False):
+    form = session.query(Form).get(pk)
+    if form is None:
+        abort(make_response('Form %d not found' % pk, 404))
+
+    # fetch all versions except provided pk
+    query = session.query(Form).filter_by(initialID = form.initialID).filter(Form.pk_Form != pk)
+
+    return json.dumps(formsToJSON(query, short), ensure_ascii=False)
 
 @app.route('/forms', methods = ['POST'])
 @app.route('/forms/<string:context>', methods = ['POST'])
