@@ -120,7 +120,10 @@ class Form(Base):
             "id": self.pk_Form,
             "name": self.name,
             "context": self.context,
-            "obsolete": self.obsolete
+            "obsolete": self.obsolete,
+            "modificationDate": self.modificationDate,
+            "state": self.state,
+            "initialID": self.initialID
         }
 
     def recuriseToJSON(self, withschema=True):
