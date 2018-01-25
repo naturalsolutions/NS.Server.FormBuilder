@@ -147,6 +147,8 @@ def createForm(context = None, previousID = 0):
         session.commit()
         session.add(form)
         session.flush()
+        session.commit()
+
         if form.initialID == 0:
             form.initialID = form.pk_Form
             session.commit()
