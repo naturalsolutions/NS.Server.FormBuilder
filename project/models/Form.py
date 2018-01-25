@@ -126,22 +126,16 @@ class Form(Base):
 
     def recuriseToJSON(self, withschema=True):
         json = self.toJSON()
-        inputs = {}
-
-        loops = 0
-        allInputs = self.inputs
-
-        for each in allInputs:
-            inputs[loops] = each.toJSON()
-            loops += 1
 
         if withschema:
-            json['schema'] = inputs
+            json['schema'] = {}
+            i = 0
+            for each in self.inputs:
+                json['schema'][i] = each.toJSON()
+                i += 1
 
         json['translations'] = self.getTranslations()
-
         json = self.addFormProperties(json)
-
         return json
 
     def hasCircularDependencies(self, allParents, session):
