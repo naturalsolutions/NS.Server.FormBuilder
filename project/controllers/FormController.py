@@ -69,9 +69,14 @@ def createForm(context = None, previousID = 0):
 
     previousForm = None
     if previousID:
-        previousForm = session.query(Form).filter_by(pk_Form = previousID, state = 1).first()
+        initialID = session.query(Form).filter_by(pk_Form = previousID).first().initialID
+        # find previously active form with initialID
+        previousForm = session.query(Form).filter_by(initialID = initialID, state = 1).first()
         if previousForm is None:
-            abort(make_response('There is no active protocol with provided initialID %d' % previousID, 400))
+            # find previously deleted form with initialID
+            previousForm = session.query(Form).filter_by(initialID = initialID, state = 3).first()
+        if previousForm is None:
+            abort(make_response('There is no active or deleted protocol with provided initialID %d' % previousID, 400))
 
     formProperties = Utility._pick(request.json, Form.getColumnList())
     formExtraProperties = Utility._pickNot(request.json, Form.getColumnList() + ['fileList'])
@@ -153,7 +158,8 @@ def createForm(context = None, previousID = 0):
             form.initialID = form.pk_Form
             session.commit()
 
-        if previousForm:
+        # set previous form's state to 2, if it was active (keep other states as is)
+        if previousForm and previousForm.state == 1:
             previousForm.state = 2
             session.commit()
 
