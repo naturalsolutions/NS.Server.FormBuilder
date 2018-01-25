@@ -53,7 +53,6 @@ def updateLng(id=None):
 def createLng():
     try:
         lejson = request.get_json(silent=True)
-        print(lejson)
         languagetocreate = lejson['language']
         language = Language(
             languagetocreate['Label'], languagetocreate['Description'])

@@ -10,7 +10,6 @@ from ..models.InputProperty import InputProperty
 import json
 import sys
 
-import pprint
 
 # Return all forms
 @app.route('/templates', methods = ['GET'])
@@ -86,9 +85,6 @@ def create_template():
         IfmissingParameters = True
 
         neededParametersList = Form.getColumnList()
-
-        pprint.pprint(neededParametersList)
-        pprint.pprint(request.json)
 
         for a in neededParametersList: IfmissingParameters = IfmissingParameters and (a in request.json)
 
