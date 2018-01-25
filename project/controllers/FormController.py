@@ -323,7 +323,7 @@ def removeForm(pk, context = None):
         abort(404)
 
     try:
-        session.delete(form)
+        form.state = 3
         session.commit()
     except:
         print_exc()
