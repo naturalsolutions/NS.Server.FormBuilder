@@ -47,7 +47,21 @@ def getForm(pk):
     if form is None:
         return abort(404)
 
-    return json.dumps(form.recuriseToJSON(True), ensure_ascii=False)
+    jsonForm = form.recuriseToJSON(True)
+    # get currently active form id
+    if form.state != 1:
+        currentForm = session.query(Form).filter_by(initialID = form.initialID, state = 1).first()
+        if currentForm:
+            jsonForm['currentForm'] = currentForm.pk_Form
+
+    # fetch other versions
+    versionsQuery = (session.query(Form)
+        .filter_by(initialID = form.initialID)
+        .filter(Form.pk_Form != pk)
+        .order_by(Form.modificationDate.desc()))
+
+    jsonForm['versions'] = formsToJSON(versionsQuery, True)
+    return json.dumps(jsonForm, ensure_ascii=False)
 
 @app.route('/history/short/<int:pk>', methods = ['GET'])
 def getFormShortHistory(pk):
