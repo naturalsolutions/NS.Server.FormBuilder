@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 #
 from project import app
-from flask import jsonify, abort, render_template, request, make_response
-from ..utilities import Utility
-from ..models import session, engine
+from flask import abort, request, make_response
+from ..models import session
 from ..models.Form import Form
 from ..models.Input import Input
 from sqlalchemy import *
 from sqlalchemy.exc import ProgrammingError
 import urllib.parse
 import json
-import sys
-import datetime
-import pprint
+
 
 def getTrackSqlConnection(forcedSqlConn = None):
 	if forcedSqlConn != None:

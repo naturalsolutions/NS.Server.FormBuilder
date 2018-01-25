@@ -1,7 +1,6 @@
 # -*- coding: utf8 -*-
 
 from sqlalchemy import *
-from sqlalchemy.orm import relationship
 from .base import Base
 
 

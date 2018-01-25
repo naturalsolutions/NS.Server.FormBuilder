@@ -6,8 +6,7 @@ from ..models import session
 from ..models.ConfiguratedInput import ConfiguratedInput
 from ..models.ConfiguratedInputProperty import ConfiguratedInputProperty
 from ..utilities import Utility
-import pprint
-import json
+
 
 # GET, returns all configurated fields
 @app.route('/configurations', methods = ['GET'])

@@ -3,11 +3,10 @@
 from project import app
 from flask import jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
-from ..models import session, engine,dbConfig
+from ..models import session, dbConfig
 from ..models.Form import Form
 from ..models.FormProperty import FormProperty
 from ..models.FormFile import FormFile
-from ..models.FormTrad import FormTrad
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 from ..models.InputRepository import InputRepository
@@ -15,9 +14,7 @@ from sqlalchemy import *
 import json
 import sys
 import datetime
-import pprint
 from traceback import print_exc
-import transaction
 
 def formsToJSON(formsQuery, short = False):
     forms = []

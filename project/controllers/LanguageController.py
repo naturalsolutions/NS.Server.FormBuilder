@@ -2,11 +2,9 @@
 #
 from project import app
 from flask import jsonify, request, abort, make_response
-from sqlalchemy import func
 from ..models import session
 from ..models.Language import Language
 import sys
-import json
 
 # return all or one language
 @app.route('/language', methods=['GET'])

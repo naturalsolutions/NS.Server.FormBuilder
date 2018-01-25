@@ -8,8 +8,6 @@ from ..models.FormProperty import FormProperty
 from ..models.FormTrad import FormTrad
 import datetime
 
-import pprint
-
 
 class Form(Base):
     __tablename__ = 'Form'
