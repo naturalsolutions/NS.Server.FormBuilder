@@ -57,7 +57,6 @@ def getForm(pk):
     # fetch other versions
     versionsQuery = (session.query(Form)
         .filter_by(initialID = form.initialID)
-        .filter(Form.pk_Form != pk)
         .order_by(Form.modificationDate.desc()))
     jsonForm['versions'] = formsToJSON(versionsQuery, True)
 
