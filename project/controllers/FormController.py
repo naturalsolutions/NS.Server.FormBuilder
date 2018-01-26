@@ -59,8 +59,11 @@ def getForm(pk):
         .filter_by(initialID = form.initialID)
         .filter(Form.pk_Form != pk)
         .order_by(Form.modificationDate.desc()))
-
     jsonForm['versions'] = formsToJSON(versionsQuery, True)
+
+    # fetch parent forms
+    jsonForm['parentForms'] = form.getParentForms(session)
+
     return json.dumps(jsonForm, ensure_ascii=False)
 
 @app.route('/history/short/<int:pk>', methods = ['GET'])
