@@ -202,7 +202,7 @@ def createForm(context = None, previousID = 0):
     except Exception as e:
         print_exc()
         pass
-    return jsonify(form.recuriseToJSON(True))
+    return getForm(form.pk_Form)
 
 # PUT routes, update protocol
 @app.route('/forms/<string:context>/<int:pk>', methods=['PUT'])
