@@ -6,6 +6,7 @@ from .base import Base
 from ..utilities import Utility
 from ..models.FormProperty import FormProperty
 from ..models.FormTrad import FormTrad
+from ..models.InputProperty import InputProperty
 import datetime
 
 
@@ -176,6 +177,18 @@ class Form(Base):
         for i in self.inputs:
             inputsIdList.append(i.pk_Input)
         return inputsIdList
+
+    # get all forms referencing this form as a child
+    def getParentForms(self, session):
+        parents = []
+        for childFormProp in session.query(InputProperty).filter_by(value = str(self.pk_Form), name = "childForm").all():
+            parent = childFormProp.Input.Form
+            if parent.state == 1:
+                parents.append({
+                    "id":   parent.pk_Form,
+                    "name": parent.name
+                })
+        return parents
 
     def addTranslations(self, translations):
         for lang in translations:

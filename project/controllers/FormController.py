@@ -408,24 +408,8 @@ def index():
 
 @app.route('/childforms/<int:formid>', methods = ['GET'])
 def get_childforms(formid):
-    forms = []
-
-    forms_added        = []
-    current_form_index = -1
-
-    if (formid > 0):
-        formName = session.query(Form).filter_by(pk_Form = formid).first().name
-
-        for childFormInputProp in session.query(InputProperty).filter_by(value = formName, name = "childFormName").all():
-            childFormInput = session.query(Input).filter_by(pk_Input = childFormInputProp.fk_Input).first()
-            childForm = session.query(Form).filter_by(pk_Form = childFormInput.fk_form).first()
-            if childForm.pk_Form not in forms_added:
-                f = {"id":childForm.pk_Form,"name":childForm.name}
-                current_form_index += 1
-                forms.append(f)
-                forms_added.append(childForm.pk_Form)
-
-    return json.dumps(forms, ensure_ascii=False)
+    parents = session.query(Form).get(formid).getParentForms(session)
+    return json.dumps(parents, ensure_ascii=False)
 
 @app.route('/forms/getAllInputNames/<string:context>', methods = ['GET'])
 def getAllInputNames(context):
