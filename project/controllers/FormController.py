@@ -190,9 +190,12 @@ def createForm(context = None, previousID = 0):
             session.commit()
 
         # set previous form's state to 2, if it was active (keep other states as is)
-        if previousForm and previousForm.state == 1:
-            previousForm.state = 2
-            session.commit()
+        if previousForm:
+            if previousForm.state == 1:
+                previousForm.state = 2
+                session.commit()
+            previousForm.updateParentForms(session, form)
+
 
     except Exception as e:
         print (str(e).encode(sys.stdout.encoding, errors='replace'))

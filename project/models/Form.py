@@ -190,6 +190,25 @@ class Form(Base):
                 })
         return parents
 
+    # update all forms referencing this form as a child with provided newForm
+    def updateParentForms(self, session, newForm):
+        i = 0
+        for childFormProp in session.query(InputProperty).filter_by(value = str(self.pk_Form), name = "childForm").all():
+            for prop in childFormProp.Input.Properties:
+                if prop.name == 'childForm':
+                    prop.value = newForm.pk_Form
+                elif prop.name == 'childFormName':
+                    prop.value = newForm.name
+            i += 1
+            # todo trigger bridge update
+
+        # commit session if changes were made
+        if i > 0:
+            session.commit()
+
+        return i
+
+
     def addTranslations(self, translations):
         for lang in translations:
             if self.pk_Form:
