@@ -228,5 +228,7 @@ class Form(Base):
             'obsolete',
             'isTemplate',
             'context',
-            'propagate'
+            'propagate',
+            'originalID',
+            'initialID'
         ]

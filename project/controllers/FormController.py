@@ -120,6 +120,7 @@ def createForm(context = None, previousID = 0):
         # restore creation date to root form's creation date
         initialForm = session.query(Form).get(initialID)
         form.creationDate = initialForm.creationDate
+        form.originalID = previousForm.originalID
 
     form.initialID = initialID
 
