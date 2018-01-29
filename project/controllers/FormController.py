@@ -41,7 +41,8 @@ def getForms(context = None, short = False):
 def getFormsShort(context):
     return getForms(context, True)
 
-@app.route('/forms/<int:pk>', methods=['GET'])
+@app.route('/forms/<int:pk>', methods=['GET']) # deprecated
+@app.route('/form/<int:pk>', methods=['GET'])  # prefer this url, avoids ambiguity with /forms/<context>
 def getForm(pk):
     form = session.query(Form).get(pk)
     if form is None:
