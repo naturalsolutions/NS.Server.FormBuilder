@@ -468,6 +468,10 @@ def exec_exportFormBuilder(form):
     context = form.context
     formid = form.pk_Form
 
+    if not context in dbConfig:
+        print("no export db configured for context %s" % context)
+        return
+
     stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig[context]+""".[SendDataToReferential] :formToUpdate;
         """).bindparams(bindparam('formToUpdate', formid))
 
