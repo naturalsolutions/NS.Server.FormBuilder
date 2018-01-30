@@ -472,8 +472,8 @@ def exec_exportFormBuilder(form):
         print("no export db configured for context %s" % context)
         return
 
-    stmt = text("""SET NOCOUNT ON; EXEC """+dbConfig[context]+""".[SendDataToReferential] :formToUpdate;
-        """).bindparams(bindparam('formToUpdate', formid))
+    stmt = text("SET NOCOUNT ON; EXEC %s.[SendDataToReferential] :formToUpdate;" % dbConfig[context])
+    stmt = stmt.bindparams(bindparam('formToUpdate', formid))
 
     curSession = session()
     curSession.execute(stmt.execution_options(autocommit=True))
