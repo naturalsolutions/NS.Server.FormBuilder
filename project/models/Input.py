@@ -42,7 +42,7 @@ class Input(Base):
     InputTrad   = relationship("InputTrad", cascade="all", lazy="dynamic")
 
     # constructor
-    def __init__(self, name, translations, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
+    def __init__(self, name, translations, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order, originalID):
         self.name           = name
         self.addTranslations(translations)
         self.editMode       = editMode
@@ -55,6 +55,7 @@ class Input(Base):
         self.linkedField    = linkedField
         self.curStatus      = "1"
         self.order          = order
+        self.originalID     = originalID
 
         # linked field
         self.linkedFieldTable             = linkedFieldTable
@@ -73,6 +74,7 @@ class Input(Base):
         self.fieldClassEdit  = kwargs['fieldClassEdit']
         self.fieldClassDisplay  = kwargs['fieldClassDisplay']
         self.order       = kwargs['order']
+        self.originalID = kwargs['originalID']
         self.addTranslations(kwargs['translations'])
 
         # linked field
@@ -149,7 +151,8 @@ class Input(Base):
             'linkedFieldTable',
             'linkedField',
             'linkedFieldset',
-            'order'
+            'order',
+            'originalID'
         ]
 
     def getTranslations(self):
