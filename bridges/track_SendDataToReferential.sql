@@ -60,40 +60,50 @@ AS
       [pk_Form] [bigint] NOT NULL,
       [name] [varchar](100) NOT NULL,
       [tag] [varchar](300) NULL,
-      [labelFr] [varchar](300) NOT NULL,
-      [labelEn] [varchar](300) NOT NULL,
       [creationDate] [datetime] NOT NULL,
       [modificationDate] [datetime] NULL,
       [curStatus] [int] NOT NULL,
-      [descriptionFr] [varchar](300) NOT NULL,
-      [descriptionEn] [varchar](300) NOT NULL,
       [obsolete] [bit] NULL,
       [isTemplate] [bit] NOT NULL,
       [context] [varchar](50) NOT NULL,
       [originalID] [bigint] NULL,
-      [propagate] [bit] NULL
+      [propagate] [bit] NULL,
+      [state] [int] NOT NULL,
+      [initialID] [int] NOT NULL
     )
-
     INSERT INTO @formStaticProps SELECT * FROM Formbuilder.dbo.Form WHERE pk_Form = @formToUpdate
+
+    DECLARE @formTradFr TABLE (
+      [Name] [varchar](200) NULL,
+      [Description] [varchar](255) NULL
+    )
+    INSERT INTO @formTradFr SELECT [Name], [Description] FROM Formbuilder.dbo.FormTrad WHERE FK_Form = @formToUpdate AND FK_Language = 'fr'
+
+    DECLARE @formTradEn TABLE (
+      [Name] [varchar](200) NULL,
+      [Description] [varchar](255) NULL
+    )
+    INSERT INTO @formTradEn SELECT [Name], [Description] FROM Formbuilder.dbo.FormTrad WHERE FK_Form = @formToUpdate AND FK_Language = 'en'
 
     DECLARE @originalTrackFormID int
     SELECT @originalTrackFormID = originalID, @dopropagate = [propagate] FROM @formStaticProps
 
     IF (@originalTrackFormID IS NOT NULL)
       BEGIN
-        UPDATE TProtocole SET TPro_Titre = [name], TPro_Titre_LabelFr = [labelFr], TPro_Titre_LabelEn = [labelEn],
-          TPro_Description = [descriptionFr], TPro_DescriptionFr = [descriptionFr], TPro_DescriptionEn = [descriptionEn]
-        FROM @formStaticProps WHERE TProtocole.TPro_PK_ID = @originalTrackFormID
-
+        UPDATE TProtocole SET
+          TPro_Titre = f.[name],
+          TPro_Titre_LabelFr = fr.Name, TPro_DescriptionFr = fr.Description,
+          TPro_Titre_LabelEn = en.Name, TPro_DescriptionEn = en.Description
+          FROM @formStaticProps f, @formTradFr fr, @formTradEn en WHERE TProtocole.TPro_PK_ID = @originalTrackFormID
       END
     ELSE
       BEGIN
-        INSERT INTO TProtocole SELECT [name], [labelFr], [labelEn], [descriptionFr],
-                                 '', '', 0, '', '', 0, 0, [descriptionFr], [descriptionEn]
-                               FROM @formStaticProps
+        INSERT INTO TProtocole SELECT f.[name], fr.Name, en.Name, fr.Description,
+                                 '', '', 0, '', '', 0, 0, fr.Description, en.Description
+                               FROM @formStaticProps f, @formTradFr fr, @formTradEn en
 
         SELECT @originalTrackFormID = MAX(TPro_PK_ID) FROM TProtocole
-        UPDATE Formbuilder.dbo.Form SET [originalID] = @originalTrackFormID WHERE [pk_Form] = (SELECT [pk_Form] FROM @formStaticProps)
+        UPDATE Formbuilder.dbo.Form SET [originalID] = @originalTrackFormID WHERE [pk_Form] = @formToUpdate
         UPDATE @formStaticProps SET [originalID] = @originalTrackFormID
       END
 
@@ -180,8 +190,6 @@ AS
       [pk_Input] [bigint] NOT NULL,
       [fk_form] [bigint] NOT NULL,
       [name] [varchar](100) NOT NULL,
-      [labelFr] [varchar](300) NOT NULL,
-      [labelEn] [varchar](300) NOT NULL,
       [editMode] [int] NOT NULL,
       [fieldSize] [varchar](100) NOT NULL,
       [atBeginingOfLine] [bit] NOT NULL,
@@ -208,8 +216,8 @@ AS
           [pk_Input] [bigint] NOT NULL,
           [fk_form] [bigint] NOT NULL,
           [name] [varchar](100) NOT NULL,
-          [labelFr] [varchar](300) NOT NULL,
-          [labelEn] [varchar](300) NOT NULL,
+          [labelFr] [varchar](300) NULL,
+          [labelEn] [varchar](300) NULL,
           [editMode] [int] NOT NULL,
           [fieldSize] [varchar](100) NOT NULL,
           [atBeginingOfLine] [bit] NOT NULL,
@@ -227,10 +235,23 @@ AS
         )
 
         DECLARE @rowInputName varchar(100) = null
-        SELECT TOP 1 @rowInputName = name FROM @inputsStaticProps
+        DECLARE @rowInputID bigint = null
+        SELECT TOP 1 @rowInputName = name, @rowInputID = pk_Input FROM @inputsStaticProps
+
+        DECLARE @rowInputLabelFr varchar(200) = (
+          SELECT [Name] FROM Formbuilder.dbo.InputTrad WHERE FK_Input = @rowInputID AND FK_Language = 'fr'
+        )
+        DECLARE @rowInputLabelEn varchar(200) = (
+          SELECT [Name] FROM Formbuilder.dbo.InputTrad WHERE FK_Input = @rowInputID AND FK_Language = 'fr'
+        )
 
 
-        INSERT INTO @rowInputsStaticProps SELECT TOP 1 * FROM @inputsStaticProps
+        INSERT INTO @rowInputsStaticProps
+        ([pk_Input], [fk_form], [name], [editMode], [fieldSize], [atBeginingOfLine], [startDate],
+         [curStatus], [order], [type], [editorClass], [fieldClassEdit], [fieldClassDisplay], [originalID],
+         [linkedFieldTable], [linkedField],[linkedFieldset])
+          SELECT TOP 1 * FROM @inputsStaticProps
+        UPDATE @rowInputsStaticProps SET [labelFr] = @rowInputLabelFr, [labelEn] = @rowInputLabelEn
 
         DECLARE @track_ttypebase_id int
         SELECT @track_ttypebase_id = TTBse_PK_ID
@@ -729,7 +750,11 @@ AS
         SELECT TOP 1 @existingInputID = [TObs_PK_ID] FROM @existingInputs
 
         DECLARE @existsInFB BIGINT
-        SELECT @existsInFB = pk_Input FROM Formbuilder.dbo.Input WHERE [originalID] = @existingInputID
+        -- filter out inactive forms (state != 1)
+        SELECT @existsInFB = i.pk_Input FROM Formbuilder.dbo.Input i, Formbuilder.dbo.Form f
+        WHERE i.[originalID] = @existingInputID
+        AND   i.[fk_form] = f.[pk_Form]
+        AND   f.[state] = 1
 
         IF @existsInFB IS NULL
           BEGIN
