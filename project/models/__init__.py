@@ -12,8 +12,6 @@ from . import FormProperty
 from . import Input
 from . import InputProperty
 from . import FormFile
-from . import ConfiguratedInput
-from . import ConfiguratedInputProperty
 from . import Language
 from . import FormTrad
 
