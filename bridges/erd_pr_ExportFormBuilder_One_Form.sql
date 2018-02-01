@@ -14,18 +14,20 @@ ALTER PROCEDURE [dbo].[pr_ExportFormBuilder_One_Form]
 AS
   BEGIN
 
+    DECLARE @initialID int = (SELECT initialID FROM Formbuilder_DEV.dbo.Form WHERE pk_Form = @form_id)
+
     DELETE ip
     FROM FormBuilderInputProperty ip
-      JOIN FormBuilderInputInfos i ON i.ID = ip.fk_Input and i.fk_form = @form_id
+      JOIN FormBuilderInputInfos i ON i.ID = ip.fk_Input and i.fk_form = @initialID
 
     DELETE FormBuilderInputInfos
-    WHERE fk_form = @form_id
+    WHERE fk_form = @initialID
 
     DELETE FormBuilderFormProperty
-    where fk_form =  @form_id
+    where fk_form =  @initialID
 
     DELETE FormBuilderFormsInfos
-    where ID =  @form_id
+    where ID =  @initialID
 
     /**************** INSERT FormsInfos ***********************/
 
@@ -47,22 +49,24 @@ AS
       ,[context]
       ,ObjectType)
 
-      SELECT   [pk_Form]
+      SELECT   @initialID
         ,[name]
         ,[tag]
-        ,[labelFr]
-        ,[labelEn]
+        ,TradFR.[Name]
+        ,TradEN.[Name]
         ,[creationDate]
         ,[modificationDate]
         ,[curStatus]
-        ,[descriptionFr]
-        ,[descriptionEn]
+        ,TradFR.[Description]
+        ,TradEN.[Description]
         ,[obsolete]
         ,[propagate]
         ,[isTemplate]
         ,[context]
         ,'Protocole'
       FROM Formbuilder_DEV.dbo.Form fo
+        LEFT JOIN Formbuilder_DEV.dbo.FormTrad TradFR ON fo.pk_Form = TradFR.FK_Form AND TradFR.FK_Language = 'fr'
+        LEFT JOIN Formbuilder_DEV.dbo.FormTrad TradEN ON fo.pk_Form = TradEN.FK_Form AND TradEN.FK_Language = 'en'
       WHERE context = 'ecoreleve' and pk_Form = @form_id
     ;
     --SET IDENTITY_INSERT  [FormBuilderFormsInfos] OFF;
@@ -78,7 +82,7 @@ AS
       ,[creationDate]
       ,[valueType])
       SELECT		--pk_FormProperty,
-        fp.[fk_Form]
+        @initialID
         ,fp.[name]
         ,fp.[value]
         ,fp.[creationDate]
@@ -113,10 +117,10 @@ AS
       ,editMode
     )
       SELECT pk_Input
-        ,I.[fk_form]
+        ,@initialID
         ,I.[name]
-        ,I.[labelFr]
-        ,I.[labelEn]
+        ,TradFR.[Name]
+        ,TradEN.[Name]
         , CASE WHEN  I.editMode&4 = 0 THEN 1 else 0 END
         ,0
         ,I.[fieldSize]
@@ -134,8 +138,8 @@ AS
         ,I.editMode
 
       FROM Formbuilder_DEV.dbo.Input I
-      --LEFT JOIN Formbuilder_DEV.dbo.InputProperty ip ON I.pk_Input = ip.fk_Input AND I.type = 'Date' AND ip.name = 'format'
-      --LEFT JOIN Formbuilder_DEV.dbo.Fieldset F ON I.linkedFieldset = F.refid --and F.pk_Fieldset in (select * from toto)
+        LEFT JOIN Formbuilder_DEV.dbo.InputTrad TradFR ON I.pk_Input = TradFR.FK_Input AND TradFR.FK_Language = 'fr'
+        LEFT JOIN Formbuilder_DEV.dbo.InputTrad TradEN ON I.pk_Input = TradEN.FK_Input AND TradEN.FK_Language = 'en'
       WHERE i.fk_form in (select ID from [FormBuilderFormsInfos]) AND I.[curStatus] = 1
             and i.fk_form = @form_id
 
@@ -161,11 +165,10 @@ AS
         ,IP.[value]
         ,IP.[creationDate]
         ,IP.[valueType]
-      FROM Formbuilder_DEV.[dbo].[InputProperty] IP WHERE fk_Input in (select ID FROM [FormBuilderInputInfos])
-                                                          and EXISTS (select * FROM Formbuilder_DEV.dbo.Input I where I.pk_Input = IP.fk_Input and I.fk_form = @form_id)
-
+      FROM Formbuilder_DEV.[dbo].[InputProperty] IP
+      WHERE fk_Input IN (select ID FROM [FormBuilderInputInfos])
+            AND EXISTS (SELECT * FROM Formbuilder_DEV.dbo.Input I WHERE I.pk_Input = IP.fk_Input AND I.fk_form = @form_id)
 
     --SET IDENTITY_INSERT  [FormBuilderInputProperty] OFF;
-
-    ---EXEC dbo.[pr_ImportFormBuilder]
+    --EXEC dbo.[pr_ImportFormBuilder]
   END
