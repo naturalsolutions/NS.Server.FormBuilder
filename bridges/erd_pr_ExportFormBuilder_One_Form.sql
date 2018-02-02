@@ -50,7 +50,7 @@ AS
       ,ObjectType)
 
       SELECT   @initialID
-        ,[name]
+        ,fo.[name]
         ,[tag]
         ,TradFR.[Name]
         ,TradEN.[Name]

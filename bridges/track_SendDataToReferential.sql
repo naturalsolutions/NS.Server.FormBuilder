@@ -1,4 +1,4 @@
-USE [Referentiel_Track]
+USE [Referentiel_Track_DEV]
 GO
 /****** Object:  StoredProcedure [dbo].[SendDataToReferential]    Script Date: 30/01/2018 15:23:40 ******/
 SET ANSI_NULLS ON
@@ -242,7 +242,7 @@ AS
           SELECT [Name] FROM Formbuilder.dbo.InputTrad WHERE FK_Input = @rowInputID AND FK_Language = 'fr'
         )
         DECLARE @rowInputLabelEn varchar(200) = (
-          SELECT [Name] FROM Formbuilder.dbo.InputTrad WHERE FK_Input = @rowInputID AND FK_Language = 'fr'
+          SELECT [Name] FROM Formbuilder.dbo.InputTrad WHERE FK_Input = @rowInputID AND FK_Language = 'en'
         )
 
 
