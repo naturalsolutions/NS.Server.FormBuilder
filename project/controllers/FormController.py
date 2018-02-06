@@ -161,7 +161,7 @@ def createForm(context = None, previousID = 0):
         foundInputs = session.query(Input).filter_by(name = input.name).all()
         for foundInput in foundInputs:
             # disable this check for track context
-            if form.context.lower() != 'track':
+            if form.context.lower() == 'track':
                 break
 
             foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
