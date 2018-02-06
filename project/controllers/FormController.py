@@ -158,11 +158,15 @@ def createForm(context = None, previousID = 0):
         form.addInput(input)
 
         # we disallow fields with same name to have different types in a context
-        foundInputs = session.query(Input).filter_by(name = input.name).all()
+        foundInputs = session.query(Input).filter(Input.name == input.name, Input.Form.has(state = 1)).all()
         for foundInput in foundInputs:
             # disable this check for track context
             if form.context.lower() == 'track':
                 break
+
+            # skip if previousForm (state soon to be != 1, not yet though)
+            if previousForm == foundInput.Form:
+                continue
 
             foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
             if foundForm.context == form.context and foundInput.type != input.type:
