@@ -323,6 +323,9 @@ AS
 
                 INSERT INTO @typeTogive SELECT * FROM TType WHERE TTyp_PK_ID = (SELECT TObs_FK_TTypID FROM TObservation WHERE TObservation.TObs_PK_ID = @originalTrackInputID)
 
+                ---- UPDATE BaseType in case we're coming from a CONVERT
+                UPDATE @typeTogive SET TTyp_FK_TTBse_ID = @track_ttypebase_id
+
                 --------------------------------------------
 
                 UPDATE TObservation SET TObs_Titre = [name], TObs_Titre_LabelFr = [labelFr], TObs_Titre_LabelEn = [labelEn],
