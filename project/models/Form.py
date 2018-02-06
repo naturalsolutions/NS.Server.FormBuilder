@@ -200,7 +200,7 @@ class Form(Base):
                 elif prop.name == 'childFormName':
                     prop.value = newForm.name
             i += 1
-            # todo trigger bridge update
+            # there might be a need to trigger bridge changes, does not apply for TRACK though since we keep OriginalID
 
         # commit session if changes were made
         if i > 0:
