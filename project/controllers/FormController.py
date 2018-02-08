@@ -87,15 +87,30 @@ def createForm(context = None, previousID = 0):
     if not request.json:
         abort(make_response('Data seems not be in JSON format', 400))
 
-    # unique constraint check on form name
-    checkformname = session.query(Form).filter_by(pk_Form = previousID).first()
-    if (checkformname and checkformname.pk_Form != previousID):
-        abort(make_response('A protocol with this name already exist ! [ERR:NAME]', 418))
-
     # check for missing properties
     for prop in Form.getColumnList():
         if not prop in request.json:
             abort(make_response('Required parameter is missing: %s' % prop, 400))
+
+    # check for some unique name constraints
+    formName = request.json['name']
+    formTranslations = request.json['translations']
+    activeForms = session.query(Form).filter(Form.pk_Form != previousID, Form.state == 1)
+
+    # form name check
+    dupeForm = activeForms.filter(Form.name == formName).first()
+    if dupeForm:
+        abort(make_response('A protocol with this name already exists -- {"Error":"NAME", "ID":"%d"}' % dupeForm.pk_Form, 400))
+
+    # form translations check
+    for lang in ['fr', 'en']:
+        if lang not in formTranslations:
+            abort(make_response('Missing %s translations in request' % lang, 400))
+
+        formTranslatedName = formTranslations[lang]['Name']
+        dupeForm = activeForms.filter(Form.FormTrad.any(Name = formTranslatedName, fk_Language = lang)).first()
+        if dupeForm:
+            abort(make_response('A protocol with this %s name already exists -- {"Error":"%sNAME", "ID":"%d"}' % (lang.upper(), lang.upper(), dupeForm.pk_Form), 400))
 
     previousForm = None
     if previousID:
@@ -106,7 +121,7 @@ def createForm(context = None, previousID = 0):
             # find previously deleted form with initialID
             previousForm = session.query(Form).filter_by(initialID = initialID, state = 3).first()
         if previousForm is None:
-            abort(make_response('There is no active or deleted protocol with provided initialID %d' % previousID, 400))
+            abort(make_response('There is no active or deleted protocol with provided initialID -- {"Error":"NOTFOUND", "ID":"%d"}' % previousID, 404))
 
     formProperties = Utility._pick(request.json, Form.getColumnList())
     formExtraProperties = Utility._pickNot(request.json, Form.getColumnList() + ['fileList'])
@@ -170,7 +185,9 @@ def createForm(context = None, previousID = 0):
 
             foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
             if foundForm.context == form.context and foundInput.type != input.type:
-                abort(make_response('customerror::modal.save.inputnamehasothertype::' + str(foundInput.name) + ' = ' + str(foundInput.type), 400))
+                abort(make_response(
+                    'Two fields with the same name for a given context must also share the same type -- {"Error":"FIELDTYPE", "ID":"%d", "FieldName":"%s", "FieldType":"%s"}'
+                    % (foundForm.pk_Form, foundInput.name, foundInput.type), 400))
 
     # check for circular dependencies with child forms
     if (form.hasCircularDependencies([], session)):
