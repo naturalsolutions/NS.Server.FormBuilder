@@ -382,19 +382,16 @@ def removeForm(pk, context = None):
     form = session.query(Form).filter_by(pk_Form = pk).first()
     if form is None:
         abort(404)
+    form.state = 3
 
     try:
-        form.state = 3
+        makeFormObsolete(pk)
         session.commit()
-    except:
+        exec_removeFormBuilderToReferential(form)
+    except Exception as e:
+        session.rollback()
         print_exc()
-        abort(make_response('Error during delete', 500))
-    finally:
-        try:
-            exec_removeFormBuilderToReferential(form)
-        except Exception as e:
-            print_exc()
-            pass
+        pass
     return make_response("Successfully deleted form %d" % pk)
 
 @app.route('/forms/<int:formid>/field/<int:inputid>', methods=['DELETE'])
@@ -460,12 +457,18 @@ def getAllInputNames(context):
 
 @app.route('/makeObsolete/<int:formID>', methods = ['PUT'])
 def makeFormObsolete(formID):
-    
     myForm = session.query(Form).filter_by(pk_Form = formID).first()
     myForm.obsolete = True
 
+    activeProperty = myForm.Properties.filter_by(name = 'actif').first()
+    if activeProperty:
+        activeProperty.value = "0"
+
     try:
         session.add(myForm)
+        session.add(activeProperty)
+        session.commit()
+        exec_exportFormBuilder(myForm)
     except:
         session.rollback()
         abort(make_response('Error during delete', 500))
@@ -497,10 +500,11 @@ def exec_exportFormBuilder(form):
     stmt = stmt.bindparams(bindparam('formToUpdate', formid))
 
     curSession = session()
-    curSession.execute(stmt.execution_options(autocommit=True))
-
-    curSession.commit()
-
+    try:
+        curSession.execute(stmt.execution_options(autocommit=True))
+        curSession.commit()
+    except Exception as e:
+        print("couldn't exec Remove stored procedure: %s" % e)
     return
 
 def exec_removeFormBuilderToReferential(form):
@@ -511,7 +515,10 @@ def exec_removeFormBuilderToReferential(form):
         """).bindparams(bindparam('formToDelete', form.originalID))
 
     curSession = session()
-    curSession.execute(stmt.execution_options(autocommit=True))
 
-    curSession.commit()
+    try:
+        curSession.execute(stmt.execution_options(autocommit=True))
+        curSession.commit()
+    except Exception as e:
+        print("couldn't exec Remove stored procedure: %s" % e)
     return

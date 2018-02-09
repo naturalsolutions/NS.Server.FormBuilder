@@ -30,7 +30,7 @@ class Form(Base):
 
     # Relationship
     inputs = relationship("Input", cascade="all")
-    Properties = relationship("FormProperty", cascade="all")
+    Properties = relationship("FormProperty", cascade="all", lazy='dynamic')
     FormFile = relationship("FormFile", cascade="all")
     FormTrad = relationship("FormTrad", cascade="all", lazy='dynamic')
 
