@@ -29,7 +29,7 @@ def formsToJSON(formsQuery, short = False):
 @app.route('/forms', methods = ['GET'])
 @app.route('/forms/<string:context>', methods = ['GET'])
 def getForms(context = None, short = False):
-    query = session.query(Form).filter_by(state = 1)
+    query = session.query(Form).filter_by(state = 1).order_by('name')
 
     # filter_by context, except for "all"
     if (context and context.lower() != "all"):
