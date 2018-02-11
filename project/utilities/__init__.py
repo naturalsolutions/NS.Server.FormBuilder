@@ -4,6 +4,11 @@ class Utility:
 
     @classmethod
     def _pick(self,array, keys):
+        # be flexible, set empty if unavailable..
+        for key in keys:
+            if key not in array:
+                array[key] = ''
+
         return { your_key: array[your_key] for your_key in keys }
 
     @classmethod
