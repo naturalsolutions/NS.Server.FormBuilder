@@ -94,11 +94,12 @@ def createForm(context = None, previousID = 0):
 
     # check for some unique name constraints
     formName = request.json['name']
+    context = request.json['context']
     formTranslations = request.json['translations']
     activeForms = session.query(Form).filter(Form.pk_Form != previousID, Form.state == 1)
 
     # form name check
-    dupeForm = activeForms.filter(Form.name == formName).first()
+    dupeForm = activeForms.filter(Form.context == context, Form.name == formName).first()
     if dupeForm:
         abort(make_response('A protocol with this name already exists -- {"Error":"NAME", "ID":"%d"}' % dupeForm.pk_Form, 400))
 
@@ -108,7 +109,10 @@ def createForm(context = None, previousID = 0):
             abort(make_response('Missing %s translations in request' % lang, 400))
 
         formTranslatedName = formTranslations[lang]['Name']
-        dupeForm = activeForms.filter(Form.FormTrad.any(Name = formTranslatedName, fk_Language = lang)).first()
+        dupeForm = activeForms.filter(
+            Form.context == context,
+            Form.FormTrad.any(Name = formTranslatedName, fk_Language = lang)).first()
+
         if dupeForm:
             abort(make_response('A protocol with this %s name already exists -- {"Error":"%sNAME", "ID":"%d"}' % (lang.upper(), lang.upper(), dupeForm.pk_Form), 400))
 
