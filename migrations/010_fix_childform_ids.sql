@@ -6,5 +6,5 @@ FROM Input I, InputProperty IP
   WHERE I.type = 'ChildForm'
     AND ISNUMERIC(IP.value) = 0
     AND IP.name = 'childForm'
-    AND IP.fk_Input = Input.pk_Input
+    AND IP.fk_Input = I.pk_Input
 GO
