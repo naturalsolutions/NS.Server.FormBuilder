@@ -101,7 +101,9 @@ def createForm(context = None, previousID = 0):
     # form name check
     dupeForm = activeForms.filter(Form.context == context, Form.name == formName).first()
     if dupeForm:
-        abort(make_response('A protocol with this name already exists -- {"Error":"NAME", "ID":"%d"}' % dupeForm.pk_Form, 400))
+        abort(make_response(
+            'A protocol with this name already exists -- ' +
+            '{"Error":"NAME", "ID":"%d", "Context": "%s"}' % (dupeForm.pk_Form, dupeForm.context), 400))
 
     # form translations check
     for lang in ['fr', 'en']:
@@ -114,7 +116,10 @@ def createForm(context = None, previousID = 0):
             Form.FormTrad.any(Name = formTranslatedName, fk_Language = lang)).first()
 
         if dupeForm:
-            abort(make_response('A protocol with this %s name already exists -- {"Error":"%sNAME", "ID":"%d"}' % (lang.upper(), lang.upper(), dupeForm.pk_Form), 400))
+            abort(make_response(
+                'A protocol with this %s name already exists -- ' % (lang.upper()) +
+                '{"Error":"%sNAME", "ID":"%d", "Context":"%s"}' % (lang.upper(), dupeForm.pk_Form, dupeForm.context),
+                400))
 
     previousForm = None
     if previousID:
@@ -125,7 +130,9 @@ def createForm(context = None, previousID = 0):
             # find previously deleted form with initialID
             previousForm = session.query(Form).filter_by(initialID = initialID, state = 3).first()
         if previousForm is None:
-            abort(make_response('There is no active or deleted protocol with provided initialID -- {"Error":"NOTFOUND", "ID":"%d"}' % previousID, 404))
+            abort(make_response(
+                'There is no active or deleted protocol with provided initialID -- ' +
+                '{"Error":"NOTFOUND", "ID":"%d", "Context":"%s"}' % (previousID, context), 404))
 
     formProperties = Utility._pick(request.json, Form.getColumnList())
     formExtraProperties = Utility._pickNot(request.json, Form.getColumnList() + ['fileList'])
@@ -190,8 +197,9 @@ def createForm(context = None, previousID = 0):
             foundForm = session.query(Form).filter_by(pk_Form = foundInput.fk_form).first()
             if foundForm.context == form.context and foundInput.type != input.type:
                 abort(make_response(
-                    'Two fields with the same name for a given context must also share the same type -- {"Error":"FIELDTYPE", "ID":"%d", "FieldName":"%s", "FieldType":"%s"}'
-                    % (foundForm.pk_Form, foundInput.name, foundInput.type), 400))
+                    'Two fields with the same name for a given context must also share the same type -- '+
+                    '{"Error":"FIELDTYPE", "ID":"%d", "FieldName":"%s", "FieldType":"%s", "Context":"%s"}' % (
+                        foundForm.pk_Form, foundInput.name, foundInput.type, foundForm.context), 400))
 
     # check for circular dependencies with child forms
     if (form.hasCircularDependencies([], session)):
