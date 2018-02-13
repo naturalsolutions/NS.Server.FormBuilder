@@ -3,6 +3,8 @@
 from sqlalchemy import *
 from sqlalchemy.orm import relationship
 from .base import Base
+from ..models.InputTrad import InputTrad
+
 import datetime
 
 
@@ -16,8 +18,8 @@ class Input(Base):
     fk_form       = Column(ForeignKey('Form.pk_Form'), nullable=False)
 
     name          = Column(String(100, 'French_CI_AS'), nullable=False)
-    labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
-    labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
+    # labelFr       = Column(String(300, 'French_CI_AS'), nullable=False)
+    # labelEn       = Column(String(300, 'French_CI_AS'), nullable=False)
     editMode      = Column(Integer, nullable=False)
     fieldSize     = Column(String(100, 'French_CI_AS'), nullable=False)
     atBeginingOfLine = Column(Boolean, nullable=False)
@@ -37,13 +39,12 @@ class Input(Base):
 
     Form        = relationship('Form')
     Properties  = relationship("InputProperty", cascade="all")
+    InputTrad   = relationship("InputTrad", cascade="all", lazy="dynamic")
 
     # constructor
-    def __init__(self, name, labelFr, labelEn, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order):
-        print ("new name is " + name)
+    def __init__(self, name, translations, editMode, fieldSize, atBeginingOfLine, type, editorClass, fieldClassEdit, fieldClassDisplay, linkedFieldTable, linkedField, linkedFieldset, order, originalID):
         self.name           = name
-        self.labelFr        = labelFr
-        self.labelEn        = labelEn
+        self.addTranslations(translations)
         self.editMode       = editMode
         self.fieldSize      = fieldSize
         self.atBeginingOfLine = atBeginingOfLine
@@ -54,6 +55,7 @@ class Input(Base):
         self.linkedField    = linkedField
         self.curStatus      = "1"
         self.order          = order
+        self.originalID     = originalID
 
         # linked field
         self.linkedFieldTable             = linkedFieldTable
@@ -65,8 +67,6 @@ class Input(Base):
     # Update form values
     def update(self, **kwargs):
         self.name        = kwargs['name']
-        self.labelFr     = kwargs['labelFr']
-        self.labelEn     = kwargs['labelEn']
         self.editMode    = kwargs['editMode']
         self.fieldSize   = kwargs['fieldSize']
         self.atBeginingOfLine   = kwargs['atBeginingOfLine']
@@ -74,6 +74,8 @@ class Input(Base):
         self.fieldClassEdit  = kwargs['fieldClassEdit']
         self.fieldClassDisplay  = kwargs['fieldClassDisplay']
         self.order       = kwargs['order']
+        self.originalID = kwargs['originalID']
+        self.addTranslations(kwargs['translations'])
 
         # linked field
         self.linkedFieldTable             = kwargs['linkedFieldTable']
@@ -84,8 +86,6 @@ class Input(Base):
     def toJSON(self):
         JSONObject = {
             "id"                : self.pk_Input,
-            "labelFr"           : self.labelFr,
-            "labelEn"           : self.labelEn,
             "atBeginingOfLine"  : self.atBeginingOfLine,
             "editMode"          : self.editMode,
             "fieldSize"         : self.fieldSize,
@@ -101,7 +101,9 @@ class Input(Base):
             # linked field 
 
             "linkedFieldTable"             : self.linkedFieldTable,
-            "linkedField"                  : self.linkedField
+            "linkedField"                  : self.linkedField,
+
+            "translations"  : self.getTranslations()
         }
 
         for prop in self.Properties :
@@ -112,6 +114,16 @@ class Input(Base):
         #    JSONObject[realChildFormName] = 
 
         return JSONObject
+
+    def addTranslations(self, translations):
+        for lang in translations:
+            if self.pk_Input:
+                trad = self.InputTrad.filter_by(fk_Language = lang).first()
+                if trad:
+                    trad.update(**translations[lang])
+                    continue
+
+            self.InputTrad.append(InputTrad(**translations[lang]))
 
     # add property to the configurated input
     def addProperty(self, prop):
@@ -128,8 +140,7 @@ class Input(Base):
     def getColumnsList(cls):
         return [
             'name',
-            'labelFr',
-            'labelEn',
+            'translations',
             'editMode',
             'fieldSize',
             'atBeginingOfLine',
@@ -140,5 +151,13 @@ class Input(Base):
             'linkedFieldTable',
             'linkedField',
             'linkedFieldset',
-            'order'
+            'order',
+            'originalID'
         ]
+
+    def getTranslations(self):
+        translations = dict()
+        allTrad = self.InputTrad
+        for each in allTrad:
+            translations[each.fk_Language] = each.toJSON()
+        return translations

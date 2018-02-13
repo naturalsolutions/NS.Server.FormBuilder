@@ -3,14 +3,10 @@
 from project import app
 from ..models import session
 from ..models.Form import Form
-from flask import jsonify, abort, render_template, request, make_response
-from sqlalchemy import *
+from flask import abort, request, make_response
 from ..controllers import TrackController
-import urllib.parse
 import json
-import sys
-import datetime
-import pprint
+
 
 # Return all forms
 @app.route('/autocomplete/forms', methods = ['GET'])
