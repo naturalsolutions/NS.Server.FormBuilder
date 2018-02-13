@@ -4,6 +4,11 @@ class Utility:
 
     @classmethod
     def _pick(self,array, keys):
+        # be flexible, set empty if unavailable..
+        for key in keys:
+            if key not in array:
+                array[key] = ''
+
         return { your_key: array[your_key] for your_key in keys }
 
     @classmethod
@@ -31,3 +36,10 @@ class Utility:
     def _print_r(self, variable):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(variable)
+
+    @classmethod
+    def datetimeToStr(cls, date, format="%d/%m/%Y - %H:%M:%S"):
+        if not date or date == 'NULL':
+            return ""
+
+        return date.strftime(format)

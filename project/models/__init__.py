@@ -11,12 +11,7 @@ from . import Form
 from . import FormProperty
 from . import Input
 from . import InputProperty
-from . import Unity
-from . import Propagation
 from . import FormFile
-from . import ConfiguratedInput
-from . import ConfiguratedInputProperty
-from . import Fieldset
 from . import Language
 from . import FormTrad
 
@@ -30,7 +25,8 @@ sqlConnexion = urllib.parse.quote_plus(sqlConnexion)
 sqlConnexion = "mssql+pyodbc:///?odbc_connect=%s" % sqlConnexion
 
 dbConfig = data['dbConfig']
-engine = create_engine(sqlConnexion)
+# recycle conn every 10min to prevent SQLSERVER to fuck our otherwise forever active connection
+engine = create_engine(sqlConnexion, pool_recycle=6000)
 Base.metadata.create_all(engine)
 session = scoped_session(sessionmaker(bind=engine))
 

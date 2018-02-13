@@ -6,9 +6,8 @@ from .base import Base
 from ..utilities import Utility
 from ..models.FormProperty import FormProperty
 from ..models.FormTrad import FormTrad
+from ..models.InputProperty import InputProperty
 import datetime
-
-import pprint
 
 
 class Form(Base):
@@ -26,11 +25,12 @@ class Form(Base):
     context = Column(String(50, 'French_CI_AS'), nullable=False)
     originalID = Column(Integer, nullable=True)
     propagate = Column(Boolean, nullable=False)
+    state = Column(Integer, nullable=False)     # 1: current version, 2: old version, 3: current version (deleted)
+    initialID = Column(Integer, nullable=False) # id of root form after first creation
 
     # Relationship
-    fieldsets = relationship("Fieldset", cascade="all")
     inputs = relationship("Input", cascade="all")
-    Properties = relationship("FormProperty", cascade="all")
+    Properties = relationship("FormProperty", cascade="all", lazy='dynamic')
     FormFile = relationship("FormFile", cascade="all")
     FormTrad = relationship("FormTrad", cascade="all", lazy='dynamic')
 
@@ -68,21 +68,10 @@ class Form(Base):
         self.obsolete = kwargs['obsolete']
         self.addTranslations(kwargs['translations'])
 
-    def get_fieldsets(self):
-        """
-        Return all form fieldsets
-        :return: form fieldsets as json
-        """
-        fieldsets = []
-        for each in self.fieldsets:
-            if each.curStatus != 4:
-                fieldsets.append(each.toJSON())
-        return fieldsets
-
     def get_formtrad(self):
         """
-        Return all form fieldsets
-        :return: form fieldsets as json
+        Return all form trads
+        :return: form trads as json
         """
         trads = []
         for each in self.FormTrad:
@@ -99,14 +88,16 @@ class Form(Base):
             "id": self.pk_Form,
             "name": self.name,
             "tag": self.tag,
-            "creationDate": "" if self.creationDate == 'NULL' or self.creationDate is None else self.creationDate.strftime("%d/%m/%Y - %H:%M:%S"),
-            "modificationDate": "" if self.modificationDate == 'NULL' or self.modificationDate is None else self.modificationDate.strftime("%d/%m/%Y - %H:%M:%S"),
+            "creationDate": Utility.datetimeToStr(self.creationDate),
+            "modificationDate": Utility.datetimeToStr(self.modificationDate),
             "curStatus": self.curStatus,
             "obsolete": self.obsolete,
             "isTemplate": self.isTemplate,
             "context": self.context,
             "propagate": self.propagate,
-            "originalID": self.originalID
+            "originalID": self.originalID,
+            "state": self.state,
+            "initialID": self.initialID
         }
 
     # Serialize a form in JSON object
@@ -123,25 +114,29 @@ class Form(Base):
             jsonobject['fileList'].append(fileAssoc.toJSON())
         return jsonobject
 
+    def shortJSON(self):
+        return {
+            "id": self.pk_Form,
+            "name": self.name,
+            "context": self.context,
+            "obsolete": self.obsolete,
+            "modificationDate": Utility.datetimeToStr(self.modificationDate),
+            "state": self.state,
+            "initialID": self.initialID
+        }
+
     def recuriseToJSON(self, withschema=True):
         json = self.toJSON()
-        inputs = {}
-
-        loops = 0
-        allInputs = self.inputs
-
-        for each in allInputs:
-            inputs[loops] = each.toJSON()
-            loops += 1
 
         if withschema:
-            json['schema'] = inputs
+            json['schema'] = {}
+            i = 0
+            for each in self.inputs:
+                json['schema'][i] = each.toJSON()
+                i += 1
 
-        json['fieldsets'] = self.get_fieldsets()
         json['translations'] = self.getTranslations()
-
         json = self.addFormProperties(json)
-
         return json
 
     def hasCircularDependencies(self, allParents, session):
@@ -172,10 +167,6 @@ class Form(Base):
     def addInput(self, newInput):
         self.inputs.append(newInput)
 
-    # Add fieldset to the form
-    def addFieldset(self, fieldset):
-        self.fieldsets.append(fieldset)
-
     # Add FormFile to the form
     def addFile(self, newFile):
         self.FormFile.append(newFile)
@@ -186,6 +177,37 @@ class Form(Base):
         for i in self.inputs:
             inputsIdList.append(i.pk_Input)
         return inputsIdList
+
+    # get all forms referencing this form as a child
+    def getParentForms(self, session):
+        parents = []
+        for childFormProp in session.query(InputProperty).filter_by(value = str(self.pk_Form), name = "childForm").all():
+            parent = childFormProp.Input.Form
+            if parent.state == 1:
+                parents.append({
+                    "id":   parent.pk_Form,
+                    "name": parent.name
+                })
+        return parents
+
+    # update all forms referencing this form as a child with provided newForm
+    def updateParentForms(self, session, newForm):
+        i = 0
+        for childFormProp in session.query(InputProperty).filter_by(value = str(self.pk_Form), name = "childForm").all():
+            for prop in childFormProp.Input.Properties:
+                if prop.name == 'childForm':
+                    prop.value = newForm.pk_Form
+                elif prop.name == 'childFormName':
+                    prop.value = newForm.name
+            i += 1
+            # there might be a need to trigger bridge changes, does not apply for TRACK though since we keep OriginalID
+
+        # commit session if changes were made
+        if i > 0:
+            session.commit()
+
+        return i
+
 
     def addTranslations(self, translations):
         for lang in translations:
@@ -222,9 +244,10 @@ class Form(Base):
             'tag',
             'translations',
             'schema',
-            'fieldsets',
             'obsolete',
             'isTemplate',
             'context',
-            'propagate'
+            'propagate',
+            'originalID',
+            'initialID'
         ]

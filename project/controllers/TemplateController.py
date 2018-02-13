@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
 #
 from project import app
-from flask import jsonify, abort, render_template, request, make_response
+from flask import jsonify, abort, request, make_response
 from ..utilities import Utility
 from ..models import session
 from ..models.Form import Form
-from ..models.InputProperty import InputProperty
 from ..models.Input import Input
 from ..models.InputProperty import InputProperty
-from ..models.InputRepository import InputRepository
-from ..models.Fieldset import Fieldset
 import json
 import sys
-import datetime
 
-import pprint
 
 # Return all forms
 @app.route('/templates', methods = ['GET'])
@@ -91,9 +86,6 @@ def create_template():
 
         neededParametersList = Form.getColumnList()
 
-        pprint.pprint(neededParametersList)
-        pprint.pprint(request.json)
-
         for a in neededParametersList: IfmissingParameters = IfmissingParameters and (a in request.json)
 
         if IfmissingParameters == False:
@@ -131,10 +123,6 @@ def create_template():
 
                 # Add new input to the form
                 form.addInput(newInput)
-
-            for fieldset in request.json['fieldsets']:
-                newfieldset = Fieldset(fieldset['legend'], ",".join(fieldset['fields']), False)
-                form.addFieldset(newfieldset)
 
             try:
                 session.add (form)

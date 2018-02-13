@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 #
 from project import app
-from flask import jsonify, abort, render_template, request, make_response
-from ..utilities import Utility
-from ..models import session, engine
+from flask import abort, request, make_response
+from ..models import session
 from ..models.Form import Form
 from ..models.Input import Input
 from sqlalchemy import *
 from sqlalchemy.exc import ProgrammingError
 import urllib.parse
 import json
-import sys
-import datetime
-import pprint
+
 
 def getTrackSqlConnection(forcedSqlConn = None):
 	if forcedSqlConn != None:
@@ -53,8 +50,9 @@ def getData():
 	else:
 		abort(make_response('No datas given !', 400))
 
+@app.route('/unities/<string:context>/<string:lang>', methods = ['GET'])
 @app.route('/getTrackUnities/<string:lang>', methods = ['GET'])
-def getTrackUnities(lang):
+def getTrackUnities(lang, context):
 	toret = {}
 	trackEngine = getTrackSqlConnection()
 
@@ -159,4 +157,3 @@ def getTrackInputWeight(originalID):
 			toret["InputWeight"][itemDB] = totresult
 
 	return json.dumps(toret, ensure_ascii=False)
-
