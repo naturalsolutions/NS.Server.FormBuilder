@@ -635,7 +635,7 @@ AS
                         UPDATE @typeTogive SET TTyp_FK_TTop_ID = [value]
                         FROM @rowInputsDynamicProps
                       END
-                    IF @inputName = 'defaultValue'
+                    IF @inputName = 'defaultPath'
                       BEGIN
                         UPDATE TObservation SET TObs_ValeurDefault = [value]
                         FROM @rowInputsDynamicProps
