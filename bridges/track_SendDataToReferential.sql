@@ -413,6 +413,11 @@ AS
                       BEGIN
                         UPDATE @typeTogive SET TTyp_SQL = [value]
                         FROM @rowInputsDynamicProps
+                        -- todo @rk check if this is right (below) and check why above
+                        UPDATE TObservation SET TObs_ValeurDefault = [value]
+                        FROM @rowInputsDynamicProps
+                        WHERE TObservation.TObs_PK_ID = @originalTrackInputID
+                              AND [value] <> ''
                       END
                     IF @inputName = 'help'
                       BEGIN
@@ -473,6 +478,11 @@ AS
                       BEGIN
                         UPDATE @typeTogive SET TTyp_SQL = [value]
                         FROM @rowInputsDynamicProps
+                        -- todo @rk check if this is right (below) and check why above
+                        UPDATE TObservation SET TObs_ValeurDefault = [value]
+                        FROM @rowInputsDynamicProps
+                        WHERE TObservation.TObs_PK_ID = @originalTrackInputID
+                              AND [value] <> ''
                       END
                     IF @inputName = 'format'
                       BEGIN
@@ -575,6 +585,11 @@ AS
                       BEGIN
                         UPDATE @typeTogive SET TTyp_SQL = [value]
                         FROM @rowInputsDynamicProps
+                        -- todo @rk check if this is right (below) and check why above update exists and if its right
+                        UPDATE TObservation SET TObs_ValeurDefault = [value]
+                        FROM @rowInputsDynamicProps
+                        WHERE TObservation.TObs_PK_ID = @originalTrackInputID
+                              AND [value] <> ''
                       END
                     IF @inputName = 'isDefaultSQL'
                       BEGIN
@@ -591,6 +606,11 @@ AS
                       BEGIN
                         UPDATE @typeTogive SET TTyp_SQL = [value]
                         FROM @rowInputsDynamicProps
+                        -- todo @rk check if this is right (below) and check why above
+                        UPDATE TObservation SET TObs_ValeurDefault = [value]
+                        FROM @rowInputsDynamicProps
+                        WHERE TObservation.TObs_PK_ID = @originalTrackInputID
+                              AND [value] <> ''
                       END
                     IF @inputName = 'help'
                       BEGIN
