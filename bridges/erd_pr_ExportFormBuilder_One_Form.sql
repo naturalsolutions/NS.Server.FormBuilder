@@ -1,11 +1,9 @@
-USE [EcoReleve_ECWP_FOR_Referentiel]
-GO
-/****** Object:  StoredProcedure [dbo].[pr_ExportFormBuilder_One_Form]    Script Date: 01/02/2018 15:25:09 ******/
+
+/****** Object:  StoredProcedure [dbo].[pr_ExportFormBuilder_One_Form]    Script Date: 12/02/2018 11:00:45 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 
 ALTER PROCEDURE [dbo].[pr_ExportFormBuilder_One_Form]
@@ -14,7 +12,8 @@ ALTER PROCEDURE [dbo].[pr_ExportFormBuilder_One_Form]
 AS
   BEGIN
 
-    DECLARE @initialID int = (SELECT initialID FROM Formbuilder_DEV.dbo.Form WHERE pk_Form = @form_id)
+    DECLARE @initialID int = NULL
+	SET @initialID = (SELECT initialID FROM Formbuilder_DEV.dbo.Form WHERE pk_Form = @form_id)
 
     DELETE ip
     FROM FormBuilderInputProperty ip
@@ -29,27 +28,28 @@ AS
     DELETE FormBuilderFormsInfos
     where ID =  @initialID
 
-    /**************** INSERT FormsInfos ***********************/
+    --/**************** INSERT FormsInfos ***********************/
 
-    --SET IDENTITY_INSERT  [FormBuilderFormsInfos] ON;
-    INSERT INTO [FormBuilderFormsInfos]
-    (ID
-      ,[name]
-      ,[tag]
-      ,[labelFr]
-      ,[labelEn]
-      ,[creationDate]
-      ,[modificationDate]
-      ,[curStatus]
-      ,[descriptionFr]
-      ,[descriptionEn]
-      ,[obsolete]
-      ,[propagate]
-      ,[isTemplate]
-      ,[context]
-      ,ObjectType)
+    ----SET IDENTITY_INSERT  [FormBuilderFormsInfos] ON;
+    INSERT INTO [FormBuilderFormsInfos](
+			ID
+		  ,[name]
+		  ,[tag]
+		  ,[labelFr]
+		  ,[labelEn]
+		  ,[creationDate]
+		  ,[modificationDate]
+		  ,[curStatus]
+		  ,[descriptionFr]
+		  ,[descriptionEn]
+		  ,[obsolete]
+		  ,[propagate]
+		  ,[isTemplate]
+		  ,[context]
+		  ,ObjectType
+		  )
 
-      SELECT   @initialID
+      SELECT @initialID
         ,fo.[name]
         ,[tag]
         ,TradFR.[Name]
@@ -74,14 +74,14 @@ AS
 
 
     --SET IDENTITY_INSERT  [FormBuilderFormProperty] ON;
-    INSERT INTO [dbo].[FormBuilderFormProperty]
-    (--ID,
-     [fk_Form]
-      ,[name]
-      ,[value]
-      ,[creationDate]
-      ,[valueType])
-      SELECT		--pk_FormProperty,
+    INSERT INTO [dbo].[FormBuilderFormProperty](
+			[fk_Form]
+		  ,[name]
+		  ,[value]
+		  ,[creationDate]
+		  ,[valueType]
+		)
+      SELECT
         @initialID
         ,fp.[name]
         ,fp.[value]
@@ -94,29 +94,30 @@ AS
     /**************** INSERT InputInfos ***********************/
 
     --SET IDENTITY_INSERT  [FormBuilderInputInfos] ON;
-    INSERT INTO [FormBuilderInputInfos]
-    (ID
-      ,[fk_form]
-      ,[name]
-      ,[labelFr]
-      ,[labelEn]
-      ,[required]
-      ,[readonly]
-      ,[fieldSize]
-      ,atBeginingOfLine
-      ,[startDate]
-      ,[curStatus]
-      ,[type]
-      ,[editorClass]
-      ,[fieldClassEdit]
-      ,[fieldClassDisplay]
-      ,[linkedFieldTable]
-      ,[linkedField]
-      ,[order]
-      ,Legend
-      ,editMode
-    )
-      SELECT pk_Input
+    INSERT INTO [FormBuilderInputInfos](
+		ID
+		,[fk_form]
+		,[name]
+		,[labelFr]
+		,[labelEn]
+		,[required]
+		,[readonly]
+		,[fieldSize]
+		,atBeginingOfLine
+		,[startDate]
+		,[curStatus]
+		,[type]
+		,[editorClass]
+		,[fieldClassEdit]
+		,[fieldClassDisplay]
+		,[linkedFieldTable]
+		,[linkedField]
+		,[order]
+		,Legend
+		,editMode
+		)
+      SELECT 
+		pk_Input
         ,@initialID
         ,I.[name]
         ,TradFR.[Name]
@@ -140,7 +141,7 @@ AS
       FROM Formbuilder_DEV.dbo.Input I
         LEFT JOIN Formbuilder_DEV.dbo.InputTrad TradFR ON I.pk_Input = TradFR.FK_Input AND TradFR.FK_Language = 'fr'
         LEFT JOIN Formbuilder_DEV.dbo.InputTrad TradEN ON I.pk_Input = TradEN.FK_Input AND TradEN.FK_Language = 'en'
-      WHERE i.fk_form in (select ID from [FormBuilderFormsInfos]) AND I.[curStatus] = 1
+      WHERE  I.[curStatus] = 1
             and i.fk_form = @form_id
 
 
@@ -152,22 +153,23 @@ AS
 
     --SET IDENTITY_INSERT  [FormBuilderInputProperty] ON;
 
-    INSERT INTO [FormBuilderInputProperty]
-    (ID
-      ,[fk_Input]
-      ,[name]
-      ,[value]
-      ,[creationDate]
-      ,[valueType])
+    INSERT INTO [FormBuilderInputProperty](
+		ID
+		,[fk_Input]
+		,[name]
+		,[value]
+		,[creationDate]
+		,[valueType])
       SELECT [pk_InputProperty]
         ,[fk_Input]
         ,IP.[name]
-        ,IP.[value]
+        ,CASE WHEN IP.[name] = 'childForm' THEN CONVERT(varchar(25),(SELECT initialID FROM Formbuilder_DEV.dbo.Form WHERE pk_Form = IP.value))
+				ELSE IP.value
+		 END
         ,IP.[creationDate]
         ,IP.[valueType]
       FROM Formbuilder_DEV.[dbo].[InputProperty] IP
-      WHERE fk_Input IN (select ID FROM [FormBuilderInputInfos])
-            AND EXISTS (SELECT * FROM Formbuilder_DEV.dbo.Input I WHERE I.pk_Input = IP.fk_Input AND I.fk_form = @form_id)
+      WHERE EXISTS (SELECT * FROM Formbuilder_DEV.dbo.Input I WHERE I.pk_Input = IP.fk_Input AND I.fk_form = @form_id)
 
     --SET IDENTITY_INSERT  [FormBuilderInputProperty] OFF;
     --EXEC dbo.[pr_ImportFormBuilder]
