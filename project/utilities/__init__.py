@@ -1,5 +1,28 @@
 import pprint
 
+class EditMode(object):
+    nullmean = False
+    nullable = False
+    editable = False
+    visible = False
+    def __init__(self, val = 0):
+        self.nullmean = (val >= 8)
+        val %= 8
+        self.nullable = (val >= 4)
+        val %= 4
+        self.editable = (val >= 2)
+        val %= 2
+        self.visible = (val >= 1)
+
+    def toValue(self):
+        i = 0
+        i += 1 if self.visible else 0
+        i += 2 if self.editable else 0
+        i += 4 if self.nullable else 0
+        i += 8 if self.nullmean else 0
+        return i
+
+
 class Utility:
 
     @classmethod

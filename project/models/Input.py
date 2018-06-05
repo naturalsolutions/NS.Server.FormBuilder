@@ -1,11 +1,12 @@
 # -*- coding: utf8 -*-
-
 from sqlalchemy import *
 from sqlalchemy.orm import relationship
 from .base import Base
 from ..models.InputTrad import InputTrad
-
 import datetime
+import json
+from ..utilities import EditMode
+from collections import OrderedDict
 
 
 # Input Class
@@ -114,6 +115,141 @@ class Input(Base):
         #    JSONObject[realChildFormName] = 
 
         return JSONObject
+
+    def toJSONSchema(self, session, FormClass):
+        """
+        :param session: (circular import) used to populate child form schema
+        :param FormClass: (circular import) used to populate child form schema
+        :return:
+        """
+        s = OrderedDict([
+          ("title", self.name),
+          ("fbType", self.type),
+          ("translations", self.getTranslations()),
+        ])
+
+        # map formbuilder type to concrete json-schema type
+        typesMap = {
+            "Autocomplete": "string",
+            "AutocompleteTreeView": "integer", # todo ?
+            "Checkboxes": "array",
+            "ChildForm": "object",
+            "Date": "string",
+            "Decimal": "number",
+            "File": "string", # todo ?
+            "Number": "number",
+            "NumericRange": "number",
+            "ObjectPicker": "integer", # todo ?
+            "Pattern": "string", # todo ?
+            "Position": "integer", # todo ?
+            "Radio": "string",
+            "Select": "string",
+            "SubFormGrid": "object",
+            "TextArea": "string",
+            "Text": "string",
+            "Thesaurus": "integer", # todo ?
+            "TreeView": "integer", # todo ?
+        }
+        s["type"] = typesMap[self.type]
+
+        # default
+        if self.getProperty("defaultValue") != "":
+            s["default"] = self.getProperty("defaultValue")
+
+        # numeric's minimum & maximum
+        if s["type"] in ["integer", "number"]:
+            minVal = self.getProperty("minValue")
+            maxVal = self.getProperty("maxValue")
+            if minVal:
+                try:
+                    s["minimum"] = float(minVal) if s["type"] == "integer" else int(minVal)
+                except:
+                    pass
+            if maxVal:
+                try:
+                    s["maximum"] = float(maxVal) if s["type"] == "integer" else int(maxVal)
+                except:
+                    pass
+
+        # child form: populate sub-schema
+        if s["fbType"] in ["ChildForm", "SubFormGrid"]:
+            try:
+                subForm = session.query(FormClass).get(int(self.getProperty("childForm")))
+                if EditMode(self.editMode).nullable:
+                    s["anyOf"] = [subForm.toJSONSchema(session), {}]
+                else:
+                    s["allOf"] = [subForm.toJSONSchema(session)]
+            except Exception as e:
+                raise Exception("couldn't populate child form schema", e)
+
+        # date format
+        if s["fbType"] == "Date":
+            # todo we could use "pattern": "date | <regexp> | .." keyword from json-schema spec,
+            # but it would need to match the spec whereas our "format" is not standard
+            s["format"] = self.getProperty("format")
+
+        # choices types: "Radio", "Select" and "Checkboxes"
+        if s["fbType"] == "Radio" or s["fbType"] == "Select" or s["fbType"] == "Checkboxes":
+            try:
+                choices = json.loads(self.getProperty("choices"))
+            except:
+                # non fatal error but there will be no restriction on value for this field
+                print("error parsing choices for %s field: \"%s\"" % (s["fbType"], self.name))
+                choices = []
+            enumValues = []
+            defaultValues = []
+            for choice in choices:
+                enumValues.append(choice["value"])
+                if "isDefaultValue" in choice and choice["isDefaultValue"]:
+                    defaultValues.append(choice["value"])
+
+            # "Checkboxes"
+            if s["type"] == "array":
+                if defaultValues:
+                    s["default"] = defaultValues
+                if enumValues:
+                    s["items"] = {"enum": enumValues}
+            # "Radio", "Select" - single value
+            else:
+                if defaultValues:
+                    s["default"] = defaultValues[0] # only keep first default choice
+                if enumValues:
+                    s["enum"] = enumValues
+
+        # editMode
+        editMode = EditMode(self.editMode)
+        if not editMode.editable:
+            s["readOnly"] = True
+        if not editMode.visible:
+            s["hidden"] = True
+        if editMode.nullmean or editMode.nullable:
+            s["type"] = [s["type"], "null"]
+            if "enum" in s:
+                s["enum"].append("null")
+
+        # set default if not populated before
+        if not "default" in s and self.getProperty("defaultValue") != "":
+            s["default"] = self.getProperty("defaultValue")
+
+        # other static props of interest: todo ?
+        if self.linkedField:
+            s["linkedField"] = self.linkedField
+        if self.linkedFieldTable:
+            s["linkedFieldTable"] = self.linkedFieldTable
+        if self.fieldSize:
+            s["fieldSize"] = self.fieldSize
+        s["atBeginingOfLine"] = self.atBeginingOfLine
+        s["order"] = self.order
+
+        # other dyn props encountered, maybe exhaustive, probably not: todo ?
+        for dynProp in [
+            "url", "wsUrl", "webservices", "webServiceURL",
+            "isSQL", "isDefaultSQL",
+            "defaultNode", "fullpath", "defaultPath", "positionPath"]:
+            if self.getProperty(dynProp) != "":
+                s[dynProp] = self.getProperty(dynProp)
+
+        return s
 
     def addTranslations(self, translations):
         for lang in translations:

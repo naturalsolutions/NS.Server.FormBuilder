@@ -3,11 +3,13 @@
 from sqlalchemy import *
 from sqlalchemy.orm import relationship
 from .base import Base
-from ..utilities import Utility
+from ..utilities import Utility, EditMode
 from ..models.FormProperty import FormProperty
 from ..models.FormTrad import FormTrad
+from ..models.Input import Input
 from ..models.InputProperty import InputProperty
 import datetime
+from collections import OrderedDict
 
 
 class Form(Base):
@@ -29,7 +31,7 @@ class Form(Base):
     initialID = Column(Integer, nullable=False) # id of root form after first creation
 
     # Relationship
-    inputs = relationship("Input", cascade="all")
+    inputs = relationship("Input", cascade="all", lazy="dynamic")
     Properties = relationship("FormProperty", cascade="all", lazy='dynamic')
     FormFile = relationship("FormFile", cascade="all")
     FormTrad = relationship("FormTrad", cascade="all", lazy='dynamic')
@@ -77,6 +79,47 @@ class Form(Base):
         for each in self.FormTrad:
             trads.append(each.toJSON())
         return trads
+
+    def toJSONSchema(self, session):
+        """
+        :param session: (circular import) passed down to field.toJSONSchema to populate child form schema
+        """
+        # use ordered dict to have some consistency when dumping json
+        s = OrderedDict([
+            ("$schema", "http://json-schema.org/draft-07/schema#"),
+            ("$id", "http://natural-solutions.eu/form/%d" % self.pk_Form),
+            ("title", self.name),
+            ("type", "object"),
+            ("creationDate", Utility.datetimeToStr(self.creationDate)),
+            ("modificationDate", Utility.datetimeToStr(self.modificationDate)),
+            ("translations", self.getTranslations()),
+            ("properties", OrderedDict()),
+            ("required", []),
+        ])
+
+        requiredFieldsets = OrderedDict()
+        for field in self.inputs.order_by(Input.order):
+            editMode = EditMode(field.editMode)
+            fsKey = field.linkedFieldset
+            fieldSchema = field.toJSONSchema(session, type(self))
+            if fsKey:  # fieldset ?
+                fs = s["properties"].get(fsKey, {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                })
+                fs["properties"][field.name] = fieldSchema
+                if not editMode.nullable:
+                    fs["required"].append(field.name)
+                    requiredFieldsets[fsKey] = True
+                s["properties"][fsKey] = fs
+            else: # single property
+                s["properties"][field.name] = fieldSchema
+                if not editMode.nullable:
+                    s["required"].append(field.name)
+        for k in requiredFieldsets:
+            s["required"].append(k)
+        return s
 
     def to_json(self):
         """

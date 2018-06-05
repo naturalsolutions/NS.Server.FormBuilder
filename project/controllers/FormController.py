@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # 
 from project import app
-from flask import jsonify, abort, render_template, request, make_response
+from flask import Response, jsonify, abort, render_template, request, make_response
 from ..utilities import Utility
 from ..models import session, dbConfig
 from ..models.Form import Form
@@ -16,11 +16,13 @@ import sys
 import datetime
 from traceback import print_exc
 
-def formsToJSON(formsQuery, short = False):
+def formsToJSON(formsQuery, short = False, jsonSchema = False):
     forms = []
     for form in formsQuery:
-        if (short):
+        if short:
             f = form.shortJSON()
+        elif jsonSchema:
+            f = form.toJSONSchema(session)
         else:
             f = form.recuriseToJSON(False)
         forms.append(f)
@@ -28,14 +30,16 @@ def formsToJSON(formsQuery, short = False):
 
 @app.route('/forms', methods = ['GET'])
 @app.route('/forms/<string:context>', methods = ['GET'])
-def getForms(context = None, short = False):
+def getForms(context = None, short = False, jsonSchema = False):
+    if request.args.get('schema'):
+        jsonSchema = True
     query = session.query(Form).filter_by(state = 1).order_by('name')
 
     # filter_by context, except for "all"
     if (context and context.lower() != "all"):
         query = query.filter_by(context = context)
 
-    return json.dumps(formsToJSON(query, short), ensure_ascii=False)
+    return Response(json.dumps(formsToJSON(query, short, jsonSchema), ensure_ascii=False), mimetype='application/json')
 
 @app.route('/forms/allforms/<string:context>', methods = ['GET'])
 def getFormsShort(context):
@@ -43,10 +47,15 @@ def getFormsShort(context):
 
 @app.route('/forms/<int:pk>', methods=['GET']) # deprecated
 @app.route('/form/<int:pk>', methods=['GET'])  # prefer this url, avoids ambiguity with /forms/<context>
-def getForm(pk):
+def getForm(pk, jsonSchema = False):
+    if request.args.get('schema'):
+        jsonSchema = True
     form = session.query(Form).get(pk)
     if form is None:
         return abort(404)
+
+    if jsonSchema:
+        return Response(json.dumps(form.toJSONSchema(session), ensure_ascii=False), mimetype='application/json')
 
     jsonForm = form.recuriseToJSON(True)
     # get currently active form id
@@ -64,7 +73,7 @@ def getForm(pk):
     # fetch parent forms
     jsonForm['parentForms'] = form.getParentForms(session)
 
-    return json.dumps(jsonForm, ensure_ascii=False)
+    return Response(json.dumps(jsonForm, ensure_ascii=False), mimetype='application/json')
 
 @app.route('/history/short/<int:pk>', methods = ['GET'])
 def getFormShortHistory(pk):
@@ -446,7 +455,7 @@ def index():
 @app.route('/childforms/<int:formid>', methods = ['GET'])
 def get_childforms(formid):
     parents = session.query(Form).get(formid).getParentForms(session)
-    return json.dumps(parents, ensure_ascii=False)
+    return Response(json.dumps(parents, ensure_ascii=False), mimetype='application/json')
 
 @app.route('/forms/getAllInputNames/<string:context>', methods = ['GET'])
 def getAllInputNames(context):
@@ -464,7 +473,7 @@ def getAllInputNames(context):
             if forminput.name not in toret:
                 toret.append(forminput.name)
     toret.sort()
-    return json.dumps(toret, ensure_ascii=False)
+    return Response(json.dumps(toret, ensure_ascii=False), mimetype='application/json')
 
 
 @app.route('/makeObsolete/<int:formID>', methods = ['PUT'])
@@ -487,7 +496,7 @@ def makeFormObsolete(formID):
     finally:
         session.commit()
 
-    return json.dumps({"success":True}, ensure_ascii=False)
+    return Response(json.dumps({"success":True}, ensure_ascii=False), mimetype='application/json')
 
 # def exec_exportFormBuilderEcoreleve(formid):
 #     stmt = text(""" EXEC  """+dbConfig['ecoreleve']+ """.[pr_ExportFormBuilder];
