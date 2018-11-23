@@ -241,6 +241,11 @@ def createForm(context = None, previousID = 0):
 @app.route('/forms/<string:context>/<int:pk>', methods=['PUT'])
 @app.route('/forms/<int:pk>', methods=['PUT'])
 def updateForm(pk, context = None):
+    #Si context repro, ne rien faire
+    if context == 'repro':
+        return jsonify({
+            'id': pk
+        })
     # createForm actually creates a new form to keep form history
     return createForm(context, pk)
 
