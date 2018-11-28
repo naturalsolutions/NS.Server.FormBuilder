@@ -9,7 +9,8 @@
     },
     "dbConfig" : {
     	"ecoreleve":"Referentiel_EcoReleve.dbo",
-    	"track":"Referentiel_Track.dbo"
+    	"track":"Referentiel_Track.dbo",
+		"position":"POSITION.dbo"
     },
 	"refsDB" : {
 		"track": [],

@@ -499,6 +499,7 @@ def exec_exportFormBuilder(form):
     try:
         curSession.execute(stmt.execution_options(autocommit=True))
         curSession.commit()
+        print("successfuly executed exec_exportFormBuilder: %d" % formid)
     except Exception as e:
         print("couldn't exec Remove stored procedure: %s" % e)
     return
@@ -515,6 +516,7 @@ def exec_removeFormBuilderToReferential(form):
     try:
         curSession.execute(stmt.execution_options(autocommit=True))
         curSession.commit()
+        print("successfuly executed exec_removeFormBuilderToReferential: %d" % form.originalID)
     except Exception as e:
         print("couldn't exec Remove stored procedure: %s" % e)
     return
