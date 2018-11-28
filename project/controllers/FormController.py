@@ -161,10 +161,6 @@ def createForm(context = None, previousID = 0):
     for key in request.json['schema']:
         inputDict = request.json['schema'][key]
 
-        # set custom properties depending on field's validators
-        for i in ['required', 'readonly']:
-            inputDict[i] = inputDict['validators'] and inputDict['validators'].index(i) >= 0
-
         # delete unneeded properties
         del inputDict['validators']
         del inputDict['id']
@@ -286,18 +282,6 @@ def updateForm_old(pk):
                     # No : we add an input to the form
                     for eachInput in request.json['schema']:
                         inputsList = request.json['schema'][eachInput]
-
-                        try:
-                            request.json['schema'][eachInput]['required'] = request.json['schema'][eachInput]['validators'].index('required') >= 0
-                        except:
-                            request.json['schema'][eachInput]['required'] = False
-                            pass
-
-                        try:
-                            request.json['schema'][eachInput]['readonly'] = request.json['schema'][eachInput]['validators'].index('readonly') >= 0
-                        except:
-                            request.json['schema'][eachInput]['readonly'] = False
-                            pass
 
                         del request.json['schema'][eachInput]['validators']
 
