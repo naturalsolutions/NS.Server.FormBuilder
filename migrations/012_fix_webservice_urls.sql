@@ -4,6 +4,7 @@ WHERE name = 'webServiceURL'
 GO
 
 UPDATE InputProperty
-SET value = REPLACE(value, '/Thesaurus/api/', '/ThesaurusCore/api/')
+
+SET value = REPLACE(value, '/Thesaurus/', '/ThesaurusCore/')
 WHERE name = 'webServiceURL'
 GO
