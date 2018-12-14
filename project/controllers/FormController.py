@@ -235,6 +235,7 @@ def createForm(context = None, previousID = 0):
         abort(make_response('Error during save: %s' % str(e).encode(sys.stdout.encoding, errors='replace'), 500))
 
     try:
+        #TODO Gerer les erreurs remontés par la procédure stockée  et les envoyer au front
         exec_exportFormBuilder(form)
     except Exception as e:
         print_exc()
@@ -513,7 +514,12 @@ def exec_exportFormBuilder(form):
 
     curSession = session()
     try:
-        curSession.execute(stmt.execution_options(autocommit=True))
+        if context == 'ecoreleve':
+            #special case for ecoreleve issues
+            #dunno why but autocommit=True seems not executing the sp
+            curSession.execute(stmt)
+        else:
+            curSession.execute(stmt.execution_options(autocommit=True))
         curSession.commit()
         print("successfuly executed exec_exportFormBuilder: %d" % formid)
     except Exception as e:
