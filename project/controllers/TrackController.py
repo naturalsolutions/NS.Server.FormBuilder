@@ -22,7 +22,7 @@ def getTrackSqlConnection(forcedSqlConn = None):
 		trackSqlConnexion = urllib.parse.quote_plus(trackSqlConnexion)
 		trackSqlConnexion = "mssql+pyodbc:///?odbc_connect=%s" % trackSqlConnexion
 
-	print("trackSqlConnexion = " + trackSqlConnexion)
+	#print("trackSqlConnexion = " + trackSqlConnexion)
 	try:
 		trackEngine = create_engine(trackSqlConnexion)
 	except ProgrammingError:
@@ -41,11 +41,12 @@ def getData():
 		trackEngine = getTrackSqlConnection()
 
 		if (trackEngine != None):
-			for dataType in request.json["datas"]:
-				toret[dataType] = {}
-				result = trackEngine.execute("SELECT DISTINCT [TPro_"+dataType+"] FROM [TProtocole]")
+			for key, value in request.json["datas"].items():
+				toret[key] = {}
+				table, column = value.split(":")
+				result = trackEngine.execute("SELECT DISTINCT ["+table[:4]+"_"+column+"] FROM ["+table+"]")
 				for row in result:
-					toret[dataType][row[0]] = row[0]
+					toret[key][row[0]] = row[0]
 			return json.dumps(toret, ensure_ascii=False)
 	else:
 		abort(make_response('No datas given !', 400))
