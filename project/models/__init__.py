@@ -14,11 +14,14 @@ from . import InputProperty
 from . import FormFile
 from . import Language
 from . import FormTrad
-
+import os
 
 # Database connexion
 # We use pyodbc and SQL Server for the moment
-with open("project/config/config.json", "r") as config:
+
+absPathConfigFile = os.path.abspath( os.path.join(os.path.dirname(__file__),'../config/config.json'))
+
+with open(absPathConfigFile, "r") as config:
     data = json.loads( config.read() )
 sqlConnexion = data["sql"]["url"] if 'sql' in data and 'url' in data['sql'] else 'CASIMIR/formbuilder'
 sqlConnexion = urllib.parse.quote_plus(sqlConnexion)
