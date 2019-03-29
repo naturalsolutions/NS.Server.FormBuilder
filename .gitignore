@@ -1,9 +1,2 @@
-build/
-dist/
-formBuilder.egg-info
-setup.py
 *.pyc
-web.config
-.idea/
 project/config/config.json
-*.egg-info
