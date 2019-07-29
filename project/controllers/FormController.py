@@ -460,11 +460,16 @@ def makeFormObsolete(formID):
     activeProperty = myForm.Properties.filter_by(name = 'actif').first()
     if activeProperty:
         activeProperty.value = "0"
-
+    print(activeProperty)
     try:
+        print('1')
         session.add(myForm)
-        session.add(activeProperty)
+        print('2')
+        if activeProperty:
+            session.add(activeProperty)
+        print('3')
         session.commit()
+        print('4')
         exec_exportFormBuilder(myForm)
     except:
         session.rollback()
