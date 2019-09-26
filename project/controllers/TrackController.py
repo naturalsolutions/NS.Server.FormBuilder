@@ -45,8 +45,11 @@ def getData():
 				toret[key] = {}
 				table, column = value.split(":")
 				result = trackEngine.execute("SELECT DISTINCT ["+table[:4]+"_"+column+"] FROM ["+table+"]")
-				for row in result:
-					toret[key][row[0]] = row[0]
+				try:
+					for row in result:
+						toret[key][row[0]] = row[0]
+				except:
+					print('iteration stopped')
 			return json.dumps(toret, ensure_ascii=False)
 	else:
 		abort(make_response('No datas given !', 400))
